@@ -9,5 +9,5 @@ import rx.Observable;
 
 public interface ChannelService {
     @GET
-    Observable<String> query(@Url String url);
+    Observable<ChannelData> query(@Url String url);
 }
