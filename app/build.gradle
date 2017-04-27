@@ -22,6 +22,9 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    packagingOptions {
+        exclude 'rome-utils-*.jar'
+    }
 }
 
 dependencies {
@@ -37,7 +40,7 @@ dependencies {
     compile 'com.github.bumptech.glide:glide:3.7.0'
     compile 'com.google.dagger:dagger:2.10'
     compile 'com.jakewharton:butterknife:7.0.1'
-    compile 'com.rometools:rome:1.7.2'
+    compile 'com.rometools:rome-modules:1.7.2'
     compile 'com.squareup.retrofit2:retrofit:2.2.0'
     compile 'com.squareup.retrofit2:converter-gson:2.2.0'
     compile 'com.squareup.retrofit2:converter-scalars:2.2.0'
