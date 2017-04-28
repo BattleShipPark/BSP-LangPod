@@ -2,8 +2,8 @@ package com.battleshippark.bsp_langpod.dagger;
 
 import com.battleshippark.bsp_langpod.AppPhase;
 import com.battleshippark.bsp_langpod.BuildConfig;
-import com.battleshippark.bsp_langpod.data.ChannelListRepos;
-import com.battleshippark.bsp_langpod.data.ChannelRepos;
+import com.battleshippark.bsp_langpod.data.ChannelApi;
+import com.battleshippark.bsp_langpod.data.ChannelListApi;
 import com.battleshippark.bsp_langpod.data.rss.RssResponseMapper;
 
 import javax.inject.Singleton;
@@ -15,28 +15,28 @@ import dagger.Provides;
  */
 
 @Module
-class ChannelReposModule {
+class ServerApiModule {
     @Provides
     @Singleton
-    ChannelListRepos provideChannelListRepos(AppPhase appPhase) {
-        return new ChannelListRepos(appPhase);
+    ChannelListApi channelListApi(AppPhase appPhase) {
+        return new ChannelListApi(appPhase);
     }
 
     @Provides
     @Singleton
-    ChannelRepos provideChannelRepos(RssResponseMapper mapper) {
-        return new ChannelRepos(mapper);
+    ChannelApi channelApi(RssResponseMapper mapper) {
+        return new ChannelApi(mapper);
     }
 
     @Provides
     @Singleton
-    RssResponseMapper provideRssResponseMapper() {
+    RssResponseMapper rssResponseMapper() {
         return new RssResponseMapper();
     }
 
     @Provides
     @Singleton
-    AppPhase provideAppPhase() {
+    AppPhase appPhase() {
         return new AppPhase(BuildConfig.DEBUG);
     }
 }

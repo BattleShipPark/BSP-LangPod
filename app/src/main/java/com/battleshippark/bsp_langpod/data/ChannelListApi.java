@@ -14,12 +14,12 @@ import rx.Observable;
 /**
  */
 
-public class ChannelListRepos implements ChannelInteractor<ChannelListData> {
+public class ChannelListApi implements ChannelInteractor<ChannelListData> {
     private final AppPhase appPhase;
     private final GsonConverterFactory gsonConverterFactory;
 
     @Inject
-    public ChannelListRepos(AppPhase appPhase) {
+    public ChannelListApi(AppPhase appPhase) {
         this.appPhase = appPhase;
         this.gsonConverterFactory = GsonConverterFactory.create(
                 new GsonBuilder()

@@ -12,11 +12,11 @@ import rx.Observable;
 /**
  */
 
-public class ChannelRepos implements ChannelInteractor<ChannelData> {
+public class ChannelApi implements ChannelInteractor<ChannelData> {
     private final RssResponseMapper mapper;
 
     @Inject
-    public ChannelRepos(RssResponseMapper mapper) {
+    public ChannelApi(RssResponseMapper mapper) {
         this.mapper = mapper;
     }
 
