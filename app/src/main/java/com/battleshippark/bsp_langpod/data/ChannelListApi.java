@@ -14,7 +14,7 @@ import rx.Observable;
 /**
  */
 
-public class ChannelListApi implements ChannelInteractor<ChannelListData> {
+public class ChannelListApi implements ChannelRepository<ChannelListData> {
     private final AppPhase appPhase;
     private final GsonConverterFactory gsonConverterFactory;
 

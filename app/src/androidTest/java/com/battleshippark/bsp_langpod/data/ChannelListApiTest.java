@@ -11,8 +11,8 @@ import org.junit.Test;
 public class ChannelListApiTest {
     @Test
     public void query() {
-        ChannelInteractor<ChannelListData> interactor = DaggerServerApiGraph.create().channelListApi();
-        interactor.query(null)
+        ChannelRepository<ChannelListData> channelListApi = DaggerServerApiGraph.create().channelListApi();
+        channelListApi.query(null)
                 .subscribe(channelListData -> Log.i("", channelListData.toString()));
     }
 }

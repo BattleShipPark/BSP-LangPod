@@ -5,6 +5,6 @@ import rx.Observable;
 /**
  */
 
-public interface ChannelInteractor<T> {
+public interface ChannelRepository<T> {
     Observable<T> query(String url);
 }
