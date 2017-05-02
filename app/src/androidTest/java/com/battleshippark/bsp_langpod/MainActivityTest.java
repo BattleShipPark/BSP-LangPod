@@ -3,6 +3,8 @@ package com.battleshippark.bsp_langpod;
 import android.support.test.rule.ActivityTestRule;
 
 import com.battleshippark.bsp_langpod.data.ChannelItemRealm;
+import com.battleshippark.bsp_langpod.data.ChannelListItemRealm;
+import com.battleshippark.bsp_langpod.data.ChannelListRealm;
 import com.battleshippark.bsp_langpod.data.ChannelRealm;
 import com.rometools.modules.itunes.FeedInformation;
 import com.rometools.rome.feed.module.Module;
@@ -38,7 +40,7 @@ public class MainActivityTest {
     }
 
     @Test
-    public void realm() {
+    public void channelRealm() {
         Realm realm = Realm.getDefaultInstance();
 
         realm.executeTransaction(realm1 -> {
@@ -63,6 +65,32 @@ public class MainActivityTest {
         RealmQuery<ChannelRealm> query = realm.where(ChannelRealm.class);
         RealmResults<ChannelRealm> channelRealmResults = query.findAll();
         ChannelRealm channelRealm = channelRealmResults.first();
+        System.out.println(channelRealm);
+    }
+
+    @Test
+    public void channelListRealm() {
+        Realm realm = Realm.getDefaultInstance();
+
+        realm.executeTransaction(realm1 -> {
+            ChannelListRealm channelListRealm = realm1.createObject(ChannelListRealm.class);
+
+            ChannelListItemRealm channelListItem = realm1.createObject(ChannelListItemRealm.class);
+            channelListItem.setTitle("title1");
+            channelListItem.setDesc("desc1");
+            channelListItem.setImage("image1");
+            channelListRealm.getItems().add(channelListItem);
+
+            channelListItem = realm1.createObject(ChannelListItemRealm.class);
+            channelListItem.setTitle("title2");
+            channelListItem.setDesc("desc2");
+            channelListItem.setImage("image2");
+            channelListRealm.getItems().add(channelListItem);
+        });
+
+        RealmQuery<ChannelListRealm> query = realm.where(ChannelListRealm.class);
+        RealmResults<ChannelListRealm> channelRealmResults = query.findAll();
+        ChannelListRealm channelRealm = channelRealmResults.first();
         System.out.println(channelRealm);
     }
 }
