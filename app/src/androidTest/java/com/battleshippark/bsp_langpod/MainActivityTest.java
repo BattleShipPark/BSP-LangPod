@@ -2,10 +2,10 @@ package com.battleshippark.bsp_langpod;
 
 import android.support.test.rule.ActivityTestRule;
 
-import com.battleshippark.bsp_langpod.data.ChannelItemRealm;
-import com.battleshippark.bsp_langpod.data.ChannelListItemRealm;
-import com.battleshippark.bsp_langpod.data.ChannelListRealm;
-import com.battleshippark.bsp_langpod.data.ChannelRealm;
+import com.battleshippark.bsp_langpod.data.EntireChannelRealm;
+import com.battleshippark.bsp_langpod.data.EpisodeRealm;
+import com.battleshippark.bsp_langpod.data.MyChannelRealm;
+import com.battleshippark.bsp_langpod.data.RealmHelper;
 import com.rometools.modules.itunes.FeedInformation;
 import com.rometools.rome.feed.module.Module;
 import com.rometools.rome.feed.synd.SyndFeed;
@@ -40,57 +40,61 @@ public class MainActivityTest {
     }
 
     @Test
-    public void channelRealm() {
+    public void myChannelList_Realm() {
         Realm realm = Realm.getDefaultInstance();
 
         realm.executeTransaction(realm1 -> {
-            ChannelRealm channelRealm = realm1.createObject(ChannelRealm.class);
+            realm1.deleteAll();
+
+            MyChannelRealm channelRealm = realm1.createObject(MyChannelRealm.class);
+            channelRealm.setId(RealmHelper.getNextId(realm1, MyChannelRealm.class));
             channelRealm.setTitle("title");
             channelRealm.setDesc("desc");
             channelRealm.setCopyright("me");
 
-            ChannelItemRealm channelItem = realm1.createObject(ChannelItemRealm.class);
+            EpisodeRealm channelItem = realm1.createObject(EpisodeRealm.class);
             channelItem.setTitle("title1");
             channelItem.setDesc("desc1");
             channelItem.setUrl("url1");
             channelRealm.getItems().add(channelItem);
 
-            channelItem = realm1.createObject(ChannelItemRealm.class);
+            channelItem = realm1.createObject(EpisodeRealm.class);
             channelItem.setTitle("title2");
             channelItem.setDesc("desc2");
             channelItem.setUrl("url2");
             channelRealm.getItems().add(channelItem);
         });
 
-        RealmQuery<ChannelRealm> query = realm.where(ChannelRealm.class);
-        RealmResults<ChannelRealm> channelRealmResults = query.findAll();
-        ChannelRealm channelRealm = channelRealmResults.first();
+        RealmQuery<MyChannelRealm> query = realm.where(MyChannelRealm.class);
+        RealmResults<MyChannelRealm> channelRealmResults = query.findAll();
+        MyChannelRealm channelRealm = channelRealmResults.first();
         System.out.println(channelRealm);
     }
 
     @Test
-    public void channelListRealm() {
+    public void entireChannelList_Realm() {
         Realm realm = Realm.getDefaultInstance();
 
         realm.executeTransaction(realm1 -> {
-            ChannelListRealm channelListRealm = realm1.createObject(ChannelListRealm.class);
+            realm1.deleteAll();
 
-            ChannelListItemRealm channelListItem = realm1.createObject(ChannelListItemRealm.class);
-            channelListItem.setTitle("title1");
-            channelListItem.setDesc("desc1");
-            channelListItem.setImage("image1");
-            channelListRealm.getItems().add(channelListItem);
+            EntireChannelRealm channelRealm = realm1.createObject(EntireChannelRealm.class);
+            channelRealm.setId(RealmHelper.getNextId(realm1, EntireChannelRealm.class));
+            channelRealm.setTitle("title1");
+            channelRealm.setDesc("desc1");
+            channelRealm.setImage("image1");
 
-            channelListItem = realm1.createObject(ChannelListItemRealm.class);
-            channelListItem.setTitle("title2");
-            channelListItem.setDesc("desc2");
-            channelListItem.setImage("image2");
-            channelListRealm.getItems().add(channelListItem);
+            channelRealm = realm1.createObject(EntireChannelRealm.class);
+            channelRealm.setId(RealmHelper.getNextId(realm1, EntireChannelRealm.class));
+            channelRealm.setTitle("title2");
+            channelRealm.setDesc("desc2");
+            channelRealm.setImage("image2");
         });
 
-        RealmQuery<ChannelListRealm> query = realm.where(ChannelListRealm.class);
-        RealmResults<ChannelListRealm> channelRealmResults = query.findAll();
-        ChannelListRealm channelRealm = channelRealmResults.first();
-        System.out.println(channelRealm);
+        RealmQuery<EntireChannelRealm> query = realm.where(EntireChannelRealm.class);
+        RealmResults<EntireChannelRealm> results = query.findAll();
+        for (EntireChannelRealm result : results) {
+            System.out.println(result);
+        }
     }
 }

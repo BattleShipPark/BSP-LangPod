@@ -5,12 +5,10 @@ import io.realm.RealmObject;
 /**
  */
 
-public class ChannelListItemRealm extends RealmObject {
+public class EpisodeRealm extends RealmObject {
     private String title;
-
     private String desc;
-
-    private String image;
+    private String url;
 
     public String getTitle() {
         return title;
@@ -28,20 +26,20 @@ public class ChannelListItemRealm extends RealmObject {
         this.desc = desc;
     }
 
-    public String getImage() {
-        return image;
+    public String getUrl() {
+        return url;
     }
 
-    public void setImage(String image) {
-        this.image = image;
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     @Override
     public String toString() {
-        return "ChannelListItemRealm{" +
+        return "EpisodeRealm{" +
                 "title='" + title + '\'' +
                 ", desc='" + desc + '\'' +
-                ", image='" + image + '\'' +
+                ", url='" + url + '\'' +
                 '}';
     }
 }

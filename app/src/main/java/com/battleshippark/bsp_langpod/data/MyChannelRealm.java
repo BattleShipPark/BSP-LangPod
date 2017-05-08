@@ -8,7 +8,9 @@ import io.realm.RealmObject;
 /**
  */
 
-public class ChannelRealm extends RealmObject {
+public class MyChannelRealm extends RealmObject {
+    private int id;
+
     private String title;
 
     private String desc;
@@ -17,7 +19,15 @@ public class ChannelRealm extends RealmObject {
 
     private String image;
 
-    private RealmList<ChannelItemRealm> items;
+    private RealmList<EpisodeRealm> items;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getTitle() {
         return title;
@@ -51,23 +61,24 @@ public class ChannelRealm extends RealmObject {
         this.image = image;
     }
 
-    public RealmList<ChannelItemRealm> getItems() {
+    public RealmList<EpisodeRealm> getItems() {
         return items;
     }
 
-    public void setItems(ChannelItemRealm items) {
+    public void setItems(EpisodeRealm items) {
         this.items.clear();
         this.items.add(items);
     }
 
     @Override
     public String toString() {
-        return "ChannelRealm{" +
-                "title='" + title + '\'' +
+        return "MyChannelRealm{" +
+                "id='" + id + '\'' +
+                ", title='" + title + '\'' +
                 ", desc='" + desc + '\'' +
                 ", copyright='" + copyright + '\'' +
                 ", image='" + image + '\'' +
-                "items=" + Arrays.toString(items.toArray()) +
+                ", items=" + Arrays.toString(items.toArray()) +
                 '}';
     }
 }
