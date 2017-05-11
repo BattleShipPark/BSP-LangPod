@@ -14,6 +14,16 @@ public class EntireChannelRealm extends RealmObject {
 
     private String image;
 
+    public EntireChannelRealm() {
+    }
+
+    public EntireChannelRealm(int id, String title, String desc, String image) {
+        this.id = id;
+        this.title = title;
+        this.desc = desc;
+        this.image = image;
+    }
+
     public int getId() {
         return id;
     }
