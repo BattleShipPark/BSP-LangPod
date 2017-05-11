@@ -8,6 +8,9 @@ import com.battleshippark.bsp_langpod.data.server.EntireChannelListData;
 import com.battleshippark.bsp_langpod.data.server.MyChannelData;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.List;
@@ -16,10 +19,17 @@ import rx.Observable;
 import rx.observers.TestSubscriber;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 /**
  */
+@RunWith(MockitoJUnitRunner.class)
 public class GetEntireChannelListTest {
+    @Mock
+    ChannelDbRepository dbRepository;
+    @Mock
+    ChannelServerRepository serverRepository;
+
     @Test
     public void execute() {
         List<EntireChannelRealm> entireChannelRealmList = Arrays.asList(
@@ -32,38 +42,11 @@ public class GetEntireChannelListTest {
                         EntireChannelData.create("title3", "desc3", "image3")
                 )
         );
-        ChannelDbRepository dbRepository = new ChannelDbRepository() {
-            @Override
-            public Observable<List<EntireChannelRealm>> entireChannelList() {
-                return Observable.just(entireChannelRealmList);
-            }
-
-            @Override
-            public Observable<EntireChannelListData> queryAll() {
-                return null;
-            }
-
-            @Override
-            public Observable<MyChannelData> query(int id) {
-                return null;
-            }
-        };
-        ChannelServerRepository apiRepository = new ChannelServerRepository() {
-            @Override
-            public Observable<EntireChannelListData> entireChannelList() {
-                return Observable.just(entireChannelListData);
-            }
-
-            @Override
-            public Observable<MyChannelData> channel(String url) {
-                return null;
-            }
-        };
+        when(dbRepository.entireChannelList()).thenReturn(Observable.just(entireChannelRealmList));
+        when(serverRepository.entireChannelList()).thenReturn(Observable.just(entireChannelListData));
         RealmMapper mapper = new RealmMapper();
-        UseCase<Void, EntireChannelListData> useCase = new GetEntireChannelList(dbRepository, apiRepository, null, mapper);
+        UseCase<Void, EntireChannelListData> useCase = new GetEntireChannelList(dbRepository, serverRepository, null, mapper);
         TestSubscriber<EntireChannelListData> testSubscriber = new TestSubscriber<>();
-
-
         useCase.execute(null).subscribe(testSubscriber);
 
 
@@ -71,10 +54,18 @@ public class GetEntireChannelListTest {
         testSubscriber.assertNoErrors();
         testSubscriber.assertCompleted();
 
+
+
         assertThat(testSubscriber.getOnNextEvents()).hasSize(2);
+
         EntireChannelListData dbEntireChannelListData = testSubscriber.getOnNextEvents().get(0);
         assertThat(dbEntireChannelListData.items()).hasSize(2);
+        assertThat(dbEntireChannelListData.items().get(0).title()).isEqualTo("title1");
+        assertThat(dbEntireChannelListData.items().get(1).desc()).isEqualTo("desc2");
+
         EntireChannelListData serverEntireChannelListData = testSubscriber.getOnNextEvents().get(1);
         assertThat(serverEntireChannelListData.items()).hasSize(2);
+        assertThat(serverEntireChannelListData.items().get(0).title()).isEqualTo("title2");
+        assertThat(serverEntireChannelListData.items().get(1).desc()).isEqualTo("desc3");
     }
 }
