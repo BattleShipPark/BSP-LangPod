@@ -1,9 +1,9 @@
-package com.battleshippark.bsp_langpod.data;
+package com.battleshippark.bsp_langpod.data.server;
 
 import com.battleshippark.bsp_langpod.AppPhase;
-import com.battleshippark.bsp_langpod.data.rss.GsonAvTypeAdapterFactory;
-import com.battleshippark.bsp_langpod.data.rss.RssConverterFactory;
-import com.battleshippark.bsp_langpod.data.rss.RssResponseMapper;
+import com.battleshippark.bsp_langpod.data.server.rss.GsonAvTypeAdapterFactory;
+import com.battleshippark.bsp_langpod.data.server.rss.RssConverterFactory;
+import com.battleshippark.bsp_langpod.data.server.rss.RssResponseMapper;
 import com.google.gson.GsonBuilder;
 
 import javax.inject.Inject;

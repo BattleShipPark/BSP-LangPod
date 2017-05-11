@@ -2,10 +2,9 @@ package com.battleshippark.bsp_langpod;
 
 import android.support.test.rule.ActivityTestRule;
 
-import com.battleshippark.bsp_langpod.data.EntireChannelRealm;
-import com.battleshippark.bsp_langpod.data.EpisodeRealm;
-import com.battleshippark.bsp_langpod.data.MyChannelRealm;
-import com.battleshippark.bsp_langpod.data.RealmHelper;
+import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
+import com.battleshippark.bsp_langpod.data.db.MyChannelRealm;
+import com.battleshippark.bsp_langpod.data.db.RealmHelper;
 import com.rometools.modules.itunes.FeedInformation;
 import com.rometools.rome.feed.module.Module;
 import com.rometools.rome.feed.synd.SyndFeed;

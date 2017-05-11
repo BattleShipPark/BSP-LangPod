@@ -1,7 +1,7 @@
 package com.battleshippark.bsp_langpod.domain;
 
-import com.battleshippark.bsp_langpod.data.ChannelServerRepository;
-import com.battleshippark.bsp_langpod.data.EntireChannelListData;
+import com.battleshippark.bsp_langpod.data.server.ChannelServerRepository;
+import com.battleshippark.bsp_langpod.data.server.EntireChannelListData;
 
 import java.util.concurrent.Executor;
 

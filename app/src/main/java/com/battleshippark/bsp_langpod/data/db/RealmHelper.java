@@ -1,4 +1,4 @@
-package com.battleshippark.bsp_langpod.data;
+package com.battleshippark.bsp_langpod.data.db;
 
 import io.realm.Realm;
 import io.realm.RealmObject;

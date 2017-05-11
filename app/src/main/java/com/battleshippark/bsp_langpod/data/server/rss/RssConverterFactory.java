@@ -1,4 +1,4 @@
-package com.battleshippark.bsp_langpod.data.rss;
+package com.battleshippark.bsp_langpod.data.server.rss;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;

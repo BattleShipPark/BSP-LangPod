@@ -1,4 +1,4 @@
-package com.battleshippark.bsp_langpod.data.rss;
+package com.battleshippark.bsp_langpod.data.server.rss;
 
 import com.google.gson.TypeAdapterFactory;
 import com.ryanharter.auto.value.gson.GsonTypeAdapterFactory;

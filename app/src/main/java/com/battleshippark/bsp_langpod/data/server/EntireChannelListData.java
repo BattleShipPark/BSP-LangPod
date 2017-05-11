@@ -1,4 +1,4 @@
-package com.battleshippark.bsp_langpod.data;
+package com.battleshippark.bsp_langpod.data.server;
 
 import com.google.auto.value.AutoValue;
 import com.google.gson.Gson;

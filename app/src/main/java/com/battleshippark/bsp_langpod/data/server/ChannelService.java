@@ -1,4 +1,4 @@
-package com.battleshippark.bsp_langpod.data;
+package com.battleshippark.bsp_langpod.data.server;
 
 import retrofit2.http.GET;
 import retrofit2.http.Url;

@@ -1,25 +1,18 @@
-package com.battleshippark.bsp_langpod.data;
+package com.battleshippark.bsp_langpod.data.db;
 
-import java.util.Arrays;
-
-import io.realm.RealmList;
 import io.realm.RealmObject;
 
 /**
  */
 
-public class MyChannelRealm extends RealmObject {
+public class EntireChannelRealm extends RealmObject {
     private int id;
 
     private String title;
 
     private String desc;
 
-    private String copyright;
-
     private String image;
-
-    private RealmList<EpisodeRealm> items;
 
     public int getId() {
         return id;
@@ -45,14 +38,6 @@ public class MyChannelRealm extends RealmObject {
         this.desc = desc;
     }
 
-    public String getCopyright() {
-        return copyright;
-    }
-
-    public void setCopyright(String copyright) {
-        this.copyright = copyright;
-    }
-
     public String getImage() {
         return image;
     }
@@ -61,24 +46,13 @@ public class MyChannelRealm extends RealmObject {
         this.image = image;
     }
 
-    public RealmList<EpisodeRealm> getItems() {
-        return items;
-    }
-
-    public void setItems(EpisodeRealm items) {
-        this.items.clear();
-        this.items.add(items);
-    }
-
     @Override
     public String toString() {
-        return "MyChannelRealm{" +
+        return "EntireChannelRealm{" +
                 "id='" + id + '\'' +
                 ", title='" + title + '\'' +
                 ", desc='" + desc + '\'' +
-                ", copyright='" + copyright + '\'' +
                 ", image='" + image + '\'' +
-                ", items=" + Arrays.toString(items.toArray()) +
                 '}';
     }
 }

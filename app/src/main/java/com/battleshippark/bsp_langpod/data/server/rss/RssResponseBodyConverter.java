@@ -1,6 +1,6 @@
-package com.battleshippark.bsp_langpod.data.rss;
+package com.battleshippark.bsp_langpod.data.server.rss;
 
-import com.battleshippark.bsp_langpod.data.MyChannelData;
+import com.battleshippark.bsp_langpod.data.server.MyChannelData;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedInput;

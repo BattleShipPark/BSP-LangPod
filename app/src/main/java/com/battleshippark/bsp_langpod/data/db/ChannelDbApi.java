@@ -1,4 +1,7 @@
-package com.battleshippark.bsp_langpod.data;
+package com.battleshippark.bsp_langpod.data.db;
+
+import com.battleshippark.bsp_langpod.data.server.EntireChannelListData;
+import com.battleshippark.bsp_langpod.data.server.MyChannelData;
 
 import java.util.List;
 
