@@ -8,6 +8,9 @@ import rx.Observable;
  */
 
 public interface ChannelService {
+    @GET("/totalList")
+    Observable<EntireChannelListData> queryTotalList();
+
     @GET
-    Observable<ChannelData> query(@Url String url);
+    Observable<MyChannelData> queryUrl(@Url String url);
 }

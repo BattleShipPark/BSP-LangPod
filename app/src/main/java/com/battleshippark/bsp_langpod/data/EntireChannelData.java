@@ -8,14 +8,14 @@ import com.google.gson.TypeAdapter;
  */
 
 @AutoValue
-public abstract class ChannelListItemData {
+public abstract class EntireChannelData {
     public abstract String title();
 
     public abstract String desc();
 
     public abstract String image();
 
-    public static TypeAdapter<ChannelListItemData> typeAdapter(Gson gson) {
-        return new AutoValue_ChannelListItemData.GsonTypeAdapter(gson);
+    public static TypeAdapter<EntireChannelData> typeAdapter(Gson gson) {
+        return new AutoValue_EntireChannelData.GsonTypeAdapter(gson);
     }
 }

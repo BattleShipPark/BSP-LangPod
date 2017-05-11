@@ -3,14 +3,14 @@ package com.battleshippark.bsp_langpod.data;
 /**
  */
 
-public class ChannelItemData {
+public class EpisodeData {
     public String title;
     public String desc;
     public String url;
 
     @Override
     public String toString() {
-        return "ChannelItemData{" +
+        return "EpisodeData{" +
                 "title='" + title + '\'' +
                 ", desc='" + desc + '\'' +
                 ", url='" + url + '\'' +

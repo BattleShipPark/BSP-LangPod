@@ -8,9 +8,9 @@ import rx.Observable;
  */
 
 public interface ChannelDbRepository {
-    Observable<List<EntireChannelRealm>> entireChannel();
+    Observable<List<EntireChannelRealm>> entireChannelList();
 
-    Observable<ChannelListData> queryAll();
+    Observable<EntireChannelListData> queryAll();
 
-    Observable<ChannelData> query(int id);
+    Observable<MyChannelData> query(int id);
 }

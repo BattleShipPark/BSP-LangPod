@@ -29,7 +29,7 @@ public class ChannelDbApiTest {
 
         ChannelDbRepository repository = new ChannelDbApi(realm);
 
-        repository.entireChannel().subscribe(entireChannelRealms -> {
+        repository.entireChannelList().subscribe(entireChannelRealms -> {
             for (EntireChannelRealm result : entireChannelRealms) {
                 System.out.println(result);
             }
