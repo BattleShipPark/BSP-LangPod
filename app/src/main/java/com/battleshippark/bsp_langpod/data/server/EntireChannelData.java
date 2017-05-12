@@ -9,9 +9,17 @@ import com.google.gson.TypeAdapter;
 
 @AutoValue
 public abstract class EntireChannelData {
+    public static final long DEFAULT_ID = 0;
+
     public static EntireChannelData create(String title, String desc, String image) {
-        return new AutoValue_EntireChannelData(title, desc, image);
+        return new AutoValue_EntireChannelData(DEFAULT_ID, title, desc, image);
     }
+
+    public static EntireChannelData create(long id, String title, String desc, String image) {
+        return new AutoValue_EntireChannelData(id, title, desc, image);
+    }
+
+    public abstract long id();
 
     public abstract String title();
 

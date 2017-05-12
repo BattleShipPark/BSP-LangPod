@@ -55,7 +55,6 @@ public class GetEntireChannelListTest {
         testSubscriber.assertCompleted();
 
 
-
         assertThat(testSubscriber.getOnNextEvents()).hasSize(2);
 
         EntireChannelListData dbEntireChannelListData = testSubscriber.getOnNextEvents().get(0);
@@ -67,5 +66,31 @@ public class GetEntireChannelListTest {
         assertThat(serverEntireChannelListData.items()).hasSize(2);
         assertThat(serverEntireChannelListData.items().get(0).title()).isEqualTo("title2");
         assertThat(serverEntireChannelListData.items().get(1).desc()).isEqualTo("desc3");
+    }
+
+    @Test
+    public void merge() {
+        List<EntireChannelRealm> entireChannelRealmList = Arrays.asList(
+                new EntireChannelRealm(1, "title1", "desc1", "image1"),
+                new EntireChannelRealm(2, "title2", "desc2", "image2")
+        );
+        EntireChannelListData entireChannelListData = EntireChannelListData.create(
+                Arrays.asList(
+                        EntireChannelData.create("title2", "desc2", "image2"),
+                        EntireChannelData.create("title3", "desc3", "image3")
+                )
+        );
+        RealmMapper mapper = new RealmMapper();
+        GetEntireChannelList getEntireChannelList = new GetEntireChannelList(dbRepository, serverRepository, null, mapper);
+
+
+        List<EntireChannelRealm> merged = getEntireChannelList.merge(entireChannelRealmList, entireChannelListData);
+
+
+        assertThat(merged).hasSize(3);
+        assertThat(merged.get(0)).isEqualTo(entireChannelRealmList.get(0));
+        assertThat(merged.get(1)).isEqualTo(entireChannelRealmList.get(1));
+        assertThat(merged.get(2).getId()).isEqualTo(0);
+        assertThat(merged.get(2).getTitle()).isEqualTo(entireChannelListData.items().get(1).title());
     }
 }

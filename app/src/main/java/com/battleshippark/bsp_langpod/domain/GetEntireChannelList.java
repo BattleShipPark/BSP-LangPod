@@ -1,10 +1,16 @@
 package com.battleshippark.bsp_langpod.domain;
 
+import android.support.annotation.VisibleForTesting;
+
+import com.annimon.stream.Collectors;
+import com.annimon.stream.Stream;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
 import com.battleshippark.bsp_langpod.data.db.EntireChannelRealm;
 import com.battleshippark.bsp_langpod.data.server.ChannelServerRepository;
+import com.battleshippark.bsp_langpod.data.server.EntireChannelData;
 import com.battleshippark.bsp_langpod.data.server.EntireChannelListData;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -34,7 +40,16 @@ public class GetEntireChannelList implements UseCase<Void, EntireChannelListData
     public Observable<EntireChannelListData> execute(Void param) {
         return Observable.create(subscriber -> {
             try {
-                dbRepository.entireChannelList().subscribe(new DbSubscriber(subscriber));
+                List<EntireChannelRealm> dbEntireChannelReamList = dbRepository.entireChannelList().toBlocking().single();
+                subscriber.onNext(mapper.asData(dbEntireChannelReamList));
+
+                EntireChannelListData serverEntireChannelListData = apiRepository.entireChannelList().toBlocking().single();
+
+                List<EntireChannelRealm> merged = merge(dbEntireChannelReamList, serverEntireChannelListData);
+//                dbRepository.putEntireChannelList(merged);
+
+                subscriber.onNext(mapper.asData(merged));
+
                 subscriber.onCompleted();
             } catch (Exception e) {
                 subscriber.onError(e);
@@ -42,48 +57,21 @@ public class GetEntireChannelList implements UseCase<Void, EntireChannelListData
         });
     }
 
-    class DbSubscriber extends Subscriber<List<EntireChannelRealm>> {
-        private Subscriber<? super EntireChannelListData> subscriber;
+    @VisibleForTesting
+    List<EntireChannelRealm> merge(List<EntireChannelRealm> dbEntireChannelReamList, EntireChannelListData serverEntireChannelListData) {
+        List<EntireChannelRealm> entireChannelRealmList = new ArrayList<>(dbEntireChannelReamList);
 
-        DbSubscriber(Subscriber<? super EntireChannelListData> subscriber) {
-            this.subscriber = subscriber;
-        }
+        List<EntireChannelRealm> addedList = Stream.of(serverEntireChannelListData.items())
+                .filter(entireChannelData ->
+                        Stream.of(dbEntireChannelReamList)
+                                .noneMatch(entireChannelRealm -> equals(entireChannelRealm, entireChannelData))
+                ).map(mapper::asRealm).collect(Collectors.toList());
+        entireChannelRealmList.addAll(addedList);
 
-        @Override
-        public void onCompleted() {
-            apiRepository.entireChannelList().subscribe(new ServerSubscriber(subscriber));
-        }
-
-        @Override
-        public void onError(Throwable e) {
-            subscriber.onError(e);
-        }
-
-        @Override
-        public void onNext(List<EntireChannelRealm> entireChannelRealmList) {
-            subscriber.onNext(mapper.asData(entireChannelRealmList));
-        }
+        return entireChannelRealmList;
     }
 
-    class ServerSubscriber extends Subscriber<EntireChannelListData> {
-        private Subscriber<? super EntireChannelListData> subscriber;
-
-        ServerSubscriber(Subscriber<? super EntireChannelListData> subscriber) {
-            this.subscriber = subscriber;
-        }
-
-        @Override
-        public void onCompleted() {
-        }
-
-        @Override
-        public void onError(Throwable e) {
-            subscriber.onError(e);
-        }
-
-        @Override
-        public void onNext(EntireChannelListData entireChannelListData) {
-            subscriber.onNext(entireChannelListData);
-        }
+    private boolean equals(EntireChannelRealm entireChannelRealm, EntireChannelData entireChannelData) {
+        return entireChannelRealm.getTitle().equals(entireChannelData.title());
     }
 }
