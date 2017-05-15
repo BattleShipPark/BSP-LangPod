@@ -1,5 +1,6 @@
 package com.battleshippark.bsp_langpod.data.db;
 
+import com.annimon.stream.Stream;
 import com.battleshippark.bsp_langpod.data.server.EntireChannelListData;
 import com.battleshippark.bsp_langpod.data.server.MyChannelData;
 
@@ -38,5 +39,14 @@ public class ChannelDbApi implements ChannelDbRepository {
     @Override
     public Observable<MyChannelData> query(int id) {
         return null;
+    }
+
+    @Override
+    public void putEntireChannelList(List<EntireChannelRealm> realmList) {
+        realm.executeTransaction(realm1 -> {
+            realm1.delete(EntireChannelRealm.class);
+
+            Stream.of(realmList).forEach(realm1::copyToRealm);
+        });
     }
 }

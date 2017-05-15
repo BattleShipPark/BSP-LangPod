@@ -9,6 +9,8 @@ import com.battleshippark.bsp_langpod.data.server.MyChannelData;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -19,6 +21,7 @@ import rx.Observable;
 import rx.observers.TestSubscriber;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -29,17 +32,19 @@ public class GetEntireChannelListTest {
     ChannelDbRepository dbRepository;
     @Mock
     ChannelServerRepository serverRepository;
+    @Captor
+    ArgumentCaptor<List<EntireChannelRealm>> captor;
 
     @Test
     public void execute() {
         List<EntireChannelRealm> entireChannelRealmList = Arrays.asList(
-                new EntireChannelRealm(1, "title1", "desc1", "image1"),
-                new EntireChannelRealm(2, "title2", "desc2", "image2")
+                new EntireChannelRealm(1, 10, "title1", "desc1", "image1"),
+                new EntireChannelRealm(2, 11, "title2", "desc2", "image2")
         );
         EntireChannelListData entireChannelListData = EntireChannelListData.create(
                 Arrays.asList(
-                        EntireChannelData.create(1, "title2", "desc2", "image2"),
-                        EntireChannelData.create(2, "title3", "desc3", "image3")
+                        EntireChannelData.create(1, 10, "title2", "desc2", "image2"),
+                        EntireChannelData.create(2, 11, "title3", "desc3", "image3")
                 )
         );
         when(dbRepository.entireChannelList()).thenReturn(Observable.just(entireChannelRealmList));
@@ -66,5 +71,10 @@ public class GetEntireChannelListTest {
         assertThat(serverEntireChannelListData.items()).hasSize(2);
         assertThat(serverEntireChannelListData.items().get(0).title()).isEqualTo("title2");
         assertThat(serverEntireChannelListData.items().get(1).desc()).isEqualTo("desc3");
+
+        verify(dbRepository).putEntireChannelList(captor.capture());
+        assertThat(captor.getValue()).hasSize(2);
+        assertThat(captor.getValue().get(0).getTitle()).isEqualTo("title2");
+        assertThat(captor.getValue().get(1).getDesc()).isEqualTo("desc3");
     }
 }

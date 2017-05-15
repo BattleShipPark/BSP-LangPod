@@ -40,6 +40,8 @@ public class GetEntireChannelList implements UseCase<Void, EntireChannelListData
 
                 subscriber.onNext(serverEntireChannelListData);
 
+                dbRepository.putEntireChannelList(mapper.asRealm(serverEntireChannelListData));
+
                 subscriber.onCompleted();
             } catch (Exception e) {
                 subscriber.onError(e);

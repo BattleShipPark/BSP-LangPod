@@ -16,4 +16,6 @@ public interface ChannelDbRepository {
     Observable<EntireChannelListData> queryAll();
 
     Observable<MyChannelData> query(int id);
+
+    void putEntireChannelList(List<EntireChannelRealm> realmList);
 }
