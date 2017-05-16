@@ -5,6 +5,7 @@ import com.battleshippark.bsp_langpod.data.server.MyChannelJson;
 
 import java.util.List;
 
+import io.realm.exceptions.RealmMigrationNeededException;
 import rx.Observable;
 
 /**
@@ -17,5 +18,5 @@ public interface ChannelDbRepository {
 
     Observable<MyChannelJson> query(int id);
 
-    void putEntireChannelList(List<EntireChannelRealm> realmList);
+    void putEntireChannelList(List<EntireChannelRealm> realmList) throws IllegalArgumentException, RealmMigrationNeededException;
 }

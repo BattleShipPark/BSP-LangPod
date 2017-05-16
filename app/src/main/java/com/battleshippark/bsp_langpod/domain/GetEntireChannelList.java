@@ -11,6 +11,7 @@ import java.util.concurrent.Executor;
 import javax.inject.Inject;
 
 import rx.Observable;
+import rx.Subscriber;
 
 /**
  */
@@ -31,21 +32,29 @@ public class GetEntireChannelList implements UseCase<Void, List<EntireChannelDat
 
     @Override
     public Observable<List<EntireChannelData>> execute(Void param) {
-        return Observable.create(subscriber -> {
-            try {
-                List<EntireChannelRealm> dbEntireChannelReamList = dbRepository.entireChannelList().toBlocking().single();
-                subscriber.onNext(mapper.asData(dbEntireChannelReamList));
+        return Observable.create(subscriber ->
+                dbRepository.entireChannelList().subscribe(
+                        entireChannelRealmList -> onDbLoaded(subscriber, entireChannelRealmList),
+                        subscriber::onError, subscriber::onCompleted));
+    }
 
-                EntireChannelListJson serverEntireChannelListJson = apiRepository.entireChannelList().toBlocking().single();
+    private void onDbLoaded(Subscriber<? super List<EntireChannelData>> subscriber, List<EntireChannelRealm> entireChannelRealmList) {
+        subscriber.onNext(mapper.asData(entireChannelRealmList));
 
-                subscriber.onNext(mapper.asData(serverEntireChannelListJson));
+        apiRepository.entireChannelList().subscribe(
+                entireChannelListJson -> onServerLoaded(subscriber, entireChannelListJson),
+                subscriber::onError, subscriber::onCompleted);
+    }
 
-                dbRepository.putEntireChannelList(mapper.asRealm(serverEntireChannelListJson));
+    private void onServerLoaded(Subscriber<? super List<EntireChannelData>> subscriber, EntireChannelListJson entireChannelListJson) {
+        subscriber.onNext(mapper.asData(entireChannelListJson));
 
-                subscriber.onCompleted();
-            } catch (Exception e) {
-                subscriber.onError(e);
-            }
-        });
+        try {
+            dbRepository.putEntireChannelList(mapper.asRealm(entireChannelListJson));
+        } catch (Exception e) {
+            subscriber.onError(e);
+        }
+
+        subscriber.onCompleted();
     }
 }

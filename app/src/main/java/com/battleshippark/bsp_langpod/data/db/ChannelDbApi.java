@@ -11,6 +11,7 @@ import javax.inject.Inject;
 import io.realm.Realm;
 import io.realm.RealmQuery;
 import io.realm.RealmResults;
+import io.realm.exceptions.RealmMigrationNeededException;
 import rx.Observable;
 
 /**
@@ -42,7 +43,7 @@ public class ChannelDbApi implements ChannelDbRepository {
     }
 
     @Override
-    public void putEntireChannelList(List<EntireChannelRealm> realmList) {
+    public void putEntireChannelList(List<EntireChannelRealm> realmList) throws IllegalArgumentException, RealmMigrationNeededException {
         realm.executeTransaction(realm1 -> {
             realm1.delete(EntireChannelRealm.class);
 
