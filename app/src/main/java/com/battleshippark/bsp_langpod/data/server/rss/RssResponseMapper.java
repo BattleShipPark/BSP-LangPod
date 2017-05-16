@@ -16,16 +16,11 @@ public class RssResponseMapper {
         Module module = feed.getModule("http://www.itunes.com/dtds/podcast-1.0.dtd");
         FeedInformation feedInfo = (FeedInformation) module;
 
-        MyChannelData myChannelData = MyChannelData.create(
+        return MyChannelData.create(
                 feed.getTitle(), feed.getDescription(), feed.getCopyright(), feedInfo.getImage().toString(),
-                Stream.of(feed.getEntries()).map(syndEntry -> {
-                    EpisodeData episodeData = new EpisodeData();
-                    episodeData.title = syndEntry.getTitle();
-                    episodeData.desc = syndEntry.getDescription().getValue();
-                    episodeData.url = syndEntry.getUri();
-                    return episodeData;
-                }).collect(Collectors.toList()));
-
-        return myChannelData;
+                Stream.of(feed.getEntries()).map(syndEntry -> EpisodeData.create(
+                        syndEntry.getTitle(),
+                        syndEntry.getDescription().getValue(),
+                        syndEntry.getUri())).collect(Collectors.toList()));
     }
 }

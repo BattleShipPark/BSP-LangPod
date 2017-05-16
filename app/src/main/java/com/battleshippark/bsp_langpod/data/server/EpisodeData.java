@@ -3,17 +3,17 @@ package com.battleshippark.bsp_langpod.data.server;
 /**
  */
 
-public class EpisodeData {
-    public String title;
-    public String desc;
-    public String url;
+import com.google.auto.value.AutoValue;
 
-    @Override
-    public String toString() {
-        return "EpisodeData{" +
-                "title='" + title + '\'' +
-                ", desc='" + desc + '\'' +
-                ", url='" + url + '\'' +
-                '}';
+@AutoValue
+public abstract class EpisodeData {
+    public static EpisodeData create(String title, String desc, String url) {
+        return new AutoValue_EpisodeData(title, desc, url);
     }
+
+    public abstract String title();
+
+    public abstract String desc();
+
+    public abstract String url();
 }
