@@ -9,7 +9,9 @@ import io.realm.RealmObject;
  */
 
 public class MyChannelRealm extends RealmObject {
-    private int id;
+    private long id;
+
+    private int order;
 
     private String title;
 
@@ -21,12 +23,31 @@ public class MyChannelRealm extends RealmObject {
 
     private RealmList<EpisodeRealm> items;
 
-    public int getId() {
+    public static MyChannelRealm create(long id, int order, String title, String desc, String copyright, String image) {
+        MyChannelRealm myChannelRealm = new MyChannelRealm();
+        myChannelRealm.setId(id);
+        myChannelRealm.setOrder(order);
+        myChannelRealm.setTitle(title);
+        myChannelRealm.setDesc(desc);
+        myChannelRealm.setCopyright(copyright);
+        myChannelRealm.setImage(image);
+        return myChannelRealm;
+    }
+
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
+    }
+
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
     }
 
     public String getTitle() {

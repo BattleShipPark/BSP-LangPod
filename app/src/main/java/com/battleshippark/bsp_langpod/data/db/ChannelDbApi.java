@@ -33,8 +33,13 @@ public class ChannelDbApi implements ChannelDbRepository {
     }
 
     @Override
-    public Observable<EntireChannelListJson> queryAll() {
-        return null;
+    public Observable<List<MyChannelRealm>> myChannelList() {
+        return Observable.create(subscriber -> {
+            RealmQuery<MyChannelRealm> query = realm.where(MyChannelRealm.class);
+            RealmResults<MyChannelRealm> results = query.findAllSorted("order");
+            subscriber.onNext(results);
+            subscriber.onCompleted();
+        });
     }
 
     @Override

@@ -3,6 +3,8 @@ package com.battleshippark.bsp_langpod.domain;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.battleshippark.bsp_langpod.data.db.EntireChannelRealm;
+import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
+import com.battleshippark.bsp_langpod.data.db.MyChannelRealm;
 import com.battleshippark.bsp_langpod.data.server.EntireChannelListJson;
 
 import java.util.List;
@@ -17,6 +19,27 @@ public class RealmMapper {
                         entireChannelRealm.getOrder(), entireChannelRealm.getTitle(),
                         entireChannelRealm.getDesc(), entireChannelRealm.getImage()))
                 .collect(Collectors.toList());
+    }
+
+    public List<MyChannelData> myChannelRealmAsData(List<MyChannelRealm> myChannelRealmList) {
+        return Stream.of(myChannelRealmList)
+                .map(myChannelRealm ->
+                        MyChannelData.create(myChannelRealm.getId(),
+                                myChannelRealm.getTitle(),
+                                myChannelRealm.getDesc(),
+                                myChannelRealm.getCopyright(),
+                                myChannelRealm.getImage(),
+                                episodeRealmAsData(myChannelRealm.getItems())
+                        )
+                ).collect(Collectors.toList());
+    }
+
+    List<EpisodeData> episodeRealmAsData(List<EpisodeRealm> episodeRealmList) {
+        return Stream.of(episodeRealmList).map(this::episodeRealmAsData).collect(Collectors.toList());
+    }
+
+    EpisodeData episodeRealmAsData(EpisodeRealm episodeRealm) {
+        return EpisodeData.create(episodeRealm.getTitle(), episodeRealm.getDesc(), episodeRealm.getUrl());
     }
 
     public List<EntireChannelData> asData(EntireChannelListJson entireChannelListJson) {
