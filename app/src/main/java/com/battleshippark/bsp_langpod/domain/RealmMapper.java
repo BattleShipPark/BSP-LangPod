@@ -30,7 +30,7 @@ public class RealmMapper {
                                 myChannelRealm.getDesc(),
                                 myChannelRealm.getCopyright(),
                                 myChannelRealm.getImage(),
-                                episodeRealmAsData(myChannelRealm.getItems())
+                                null
                         )
                 ).collect(Collectors.toList());
     }
