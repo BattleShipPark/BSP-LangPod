@@ -35,6 +35,17 @@ public class RealmMapper {
                 ).collect(Collectors.toList());
     }
 
+    public MyChannelData myChannelRealmAsData(MyChannelRealm myChannelRealm) {
+        return MyChannelData.create(myChannelRealm.getId(),
+                myChannelRealm.getOrder(),
+                myChannelRealm.getTitle(),
+                myChannelRealm.getDesc(),
+                myChannelRealm.getCopyright(),
+                myChannelRealm.getImage(),
+                episodeRealmAsData(myChannelRealm.getItems())
+        );
+    }
+
     List<EpisodeData> episodeRealmAsData(List<EpisodeRealm> episodeRealmList) {
         return Stream.of(episodeRealmList).map(this::episodeRealmAsData).collect(Collectors.toList());
     }

@@ -1,8 +1,6 @@
 package com.battleshippark.bsp_langpod.data.db;
 
 import com.annimon.stream.Stream;
-import com.battleshippark.bsp_langpod.data.server.EntireChannelListJson;
-import com.battleshippark.bsp_langpod.data.server.MyChannelJson;
 
 import java.util.List;
 
@@ -43,7 +41,7 @@ public class ChannelDbApi implements ChannelDbRepository {
     }
 
     @Override
-    public Observable<MyChannelJson> query(int id) {
+    public Observable<MyChannelRealm> myChannel(int id) {
         return null;
     }
 
