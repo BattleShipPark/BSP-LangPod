@@ -1,6 +1,6 @@
 package com.battleshippark.bsp_langpod.data.server.rss;
 
-import com.battleshippark.bsp_langpod.data.server.MyChannelData;
+import com.battleshippark.bsp_langpod.data.server.MyChannelJson;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedInput;
@@ -11,7 +11,7 @@ import java.io.IOException;
 import okhttp3.ResponseBody;
 import retrofit2.Converter;
 
-final class RssResponseBodyConverter implements Converter<ResponseBody, MyChannelData> {
+final class RssResponseBodyConverter implements Converter<ResponseBody, MyChannelJson> {
     private final RssResponseMapper mapper;
 
     RssResponseBodyConverter(RssResponseMapper mapper) {
@@ -19,7 +19,7 @@ final class RssResponseBodyConverter implements Converter<ResponseBody, MyChanne
     }
 
     @Override
-    public MyChannelData convert(ResponseBody value) throws IOException {
+    public MyChannelJson convert(ResponseBody value) throws IOException {
         try {
             SyndFeed feed = new SyndFeedInput().build(new XmlReader(value.byteStream()));
             return mapper.map(feed);

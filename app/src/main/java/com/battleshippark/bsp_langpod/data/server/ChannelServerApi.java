@@ -32,7 +32,7 @@ public class ChannelServerApi implements ChannelServerRepository {
     }
 
     @Override
-    public Observable<EntireChannelListData> entireChannelList() {
+    public Observable<EntireChannelListJson> entireChannelList() {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://" + appPhase.getServerDomain())
                 .addConverterFactory(gsonConverterFactory)
@@ -44,7 +44,7 @@ public class ChannelServerApi implements ChannelServerRepository {
     }
 
     @Override
-    public Observable<MyChannelData> channel(String url) {
+    public Observable<MyChannelJson> channel(String url) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://" + appPhase.getServerDomain())
                 .addConverterFactory(rssConverterFactory)

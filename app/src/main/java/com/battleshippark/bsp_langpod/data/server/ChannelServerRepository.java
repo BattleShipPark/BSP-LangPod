@@ -6,7 +6,7 @@ import rx.Observable;
  */
 
 public interface ChannelServerRepository {
-    Observable<EntireChannelListData> entireChannelList();
+    Observable<EntireChannelListJson> entireChannelList();
 
-    Observable<MyChannelData> channel(String url);
+    Observable<MyChannelJson> channel(String url);
 }

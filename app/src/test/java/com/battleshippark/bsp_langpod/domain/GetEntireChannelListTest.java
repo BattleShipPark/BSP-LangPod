@@ -3,9 +3,8 @@ package com.battleshippark.bsp_langpod.domain;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
 import com.battleshippark.bsp_langpod.data.db.EntireChannelRealm;
 import com.battleshippark.bsp_langpod.data.server.ChannelServerRepository;
-import com.battleshippark.bsp_langpod.data.server.EntireChannelData;
-import com.battleshippark.bsp_langpod.data.server.EntireChannelListData;
-import com.battleshippark.bsp_langpod.data.server.MyChannelData;
+import com.battleshippark.bsp_langpod.data.server.EntireChannelJson;
+import com.battleshippark.bsp_langpod.data.server.EntireChannelListJson;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,17 +40,17 @@ public class GetEntireChannelListTest {
                 new EntireChannelRealm(1, 10, "title1", "desc1", "image1"),
                 new EntireChannelRealm(2, 11, "title2", "desc2", "image2")
         );
-        EntireChannelListData entireChannelListData = EntireChannelListData.create(
+        EntireChannelListJson entireChannelListJson = EntireChannelListJson.create(
                 Arrays.asList(
-                        EntireChannelData.create(1, 10, "title2", "desc2", "image2"),
-                        EntireChannelData.create(2, 11, "title3", "desc3", "image3")
+                        EntireChannelJson.create(1, 10, "title2", "desc2", "image2"),
+                        EntireChannelJson.create(2, 11, "title3", "desc3", "image3")
                 )
         );
         when(dbRepository.entireChannelList()).thenReturn(Observable.just(entireChannelRealmList));
-        when(serverRepository.entireChannelList()).thenReturn(Observable.just(entireChannelListData));
+        when(serverRepository.entireChannelList()).thenReturn(Observable.just(entireChannelListJson));
         RealmMapper mapper = new RealmMapper();
-        UseCase<Void, EntireChannelListData> useCase = new GetEntireChannelList(dbRepository, serverRepository, null, mapper);
-        TestSubscriber<EntireChannelListData> testSubscriber = new TestSubscriber<>();
+        UseCase<Void, EntireChannelListJson> useCase = new GetEntireChannelList(dbRepository, serverRepository, null, mapper);
+        TestSubscriber<EntireChannelListJson> testSubscriber = new TestSubscriber<>();
         useCase.execute(null).subscribe(testSubscriber);
 
 
@@ -62,15 +61,15 @@ public class GetEntireChannelListTest {
 
         assertThat(testSubscriber.getOnNextEvents()).hasSize(2);
 
-        EntireChannelListData dbEntireChannelListData = testSubscriber.getOnNextEvents().get(0);
-        assertThat(dbEntireChannelListData.items()).hasSize(2);
-        assertThat(dbEntireChannelListData.items().get(0).title()).isEqualTo("title1");
-        assertThat(dbEntireChannelListData.items().get(1).desc()).isEqualTo("desc2");
+        EntireChannelListJson dbEntireChannelListJson = testSubscriber.getOnNextEvents().get(0);
+        assertThat(dbEntireChannelListJson.items()).hasSize(2);
+        assertThat(dbEntireChannelListJson.items().get(0).title()).isEqualTo("title1");
+        assertThat(dbEntireChannelListJson.items().get(1).desc()).isEqualTo("desc2");
 
-        EntireChannelListData serverEntireChannelListData = testSubscriber.getOnNextEvents().get(1);
-        assertThat(serverEntireChannelListData.items()).hasSize(2);
-        assertThat(serverEntireChannelListData.items().get(0).title()).isEqualTo("title2");
-        assertThat(serverEntireChannelListData.items().get(1).desc()).isEqualTo("desc3");
+        EntireChannelListJson serverEntireChannelListJson = testSubscriber.getOnNextEvents().get(1);
+        assertThat(serverEntireChannelListJson.items()).hasSize(2);
+        assertThat(serverEntireChannelListJson.items().get(0).title()).isEqualTo("title2");
+        assertThat(serverEntireChannelListJson.items().get(1).desc()).isEqualTo("desc3");
 
         verify(dbRepository).putEntireChannelList(captor.capture());
         assertThat(captor.getValue()).hasSize(2);

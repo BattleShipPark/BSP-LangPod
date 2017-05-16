@@ -3,7 +3,7 @@ package com.battleshippark.bsp_langpod.domain;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
 import com.battleshippark.bsp_langpod.data.db.EntireChannelRealm;
 import com.battleshippark.bsp_langpod.data.server.ChannelServerRepository;
-import com.battleshippark.bsp_langpod.data.server.EntireChannelListData;
+import com.battleshippark.bsp_langpod.data.server.EntireChannelListJson;
 
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -15,7 +15,7 @@ import rx.Observable;
 /**
  */
 
-public class GetEntireChannelList implements UseCase<Void, EntireChannelListData> {
+public class GetEntireChannelList implements UseCase<Void, EntireChannelListJson> {
     private final ChannelDbRepository dbRepository;
     private final ChannelServerRepository apiRepository;
     private final Executor executor;
@@ -30,17 +30,17 @@ public class GetEntireChannelList implements UseCase<Void, EntireChannelListData
     }
 
     @Override
-    public Observable<EntireChannelListData> execute(Void param) {
+    public Observable<EntireChannelListJson> execute(Void param) {
         return Observable.create(subscriber -> {
             try {
                 List<EntireChannelRealm> dbEntireChannelReamList = dbRepository.entireChannelList().toBlocking().single();
                 subscriber.onNext(mapper.asData(dbEntireChannelReamList));
 
-                EntireChannelListData serverEntireChannelListData = apiRepository.entireChannelList().toBlocking().single();
+                EntireChannelListJson serverEntireChannelListJson = apiRepository.entireChannelList().toBlocking().single();
 
-                subscriber.onNext(serverEntireChannelListData);
+                subscriber.onNext(serverEntireChannelListJson);
 
-                dbRepository.putEntireChannelList(mapper.asRealm(serverEntireChannelListData));
+                dbRepository.putEntireChannelList(mapper.asRealm(serverEntireChannelListJson));
 
                 subscriber.onCompleted();
             } catch (Exception e) {

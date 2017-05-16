@@ -3,8 +3,8 @@ package com.battleshippark.bsp_langpod.domain;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.battleshippark.bsp_langpod.data.db.EntireChannelRealm;
-import com.battleshippark.bsp_langpod.data.server.EntireChannelData;
-import com.battleshippark.bsp_langpod.data.server.EntireChannelListData;
+import com.battleshippark.bsp_langpod.data.server.EntireChannelJson;
+import com.battleshippark.bsp_langpod.data.server.EntireChannelListJson;
 
 import java.util.List;
 
@@ -12,16 +12,16 @@ import java.util.List;
  */
 
 public class RealmMapper {
-    public EntireChannelListData asData(List<EntireChannelRealm> entireChannelRealmList) {
-        return EntireChannelListData.create(
+    public EntireChannelListJson asData(List<EntireChannelRealm> entireChannelRealmList) {
+        return EntireChannelListJson.create(
                 Stream.of(entireChannelRealmList)
-                        .map(realm -> EntireChannelData.create(realm.getId(), realm.getOrder(), realm.getTitle(), realm.getDesc(), realm.getImage()))
+                        .map(realm -> EntireChannelJson.create(realm.getId(), realm.getOrder(), realm.getTitle(), realm.getDesc(), realm.getImage()))
                         .collect(Collectors.toList())
         );
     }
 
-    public List<EntireChannelRealm> asRealm(EntireChannelListData entireChannelListData) {
-        return Stream.of(entireChannelListData.items())
+    public List<EntireChannelRealm> asRealm(EntireChannelListJson entireChannelListJson) {
+        return Stream.of(entireChannelListJson.items())
                 .map(entireChannelData -> {
                     EntireChannelRealm entireChannelRealm = new EntireChannelRealm();
                     entireChannelRealm.setId(entireChannelData.id());

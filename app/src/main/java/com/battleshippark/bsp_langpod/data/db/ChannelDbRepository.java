@@ -1,7 +1,7 @@
 package com.battleshippark.bsp_langpod.data.db;
 
-import com.battleshippark.bsp_langpod.data.server.EntireChannelListData;
-import com.battleshippark.bsp_langpod.data.server.MyChannelData;
+import com.battleshippark.bsp_langpod.data.server.EntireChannelListJson;
+import com.battleshippark.bsp_langpod.data.server.MyChannelJson;
 
 import java.util.List;
 
@@ -13,9 +13,9 @@ import rx.Observable;
 public interface ChannelDbRepository {
     Observable<List<EntireChannelRealm>> entireChannelList();
 
-    Observable<EntireChannelListData> queryAll();
+    Observable<EntireChannelListJson> queryAll();
 
-    Observable<MyChannelData> query(int id);
+    Observable<MyChannelJson> query(int id);
 
     void putEntireChannelList(List<EntireChannelRealm> realmList);
 }
