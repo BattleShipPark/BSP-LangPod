@@ -23,15 +23,18 @@ public class MyChannelRealm extends RealmObject {
 
     private RealmList<EpisodeRealm> items;
 
-    public static MyChannelRealm create(long id, int order, String title, String desc, String copyright, String image) {
-        MyChannelRealm myChannelRealm = new MyChannelRealm();
-        myChannelRealm.setId(id);
-        myChannelRealm.setOrder(order);
-        myChannelRealm.setTitle(title);
-        myChannelRealm.setDesc(desc);
-        myChannelRealm.setCopyright(copyright);
-        myChannelRealm.setImage(image);
-        return myChannelRealm;
+    public MyChannelRealm() {
+    }
+
+    public MyChannelRealm(long id, int order, String title, String desc, String copyright,
+                          String image, RealmList<EpisodeRealm> episodeRealmRealmList) {
+        this.id = id;
+        this.order = order;
+        this.title = title;
+        this.desc = desc;
+        this.copyright = copyright;
+        this.image = image;
+        this.items = episodeRealmRealmList;
     }
 
     public long getId() {
@@ -95,11 +98,30 @@ public class MyChannelRealm extends RealmObject {
     public String toString() {
         return "MyChannelRealm{" +
                 "id='" + id + '\'' +
+                ", order='" + order + '\'' +
                 ", title='" + title + '\'' +
                 ", desc='" + desc + '\'' +
                 ", copyright='" + copyright + '\'' +
                 ", image='" + image + '\'' +
                 ", items=" + Arrays.toString(items.toArray()) +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        MyChannelRealm that = (MyChannelRealm) o;
+
+        if (id != that.id) return false;
+        if (order != that.order) return false;
+        if (title != null ? !title.equals(that.title) : that.title != null) return false;
+        if (desc != null ? !desc.equals(that.desc) : that.desc != null) return false;
+        if (copyright != null ? !copyright.equals(that.copyright) : that.copyright != null)
+            return false;
+        if (image != null ? !image.equals(that.image) : that.image != null) return false;
+        return items != null ? items.equals(that.items) : that.items == null;
+
     }
 }

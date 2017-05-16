@@ -11,11 +11,13 @@ import java.util.List;
 
 @AutoValue
 public abstract class MyChannelData {
-    public static MyChannelData create(long id, String title, String desc, String copyright, String image, List<EpisodeData> items) {
-        return new AutoValue_MyChannelData(id, title, desc, copyright, image, items);
+    public static MyChannelData create(long id, int order, String title, String desc, String copyright, String image, List<EpisodeData> items) {
+        return new AutoValue_MyChannelData(id, order, title, desc, copyright, image, items);
     }
 
     public abstract long id();
+
+    public abstract long order();
 
     public abstract String title();
 

@@ -19,14 +19,12 @@ import rx.Subscriber;
 
 public class GetMyChannelList implements UseCase<Void, List<MyChannelData>> {
     private final ChannelDbRepository dbRepository;
-    private final ChannelServerRepository apiRepository;
     private final Executor executor;
     private final RealmMapper mapper;
 
     @Inject
-    public GetMyChannelList(ChannelDbRepository dbRepository, ChannelServerRepository apiRepository, Executor executor, RealmMapper mapper) {
+    public GetMyChannelList(ChannelDbRepository dbRepository, Executor executor, RealmMapper mapper) {
         this.dbRepository = dbRepository;
-        this.apiRepository = apiRepository;
         this.executor = executor;
         this.mapper = mapper;
     }

@@ -10,6 +10,15 @@ public class EpisodeRealm extends RealmObject {
     private String desc;
     private String url;
 
+    public EpisodeRealm() {
+    }
+
+    public EpisodeRealm(String title, String desc, String url) {
+        this.title = title;
+        this.desc = desc;
+        this.url = url;
+    }
+
     public String getTitle() {
         return title;
     }
@@ -41,5 +50,18 @@ public class EpisodeRealm extends RealmObject {
                 ", desc='" + desc + '\'' +
                 ", url='" + url + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        EpisodeRealm that = (EpisodeRealm) o;
+
+        if (title != null ? !title.equals(that.title) : that.title != null) return false;
+        if (desc != null ? !desc.equals(that.desc) : that.desc != null) return false;
+        return url != null ? url.equals(that.url) : that.url == null;
+
     }
 }

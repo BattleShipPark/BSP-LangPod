@@ -3,15 +3,18 @@ package com.battleshippark.bsp_langpod.data;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
 import com.battleshippark.bsp_langpod.data.db.EntireChannelRealm;
+import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
 import com.battleshippark.bsp_langpod.data.db.MyChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.RealmHelper;
 
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import io.realm.Realm;
+import io.realm.RealmList;
 import rx.observers.TestSubscriber;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -52,14 +55,15 @@ public class ChannelDbApiTest {
     public void myChannelList() {
         Realm realm = Realm.getDefaultInstance();
 
+        MyChannelRealm myChannelRealm1 = new MyChannelRealm(1, 10, "title1", "desc1", "cr1", "image1",
+                new RealmList<>(new EpisodeRealm("ep.title1", "ep.desc1", "ep.url1")));
+        MyChannelRealm myChannelRealm2 = new MyChannelRealm(2, 11, "title2", "desc2", "cr2", "image2",
+                new RealmList<>(new EpisodeRealm("ep.title2", "ep.desc2", "ep.url2")));
+
         realm.executeTransaction(realm1 -> {
             realm1.delete(MyChannelRealm.class);
-
-            MyChannelRealm myChannelRealm = MyChannelRealm.create(1, 10, "title1", "desc1", "cr1", "image1");
-            realm1.copyToRealm(myChannelRealm);
-
-            myChannelRealm = MyChannelRealm.create(2, 11, "title2", "desc2", "cr2", "image2");
-            realm1.copyToRealm(myChannelRealm);
+            realm1.copyToRealm(myChannelRealm1);
+            realm1.copyToRealm(myChannelRealm2);
         });
 
         ChannelDbRepository repository = new ChannelDbApi(realm);
@@ -72,12 +76,12 @@ public class ChannelDbApiTest {
         subscriber.awaitTerminalEvent();
         subscriber.assertNoErrors();
         subscriber.assertCompleted();
+
         assertThat(subscriber.getOnNextEvents()).hasSize(1);
         List<MyChannelRealm> actualMyChannelRealmList = subscriber.getOnNextEvents().get(0);
-        assertThat(actualMyChannelRealmList.get(0).getId()).isEqualTo(1);
-        assertThat(actualMyChannelRealmList.get(0).getTitle()).isEqualTo("title1");
-        assertThat(actualMyChannelRealmList.get(1).getId()).isEqualTo(2);
-        assertThat(actualMyChannelRealmList.get(1).getTitle()).isEqualTo("title2");
+        actualMyChannelRealmList = realm.copyFromRealm(actualMyChannelRealmList);
+
+        assertThat(actualMyChannelRealmList).containsExactlyElementsOf(Arrays.asList(myChannelRealm1, myChannelRealm2));
     }
 
     @Test

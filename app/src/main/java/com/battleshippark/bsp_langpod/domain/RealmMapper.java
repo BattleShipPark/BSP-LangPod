@@ -25,6 +25,7 @@ public class RealmMapper {
         return Stream.of(myChannelRealmList)
                 .map(myChannelRealm ->
                         MyChannelData.create(myChannelRealm.getId(),
+                                myChannelRealm.getOrder(),
                                 myChannelRealm.getTitle(),
                                 myChannelRealm.getDesc(),
                                 myChannelRealm.getCopyright(),
