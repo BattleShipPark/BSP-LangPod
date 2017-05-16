@@ -15,7 +15,7 @@ import rx.Observable;
 /**
  */
 
-public class GetEntireChannelList implements UseCase<Void, EntireChannelListJson> {
+public class GetEntireChannelList implements UseCase<Void, List<EntireChannelData>> {
     private final ChannelDbRepository dbRepository;
     private final ChannelServerRepository apiRepository;
     private final Executor executor;
@@ -30,7 +30,7 @@ public class GetEntireChannelList implements UseCase<Void, EntireChannelListJson
     }
 
     @Override
-    public Observable<EntireChannelListJson> execute(Void param) {
+    public Observable<List<EntireChannelData>> execute(Void param) {
         return Observable.create(subscriber -> {
             try {
                 List<EntireChannelRealm> dbEntireChannelReamList = dbRepository.entireChannelList().toBlocking().single();
@@ -38,7 +38,7 @@ public class GetEntireChannelList implements UseCase<Void, EntireChannelListJson
 
                 EntireChannelListJson serverEntireChannelListJson = apiRepository.entireChannelList().toBlocking().single();
 
-                subscriber.onNext(serverEntireChannelListJson);
+                subscriber.onNext(mapper.asData(serverEntireChannelListJson));
 
                 dbRepository.putEntireChannelList(mapper.asRealm(serverEntireChannelListJson));
 
