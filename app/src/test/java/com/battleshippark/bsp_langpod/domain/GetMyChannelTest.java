@@ -16,6 +16,7 @@ import rx.Observable;
 import rx.observers.TestSubscriber;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 /**
@@ -27,13 +28,14 @@ public class GetMyChannelTest {
 
     @Test
     public void execute() {
-        MyChannelRealm myChannelRealm = new MyChannelRealm(1, 10, "title1", "desc1", "cr1", "image1",
+        MyChannelRealm myChannelRealm = new MyChannelRealm(1, 10, "title1", "desc1", "cr1", "image1", "url1",
                 new RealmList<>(new EpisodeRealm("ep.title1", "ep.desc1", "ep.url1")));
-        when(dbRepository.myChannel(0)).thenReturn(Observable.just(myChannelRealm));
+        when(dbRepository.myChannel(1)).thenReturn(Observable.just(myChannelRealm));
         RealmMapper mapper = new RealmMapper();
-        UseCase<Void, MyChannelData> useCase = new GetMyChannel(dbRepository, null, null, mapper);
+        UseCase<MyChannelData, MyChannelData> useCase = new GetMyChannel(dbRepository, null, null, mapper);
         TestSubscriber<MyChannelData> testSubscriber = new TestSubscriber<>();
-        useCase.execute(null).subscribe(testSubscriber);
+        useCase.execute(MyChannelData.create(1, 10, "title1", "desc1", "cr1", "image1", "url1", null))
+                .subscribe(testSubscriber);
 
 
         testSubscriber.awaitTerminalEvent();
@@ -45,7 +47,7 @@ public class GetMyChannelTest {
 
         MyChannelData actualMyChannelData = testSubscriber.getOnNextEvents().get(0);
         assertThat(actualMyChannelData)
-                .isEqualTo(MyChannelData.create(1, 10, "title1", "desc1", "cr1", "image1",
+                .isEqualTo(MyChannelData.create(1, 10, "title1", "desc1", "cr1", "image1", "url1",
                         Collections.singletonList(EpisodeData.create("ep.title1", "ep.desc1", "ep.url1"))));
     }
 }

@@ -5,9 +5,14 @@ import com.annimon.stream.Stream;
 import com.battleshippark.bsp_langpod.data.db.EntireChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
 import com.battleshippark.bsp_langpod.data.db.MyChannelRealm;
+import com.battleshippark.bsp_langpod.data.server.EntireChannelJson;
 import com.battleshippark.bsp_langpod.data.server.EntireChannelListJson;
+import com.battleshippark.bsp_langpod.data.server.EpisodeJson;
+import com.battleshippark.bsp_langpod.data.server.MyChannelJson;
 
 import java.util.List;
+
+import io.realm.RealmList;
 
 /**
  */
@@ -30,6 +35,7 @@ public class RealmMapper {
                                 myChannelRealm.getDesc(),
                                 myChannelRealm.getCopyright(),
                                 myChannelRealm.getImage(),
+                                myChannelRealm.getUrl(),
                                 null
                         )
                 ).collect(Collectors.toList());
@@ -42,6 +48,7 @@ public class RealmMapper {
                 myChannelRealm.getDesc(),
                 myChannelRealm.getCopyright(),
                 myChannelRealm.getImage(),
+                myChannelRealm.getUrl(),
                 episodeRealmAsData(myChannelRealm.getItems())
         );
     }
@@ -64,16 +71,35 @@ public class RealmMapper {
                 ).collect(Collectors.toList());
     }
 
-    public List<EntireChannelRealm> asRealm(EntireChannelListJson entireChannelListJson) {
-        return Stream.of(entireChannelListJson.items())
-                .map(entireChannelData -> {
-                    EntireChannelRealm entireChannelRealm = new EntireChannelRealm();
-                    entireChannelRealm.setId(entireChannelData.id());
-                    entireChannelRealm.setOrder(entireChannelData.order());
-                    entireChannelRealm.setTitle(entireChannelData.title());
-                    entireChannelRealm.setDesc(entireChannelData.desc());
-                    entireChannelRealm.setImage(entireChannelData.image());
-                    return entireChannelRealm;
-                }).collect(Collectors.toList());
+    public MyChannelData myChannelJsonAsData(String url, MyChannelJson myChannelJson) {
+        return MyChannelData.create(
+                myChannelJson.title(),
+                myChannelJson.desc(),
+                myChannelJson.copyright(),
+                myChannelJson.image(),
+                url,
+                Stream.of(myChannelJson.items()).map(this::episodeJsonAsData).collect(Collectors.toList())
+        );
+    }
+
+    public EpisodeData episodeJsonAsData(EpisodeJson episodeJson) {
+        return EpisodeData.create(
+                episodeJson.title(),
+                episodeJson.desc(),
+                episodeJson.url()
+        );
+    }
+
+    public List<EntireChannelRealm> entireChannelListJsonAsRealm(EntireChannelListJson entireChannelListJson) {
+        return null;
+    }
+
+    public MyChannelRealm myChannelJsonAsRealm(long id, int order, String url, MyChannelJson myChannelJson) {
+        RealmList<EpisodeRealm> episodeRealmList = Stream.of(myChannelJson.items())
+                .map(episodeJson -> new EpisodeRealm(episodeJson.title(), episodeJson.desc(), episodeJson.url()))
+                .collect(RealmList::new, RealmList::add);
+        return new MyChannelRealm(id, order, myChannelJson.title(), myChannelJson.desc(),
+                myChannelJson.copyright(), myChannelJson.image(), url,
+                episodeRealmList);
     }
 }

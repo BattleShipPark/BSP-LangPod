@@ -1,12 +1,10 @@
 package com.battleshippark.bsp_langpod.domain;
 
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
-import com.battleshippark.bsp_langpod.data.db.EntireChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.MyChannelRealm;
 import com.battleshippark.bsp_langpod.data.server.ChannelServerRepository;
-import com.battleshippark.bsp_langpod.data.server.EntireChannelListJson;
+import com.battleshippark.bsp_langpod.data.server.MyChannelJson;
 
-import java.util.List;
 import java.util.concurrent.Executor;
 
 import javax.inject.Inject;
@@ -17,7 +15,7 @@ import rx.Subscriber;
 /**
  */
 
-public class GetMyChannel implements UseCase<Void, MyChannelData> {
+public class GetMyChannel implements UseCase<MyChannelData, MyChannelData> {
     private final ChannelDbRepository dbRepository;
     private final ChannelServerRepository serverRepository;
     private final Executor executor;
@@ -32,30 +30,32 @@ public class GetMyChannel implements UseCase<Void, MyChannelData> {
     }
 
     @Override
-    public Observable<MyChannelData> execute(Void param) {
+    public Observable<MyChannelData> execute(MyChannelData localMyChannelData) {
         return Observable.create(subscriber ->
-                dbRepository.myChannel(0).subscribe(
-                        myChannelRealm -> onDbLoaded(subscriber, myChannelRealm),
+                dbRepository.myChannel(localMyChannelData.id()).subscribe(
+                        myChannelRealm -> onDbLoaded(subscriber, localMyChannelData, myChannelRealm),
                         subscriber::onError, subscriber::onCompleted));
     }
 
-    private void onDbLoaded(Subscriber<? super MyChannelData> subscriber, MyChannelRealm myChannelRealm) {
+    private void onDbLoaded(Subscriber<? super MyChannelData> subscriber, MyChannelData localMyChannelData, MyChannelRealm myChannelRealm) {
         subscriber.onNext(mapper.myChannelRealmAsData(myChannelRealm));
 
-//        serverRepository.entireChannelList().subscribe(
-//                entireChannelListJson -> onServerLoaded(subscriber, entireChannelListJson),
-//                subscriber::onError, subscriber::onCompleted);
+        serverRepository.myChannel(localMyChannelData.url()).subscribe(
+                myChannelJson -> onServerLoaded(subscriber, localMyChannelData, myChannelJson),
+                subscriber::onError, subscriber::onCompleted);
     }
 
-/*    private void onServerLoaded(Subscriber<? super List<MyChannelData>> subscriber, EntireChannelListJson entireChannelListJson) {
-        subscriber.onNext(mapper.asData(entireChannelListJson));
+    private void onServerLoaded(Subscriber<? super MyChannelData> subscriber, MyChannelData localMyChannelData, MyChannelJson myChannelJson) {
+        subscriber.onNext(mapper.myChannelJsonAsData(localMyChannelData.url(), myChannelJson));
 
         try {
-            dbRepository.putEntireChannelList(mapper.asRealm(entireChannelListJson));
+            dbRepository.putMyChannel(mapper.myChannelJsonAsRealm(localMyChannelData.id(),
+                    localMyChannelData.order(), localMyChannelData.url(),
+                    myChannelJson));
         } catch (Exception e) {
             subscriber.onError(e);
         }
 
         subscriber.onCompleted();
-    }*/
+    }
 }

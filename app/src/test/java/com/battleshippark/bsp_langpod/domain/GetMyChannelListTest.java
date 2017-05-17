@@ -27,8 +27,8 @@ public class GetMyChannelListTest {
     @Test
     public void execute() {
         List<MyChannelRealm> myChannelRealmList = Arrays.asList(
-                new MyChannelRealm(1, 10, "title1", "desc1", "cr1", "image1", null),
-                new MyChannelRealm(2, 11, "title2", "desc2", "cr2", "image2", null)
+                new MyChannelRealm(1, 10, "title1", "desc1", "cr1", "image1", "url1", null),
+                new MyChannelRealm(2, 11, "title2", "desc2", "cr2", "image2", "url2", null)
         );
         when(dbRepository.myChannelList()).thenReturn(Observable.just(myChannelRealmList));
         RealmMapper mapper = new RealmMapper();
@@ -47,8 +47,8 @@ public class GetMyChannelListTest {
         List<MyChannelData> actualMyChannelDataList = testSubscriber.getOnNextEvents().get(0);
         assertThat(actualMyChannelDataList).hasSize(2);
         assertThat(actualMyChannelDataList.get(0))
-                .isEqualTo(MyChannelData.create(1, 10, "title1", "desc1", "cr1", "image1", null));
+                .isEqualTo(MyChannelData.create(1, 10, "title1", "desc1", "cr1", "image1", "url1", null));
         assertThat(actualMyChannelDataList.get(1))
-                .isEqualTo(MyChannelData.create(2, 11, "title2", "desc2", "cr2", "image2", null));
+                .isEqualTo(MyChannelData.create(2, 11, "title2", "desc2", "cr2", "image2", "url2", null));
     }
 }

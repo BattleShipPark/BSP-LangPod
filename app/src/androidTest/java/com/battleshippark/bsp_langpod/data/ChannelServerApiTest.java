@@ -18,7 +18,7 @@ public class ChannelServerApiTest {
     @Test
     public void channel() {
         ChannelServerRepository channelApi = DaggerServerApiGraph.create().channelApi();
-        channelApi.channel("http://enabler.kbs.co.kr/api/podcast_channel/feed.xml?channel_id=R2017-0027")
+        channelApi.myChannel("http://enabler.kbs.co.kr/api/podcast_channel/feed.xml?channel_id=R2017-0027")
                 .subscribe(channelData -> System.out.println(channelData.toString()));
     }
 }

@@ -8,5 +8,5 @@ import rx.Observable;
 public interface ChannelServerRepository {
     Observable<EntireChannelListJson> entireChannelList();
 
-    Observable<MyChannelJson> channel(String url);
+    Observable<MyChannelJson> myChannel(String url);
 }

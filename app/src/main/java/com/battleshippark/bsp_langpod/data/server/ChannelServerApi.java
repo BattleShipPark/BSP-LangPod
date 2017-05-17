@@ -44,7 +44,7 @@ public class ChannelServerApi implements ChannelServerRepository {
     }
 
     @Override
-    public Observable<MyChannelJson> channel(String url) {
+    public Observable<MyChannelJson> myChannel(String url) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://" + appPhase.getServerDomain())
                 .addConverterFactory(rssConverterFactory)

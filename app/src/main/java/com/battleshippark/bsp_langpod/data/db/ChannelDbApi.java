@@ -41,8 +41,12 @@ public class ChannelDbApi implements ChannelDbRepository {
     }
 
     @Override
-    public Observable<MyChannelRealm> myChannel(int id) {
-        return null;
+    public Observable<MyChannelRealm> myChannel(long id) {
+        return Observable.create(subscriber -> {
+            MyChannelRealm myChannelRealm = realm.where(MyChannelRealm.class).equalTo("id", id).findFirst();
+            subscriber.onNext(myChannelRealm);
+            subscriber.onCompleted();
+        });
     }
 
     @Override
@@ -51,6 +55,15 @@ public class ChannelDbApi implements ChannelDbRepository {
             realm1.delete(EntireChannelRealm.class);
 
             Stream.of(realmList).forEach(realm1::copyToRealm);
+        });
+    }
+
+    @Override
+    public void putMyChannel(MyChannelRealm myChannelRealm) throws IllegalArgumentException, RealmMigrationNeededException {
+        realm.executeTransaction(realm1 -> {
+            realm1.delete(MyChannelRealm.class);
+
+            realm1.copyToRealm(myChannelRealm);
         });
     }
 }

@@ -21,19 +21,22 @@ public class MyChannelRealm extends RealmObject {
 
     private String image;
 
+    private String url;
+
     private RealmList<EpisodeRealm> items;
 
     public MyChannelRealm() {
     }
 
     public MyChannelRealm(long id, int order, String title, String desc, String copyright,
-                          String image, RealmList<EpisodeRealm> episodeRealmRealmList) {
+                          String image, String url, RealmList<EpisodeRealm> episodeRealmRealmList) {
         this.id = id;
         this.order = order;
         this.title = title;
         this.desc = desc;
         this.copyright = copyright;
         this.image = image;
+        this.url = url;
         this.items = episodeRealmRealmList;
     }
 
@@ -85,6 +88,14 @@ public class MyChannelRealm extends RealmObject {
         this.image = image;
     }
 
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
     public RealmList<EpisodeRealm> getItems() {
         return items;
     }
@@ -103,6 +114,7 @@ public class MyChannelRealm extends RealmObject {
                 ", desc='" + desc + '\'' +
                 ", copyright='" + copyright + '\'' +
                 ", image='" + image + '\'' +
+                ", url='" + url + '\'' +
                 ", items=" + Arrays.toString(items.toArray()) +
                 '}';
     }
@@ -121,6 +133,7 @@ public class MyChannelRealm extends RealmObject {
         if (copyright != null ? !copyright.equals(that.copyright) : that.copyright != null)
             return false;
         if (image != null ? !image.equals(that.image) : that.image != null) return false;
+        if (url != null ? !url.equals(that.url) : that.url != null) return false;
         return items != null ? items.equals(that.items) : that.items == null;
 
     }

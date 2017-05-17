@@ -10,7 +10,6 @@ import com.battleshippark.bsp_langpod.data.db.RealmHelper;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import io.realm.Realm;
@@ -55,9 +54,9 @@ public class ChannelDbApiTest {
     public void myChannelList() {
         Realm realm = Realm.getDefaultInstance();
 
-        MyChannelRealm myChannelRealm1 = new MyChannelRealm(1, 10, "title1", "desc1", "cr1", "image1",
+        MyChannelRealm myChannelRealm1 = new MyChannelRealm(1, 10, "title1", "desc1", "cr1", "image1", "url1",
                 new RealmList<>(new EpisodeRealm("ep.title1", "ep.desc1", "ep.url1")));
-        MyChannelRealm myChannelRealm2 = new MyChannelRealm(2, 11, "title2", "desc2", "cr2", "image2",
+        MyChannelRealm myChannelRealm2 = new MyChannelRealm(2, 11, "title2", "desc2", "cr2", "image2", "url2",
                 new RealmList<>(new EpisodeRealm("ep.title2", "ep.desc2", "ep.url2")));
 
         realm.executeTransaction(realm1 -> {

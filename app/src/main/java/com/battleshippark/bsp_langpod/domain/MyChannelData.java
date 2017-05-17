@@ -13,13 +13,20 @@ import java.util.List;
 
 @AutoValue
 public abstract class MyChannelData {
-    public static MyChannelData create(long id, int order, String title, String desc, String copyright, String image, List<EpisodeData> items) {
-        return new AutoValue_MyChannelData(id, order, title, desc, copyright, image, items);
+    public static final long EMPTY_ID = 0;
+    public static final int EMPTY_ORDER = 0;
+
+    public static MyChannelData create(String title, String desc, String copyright, String image, String url, List<EpisodeData> items) {
+        return new AutoValue_MyChannelData(EMPTY_ID, EMPTY_ORDER, title, desc, copyright, image, url, items);
+    }
+
+    public static MyChannelData create(long id, int order, String title, String desc, String copyright, String image, String url, List<EpisodeData> items) {
+        return new AutoValue_MyChannelData(id, order, title, desc, copyright, image, url, items);
     }
 
     public abstract long id();
 
-    public abstract long order();
+    public abstract int order();
 
     public abstract String title();
 
@@ -28,6 +35,8 @@ public abstract class MyChannelData {
     public abstract String copyright();
 
     public abstract String image();
+
+    public abstract String url();
 
     @Nullable
     public abstract List<EpisodeData> items();
