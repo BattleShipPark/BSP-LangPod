@@ -6,11 +6,11 @@ import com.battleshippark.bsp_langpod.data.server.ChannelServerRepository;
 import com.battleshippark.bsp_langpod.data.server.EntireChannelListJson;
 
 import java.util.List;
-import java.util.concurrent.Executor;
 
 import javax.inject.Inject;
 
 import rx.Observable;
+import rx.Scheduler;
 import rx.Subscriber;
 
 /**
@@ -19,14 +19,14 @@ import rx.Subscriber;
 public class GetEntireChannelList implements UseCase<Void, List<EntireChannelData>> {
     private final ChannelDbRepository dbRepository;
     private final ChannelServerRepository apiRepository;
-    private final Executor executor;
+    private final Scheduler scheduler;
     private final Mapper mapper;
 
     @Inject
-    public GetEntireChannelList(ChannelDbRepository dbRepository, ChannelServerRepository apiRepository, Executor executor, Mapper mapper) {
+    public GetEntireChannelList(ChannelDbRepository dbRepository, ChannelServerRepository apiRepository, Scheduler scheduler, Mapper mapper) {
         this.dbRepository = dbRepository;
         this.apiRepository = apiRepository;
-        this.executor = executor;
+        this.scheduler = scheduler;
         this.mapper = mapper;
     }
 
@@ -35,26 +35,22 @@ public class GetEntireChannelList implements UseCase<Void, List<EntireChannelDat
         return Observable.create(subscriber ->
                 dbRepository.entireChannelList().subscribe(
                         entireChannelRealmList -> onDbLoaded(subscriber, entireChannelRealmList),
-                        subscriber::onError, subscriber::onCompleted));
+                        subscriber::onError));
     }
 
     private void onDbLoaded(Subscriber<? super List<EntireChannelData>> subscriber, List<EntireChannelRealm> entireChannelRealmList) {
         try {
             subscriber.onNext(mapper.asData(entireChannelRealmList));
 
-            apiRepository.entireChannelList().subscribe(
-                    entireChannelListJson -> onServerLoaded(subscriber, entireChannelListJson),
+            apiRepository.entireChannelList().subscribeOn(scheduler).subscribe(
+                    this::onServerLoaded,
                     subscriber::onError, subscriber::onCompleted);
         } catch (Exception e) {
             subscriber.onError(e);
         }
     }
 
-    private void onServerLoaded(Subscriber<? super List<EntireChannelData>> subscriber, EntireChannelListJson entireChannelListJson) {
-        try {
-            dbRepository.putEntireChannelList(mapper.entireChannelListJsonAsRealm(entireChannelListJson));
-        } catch (Exception e) {
-            subscriber.onError(e);
-        }
+    private void onServerLoaded(EntireChannelListJson entireChannelListJson) {
+        dbRepository.putEntireChannelList(mapper.entireChannelListJsonAsRealm(entireChannelListJson));
     }
 }
