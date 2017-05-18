@@ -5,7 +5,6 @@ import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
 import com.battleshippark.bsp_langpod.data.db.EntireChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
 import com.battleshippark.bsp_langpod.data.db.MyChannelRealm;
-import com.battleshippark.bsp_langpod.data.db.RealmHelper;
 
 import org.junit.Test;
 
@@ -21,20 +20,20 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 /**
  */
 public class ChannelDbApiTest {
+    private EntireChannelRealm channelRealm1 = new EntireChannelRealm(1, 10, "title1", "desc1", "image1");
+    private EntireChannelRealm channelRealm2 = new EntireChannelRealm(2, 11, "title2", "desc2", "image2");
+
+    private Realm realm = Realm.getDefaultInstance();
+    private ChannelDbRepository repository = new ChannelDbApi(realm);
+    private TestSubscriber<List<EntireChannelRealm>> testSubscriber = new TestSubscriber<>();
+
     @Test
     public void entireChannelList_저장한것을읽어본다() {
-        EntireChannelRealm channelRealm1 = new EntireChannelRealm(1, 10, "title1", "desc1", "image1");
-        EntireChannelRealm channelRealm2 = new EntireChannelRealm(2, 11, "title2", "desc2", "image2");
-
-        Realm realm = Realm.getDefaultInstance();
         realm.executeTransaction(realm1 -> {
             realm1.delete(EntireChannelRealm.class);
             realm1.copyToRealm(channelRealm1);
             realm1.copyToRealm(channelRealm2);
         });
-
-        ChannelDbRepository repository = new ChannelDbApi(realm);
-        TestSubscriber<List<EntireChannelRealm>> testSubscriber = new TestSubscriber<>();
 
 
         repository.entireChannelList().subscribe(testSubscriber);
@@ -52,17 +51,10 @@ public class ChannelDbApiTest {
 
     @Test
     public void entireChannelList_읽은후에저장하면자동반영된다() {
-        EntireChannelRealm channelRealm1 = new EntireChannelRealm(1, 10, "title1", "desc1", "image1");
-        EntireChannelRealm channelRealm2 = new EntireChannelRealm(2, 11, "title2", "desc2", "image2");
-
-        Realm realm = Realm.getDefaultInstance();
         realm.executeTransaction(realm1 -> {
             realm1.delete(EntireChannelRealm.class);
             realm1.copyToRealm(channelRealm1);
         });
-
-        ChannelDbRepository repository = new ChannelDbApi(realm);
-        TestSubscriber<List<EntireChannelRealm>> testSubscriber = new TestSubscriber<>();
 
 
         repository.entireChannelList().subscribe(testSubscriber);
@@ -93,8 +85,6 @@ public class ChannelDbApiTest {
 
     @Test
     public void myChannelList() {
-        Realm realm = Realm.getDefaultInstance();
-
         MyChannelRealm myChannelRealm1 = new MyChannelRealm(1, 10, "title1", "desc1", "cr1", "image1", "url1",
                 new RealmList<>(new EpisodeRealm("ep.title1", "ep.desc1", "ep.url1")));
         MyChannelRealm myChannelRealm2 = new MyChannelRealm(2, 11, "title2", "desc2", "cr2", "image2", "url2",
@@ -106,7 +96,6 @@ public class ChannelDbApiTest {
             realm1.copyToRealm(myChannelRealm2);
         });
 
-        ChannelDbRepository repository = new ChannelDbApi(realm);
         TestSubscriber<List<MyChannelRealm>> subscriber = new TestSubscriber<>();
 
 
@@ -130,8 +119,6 @@ public class ChannelDbApiTest {
                 new EntireChannelRealm(1, 10, "title1", "desc1", "image1"),
                 new EntireChannelRealm(2, 11, "title2", "desc2", "image2")
         );
-        Realm realm = Realm.getDefaultInstance();
-        ChannelDbRepository repository = new ChannelDbApi(realm);
         repository.putEntireChannelList(entireChannelRealmList);
 
         List<EntireChannelRealm> actualEntireChannelRealmList = repository.entireChannelList().toBlocking().single();
