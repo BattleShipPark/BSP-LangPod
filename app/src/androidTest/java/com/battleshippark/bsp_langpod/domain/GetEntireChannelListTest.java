@@ -3,24 +3,20 @@ package com.battleshippark.bsp_langpod.domain;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
-import com.battleshippark.bsp_langpod.AppPhase;
-import com.battleshippark.bsp_langpod.BuildConfig;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
 import com.battleshippark.bsp_langpod.data.db.EntireChannelRealm;
-import com.battleshippark.bsp_langpod.data.server.ChannelServerApi;
+import com.battleshippark.bsp_langpod.data.server.ChannelServerRepository;
 import com.battleshippark.bsp_langpod.data.server.EntireChannelJson;
 import com.battleshippark.bsp_langpod.data.server.EntireChannelListJson;
-import com.battleshippark.bsp_langpod.data.server.rss.RssResponseMapper;
 
 import org.junit.Test;
-import org.mockito.Mock;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 
 import io.realm.Realm;
@@ -37,13 +33,15 @@ import static org.mockito.Mockito.when;
  */
 public class GetEntireChannelListTest {
     @Test
-    public void execute() {
+    public void execute() throws InterruptedException {
         HandlerThread handlerThread = new HandlerThread("GetEntireChannelListTest");
         handlerThread.start();
-
+        //Realm의 live update를 사용하려면 같은 쓰레드에서 만든 Realm 인스턴스를 사용해야 한다.
+        //거기다 그 쓰레드가 루퍼를 가지고 있어야 하는데, 테스트를 돌리는 쓰레드는 루퍼를 가지고 있지 않다
+        //모양은 예쁘지 않지만, 이렇게 직접 쓰레드와 루퍼를 만들어서 해결한다
         Handler handler = new Handler(handlerThread.getLooper());
         TestExecutor executor = new TestExecutor(handler);
-        TestSubscriber<List<EntireChannelData>> testSubscriber = new TestSubscriber<>();
+        TestSubscriber<List<EntireChannelRealm>> testSubscriber = new TestSubscriber<>();
         handler.post(() -> {
             Realm realm = Realm.getDefaultInstance();
             ChannelDbRepository dbRepository = new ChannelDbApi(realm);
@@ -54,7 +52,7 @@ public class GetEntireChannelListTest {
             );
             dbRepository.putEntireChannelList(entireChannelRealmList); //DB를 읽어 놓고
 
-            ChannelServerApi serverRepository = mock(ChannelServerApi.class);
+            ChannelServerRepository serverRepository = mock(ChannelServerRepository.class);
             when(serverRepository.entireChannelList()).thenReturn(
                     Observable.just(
                             EntireChannelListJson.create(
@@ -65,10 +63,9 @@ public class GetEntireChannelListTest {
             );
             Scheduler scheduler = Schedulers.io();
             DomainMapper domainMapper = new DomainMapper();
-            UseCase<Void, List<EntireChannelData>> useCase = new GetEntireChannelList(dbRepository, serverRepository,
+            UseCase<Void, List<EntireChannelRealm>> useCase = new GetEntireChannelList(dbRepository, serverRepository,
                     scheduler, Schedulers.from(executor), domainMapper);
 
-            Log.w("thread", Thread.currentThread().getName());
             useCase.execute(null).subscribe(testSubscriber);
         });
 
@@ -77,6 +74,15 @@ public class GetEntireChannelListTest {
         testSubscriber.assertCompleted();
 
         assertThat(testSubscriber.getOnNextEvents()).hasSize(1);
+        CountDownLatch latch = new CountDownLatch(1);
+        handler.post(() -> {
+            Realm realm = Realm.getDefaultInstance();
+            List<EntireChannelRealm> actualEntireChannelRealmList = realm.copyFromRealm(testSubscriber.getOnNextEvents().get(0));
+            assertThat(actualEntireChannelRealmList).hasSize(1);
+            assertThat(actualEntireChannelRealmList.get(0)).isEqualTo(new EntireChannelRealm(3, 12, "title3", "desc3", "image3"));
+            latch.countDown();
+        });
+        latch.await();
     }
 
     private class TestExecutor implements Executor {
