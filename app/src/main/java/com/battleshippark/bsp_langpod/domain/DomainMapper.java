@@ -17,7 +17,7 @@ import io.realm.RealmList;
 /**
  */
 
-public class Mapper {
+public class DomainMapper {
     public List<EntireChannelData> asData(List<EntireChannelRealm> entireChannelRealmList) {
         return Stream.of(entireChannelRealmList)
                 .map(entireChannelRealm -> EntireChannelData.create(entireChannelRealm.getId(),

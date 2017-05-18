@@ -19,14 +19,14 @@ public class GetMyChannel implements UseCase<MyChannelData, MyChannelData> {
     private final ChannelDbRepository dbRepository;
     private final ChannelServerRepository serverRepository;
     private final Executor executor;
-    private final Mapper mapper;
+    private final DomainMapper domainMapper;
 
     @Inject
-    public GetMyChannel(ChannelDbRepository dbRepository, ChannelServerRepository serverRepository, Executor executor, Mapper mapper) {
+    public GetMyChannel(ChannelDbRepository dbRepository, ChannelServerRepository serverRepository, Executor executor, DomainMapper domainMapper) {
         this.dbRepository = dbRepository;
         this.serverRepository = serverRepository;
         this.executor = executor;
-        this.mapper = mapper;
+        this.domainMapper = domainMapper;
     }
 
     @Override
@@ -38,7 +38,7 @@ public class GetMyChannel implements UseCase<MyChannelData, MyChannelData> {
     }
 
     private void onDbLoaded(Subscriber<? super MyChannelData> subscriber, MyChannelData localMyChannelData, MyChannelRealm myChannelRealm) {
-        subscriber.onNext(mapper.myChannelRealmAsData(myChannelRealm));
+        subscriber.onNext(domainMapper.myChannelRealmAsData(myChannelRealm));
 
         serverRepository.myChannel(localMyChannelData.url()).subscribe(
                 myChannelJson -> onServerLoaded(subscriber, localMyChannelData, myChannelJson),
@@ -46,10 +46,10 @@ public class GetMyChannel implements UseCase<MyChannelData, MyChannelData> {
     }
 
     private void onServerLoaded(Subscriber<? super MyChannelData> subscriber, MyChannelData localMyChannelData, MyChannelJson myChannelJson) {
-        subscriber.onNext(mapper.myChannelJsonAsData(localMyChannelData.url(), myChannelJson));
+        subscriber.onNext(domainMapper.myChannelJsonAsData(localMyChannelData.url(), myChannelJson));
 
         try {
-            dbRepository.putMyChannel(mapper.myChannelJsonAsRealm(localMyChannelData.id(),
+            dbRepository.putMyChannel(domainMapper.myChannelJsonAsRealm(localMyChannelData.id(),
                     localMyChannelData.order(), localMyChannelData.url(),
                     myChannelJson));
         } catch (Exception e) {

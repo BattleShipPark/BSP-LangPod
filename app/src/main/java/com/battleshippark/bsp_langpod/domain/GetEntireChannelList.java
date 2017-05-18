@@ -1,5 +1,7 @@
 package com.battleshippark.bsp_langpod.domain;
 
+import android.util.Log;
+
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
 import com.battleshippark.bsp_langpod.data.db.EntireChannelRealm;
 import com.battleshippark.bsp_langpod.data.server.ChannelServerRepository;
@@ -12,22 +14,26 @@ import javax.inject.Inject;
 import rx.Observable;
 import rx.Scheduler;
 import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
 
 /**
  */
 
 public class GetEntireChannelList implements UseCase<Void, List<EntireChannelData>> {
     private final ChannelDbRepository dbRepository;
-    private final ChannelServerRepository apiRepository;
+    private final ChannelServerRepository serverRepository;
     private final Scheduler scheduler;
-    private final Mapper mapper;
+    private final Scheduler postScheduler;
+    private final DomainMapper domainMapper;
 
     @Inject
-    public GetEntireChannelList(ChannelDbRepository dbRepository, ChannelServerRepository apiRepository, Scheduler scheduler, Mapper mapper) {
+    public GetEntireChannelList(ChannelDbRepository dbRepository, ChannelServerRepository serverRepository,
+                                Scheduler scheduler, Scheduler postScheduler, DomainMapper domainMapper) {
         this.dbRepository = dbRepository;
-        this.apiRepository = apiRepository;
+        this.serverRepository = serverRepository;
         this.scheduler = scheduler;
-        this.mapper = mapper;
+        this.postScheduler = postScheduler;
+        this.domainMapper = domainMapper;
     }
 
     @Override
@@ -40,9 +46,9 @@ public class GetEntireChannelList implements UseCase<Void, List<EntireChannelDat
 
     private void onDbLoaded(Subscriber<? super List<EntireChannelData>> subscriber, List<EntireChannelRealm> entireChannelRealmList) {
         try {
-            subscriber.onNext(mapper.asData(entireChannelRealmList));
+            subscriber.onNext(domainMapper.asData(entireChannelRealmList));
 
-            apiRepository.entireChannelList().subscribeOn(scheduler).subscribe(
+            serverRepository.entireChannelList().subscribeOn(scheduler).observeOn(postScheduler).subscribe(
                     this::onServerLoaded,
                     subscriber::onError, subscriber::onCompleted);
         } catch (Exception e) {
@@ -51,6 +57,6 @@ public class GetEntireChannelList implements UseCase<Void, List<EntireChannelDat
     }
 
     private void onServerLoaded(EntireChannelListJson entireChannelListJson) {
-        dbRepository.putEntireChannelList(mapper.entireChannelListJsonAsRealm(entireChannelListJson));
+        dbRepository.putEntireChannelList(domainMapper.entireChannelListJsonAsRealm(entireChannelListJson));
     }
 }

@@ -31,8 +31,8 @@ public class GetMyChannelTest {
         MyChannelRealm myChannelRealm = new MyChannelRealm(1, 10, "title1", "desc1", "cr1", "image1", "url1",
                 new RealmList<>(new EpisodeRealm("ep.title1", "ep.desc1", "ep.url1")));
         when(dbRepository.myChannel(1)).thenReturn(Observable.just(myChannelRealm));
-        Mapper mapper = new Mapper();
-        UseCase<MyChannelData, MyChannelData> useCase = new GetMyChannel(dbRepository, null, null, mapper);
+        DomainMapper domainMapper = new DomainMapper();
+        UseCase<MyChannelData, MyChannelData> useCase = new GetMyChannel(dbRepository, null, null, domainMapper);
         TestSubscriber<MyChannelData> testSubscriber = new TestSubscriber<>();
         useCase.execute(MyChannelData.create(1, 10, "title1", "desc1", "cr1", "image1", "url1", null))
                 .subscribe(testSubscriber);

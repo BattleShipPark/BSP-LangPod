@@ -58,7 +58,7 @@ public class ChannelDbApi implements ChannelDbRepository {
 
     @Override
     public void putEntireChannelList(List<EntireChannelRealm> realmList) throws IllegalArgumentException, RealmMigrationNeededException {
-        realm.executeTransaction(realm1 -> {
+        realm.executeTransactionAsync(realm1 -> {
             realm1.delete(EntireChannelRealm.class);
 
             Stream.of(realmList).forEach(realm1::copyToRealm);
