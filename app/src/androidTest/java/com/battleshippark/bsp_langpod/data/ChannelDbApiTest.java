@@ -22,32 +22,73 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
  */
 public class ChannelDbApiTest {
     @Test
-    public void entireChannelList() {
-        Realm realm = Realm.getDefaultInstance();
+    public void entireChannelList_저장한것을읽어본다() {
+        EntireChannelRealm channelRealm1 = new EntireChannelRealm(1, 10, "title1", "desc1", "image1");
+        EntireChannelRealm channelRealm2 = new EntireChannelRealm(2, 11, "title2", "desc2", "image2");
 
+        Realm realm = Realm.getDefaultInstance();
         realm.executeTransaction(realm1 -> {
             realm1.delete(EntireChannelRealm.class);
-
-            EntireChannelRealm channelRealm = realm1.createObject(EntireChannelRealm.class);
-            channelRealm.setId(RealmHelper.getNextId(realm1, EntireChannelRealm.class));
-            channelRealm.setTitle("title1");
-            channelRealm.setDesc("desc1");
-            channelRealm.setImage("image1");
-
-            channelRealm = realm1.createObject(EntireChannelRealm.class);
-            channelRealm.setId(RealmHelper.getNextId(realm1, EntireChannelRealm.class));
-            channelRealm.setTitle("title2");
-            channelRealm.setDesc("desc2");
-            channelRealm.setImage("image2");
+            realm1.copyToRealm(channelRealm1);
+            realm1.copyToRealm(channelRealm2);
         });
 
         ChannelDbRepository repository = new ChannelDbApi(realm);
+        TestSubscriber<List<EntireChannelRealm>> testSubscriber = new TestSubscriber<>();
 
-        repository.entireChannelList().subscribe(entireChannelRealms -> {
-            for (EntireChannelRealm result : entireChannelRealms) {
-                System.out.println(result);
-            }
+
+        repository.entireChannelList().subscribe(testSubscriber);
+
+
+        testSubscriber.awaitTerminalEvent();
+        testSubscriber.assertNoErrors();
+        testSubscriber.assertCompleted();
+
+        assertThat(testSubscriber.getOnNextEvents()).hasSize(1);
+        List<EntireChannelRealm> actualEntireChannelRealmList = realm.copyFromRealm(testSubscriber.getOnNextEvents().get(0));
+        assertThat(actualEntireChannelRealmList.get(0)).isEqualTo(channelRealm1);
+        assertThat(actualEntireChannelRealmList.get(1)).isEqualTo(channelRealm2);
+    }
+
+    @Test
+    public void entireChannelList_읽은후에저장하면자동반영된다() {
+        EntireChannelRealm channelRealm1 = new EntireChannelRealm(1, 10, "title1", "desc1", "image1");
+        EntireChannelRealm channelRealm2 = new EntireChannelRealm(2, 11, "title2", "desc2", "image2");
+
+        Realm realm = Realm.getDefaultInstance();
+        realm.executeTransaction(realm1 -> {
+            realm1.delete(EntireChannelRealm.class);
+            realm1.copyToRealm(channelRealm1);
         });
+
+        ChannelDbRepository repository = new ChannelDbApi(realm);
+        TestSubscriber<List<EntireChannelRealm>> testSubscriber = new TestSubscriber<>();
+
+
+        repository.entireChannelList().subscribe(testSubscriber);
+
+
+        testSubscriber.awaitTerminalEvent();
+        testSubscriber.assertNoErrors();
+        testSubscriber.assertCompleted();
+
+
+        assertThat(testSubscriber.getOnNextEvents()).hasSize(1);
+
+        //지금은 한 건만 존재한다
+        List<EntireChannelRealm> actualEntireChannelRealmList = realm.copyFromRealm(testSubscriber.getOnNextEvents().get(0));
+        assertThat(actualEntireChannelRealmList).hasSize(1);
+        assertThat(actualEntireChannelRealmList.get(0)).isEqualTo(channelRealm1);
+
+
+        realm.executeTransaction(realm1 -> {
+            realm1.copyToRealm(channelRealm2);//한 건 추가하면
+        });
+        //지금은 두 건 존재한다
+        actualEntireChannelRealmList = realm.copyFromRealm(testSubscriber.getOnNextEvents().get(0));
+        assertThat(actualEntireChannelRealmList).hasSize(2);
+        assertThat(actualEntireChannelRealmList.get(0)).isEqualTo(channelRealm1);
+        assertThat(actualEntireChannelRealmList.get(1)).isEqualTo(channelRealm2);
     }
 
     @Test
