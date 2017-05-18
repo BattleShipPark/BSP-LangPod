@@ -51,8 +51,8 @@ public class GetEntireChannelListTest {
         when(serverRepository.entireChannelList()).thenReturn(Observable.just(entireChannelListJson));
 
         DomainMapper domainMapper = new DomainMapper();
-        UseCase<Void, List<EntireChannelData>> useCase = new GetEntireChannelList(dbRepository, serverRepository, null, null, domainMapper);
-        TestSubscriber<List<EntireChannelData>> testSubscriber = new TestSubscriber<>();
+        UseCase<Void, List<EntireChannelRealm>> useCase = new GetEntireChannelList(dbRepository, serverRepository, null, null, domainMapper);
+        TestSubscriber<List<EntireChannelRealm>> testSubscriber = new TestSubscriber<>();
 
 
 
@@ -66,12 +66,12 @@ public class GetEntireChannelListTest {
 
         assertThat(testSubscriber.getOnNextEvents()).hasSize(1);
 
-        List<EntireChannelData> dbEntireChannelDataList = testSubscriber.getOnNextEvents().get(0);
+        List<EntireChannelRealm> dbEntireChannelDataList = testSubscriber.getOnNextEvents().get(0);
         assertThat(dbEntireChannelDataList).hasSize(2);
-        assertThat(dbEntireChannelDataList.get(0).id()).isEqualTo(1);
-        assertThat(dbEntireChannelDataList.get(0).title()).isEqualTo("title1");
-        assertThat(dbEntireChannelDataList.get(1).id()).isEqualTo(2);
-        assertThat(dbEntireChannelDataList.get(1).desc()).isEqualTo("desc2");
+        assertThat(dbEntireChannelDataList.get(0).getId()).isEqualTo(1);
+        assertThat(dbEntireChannelDataList.get(0).getTitle()).isEqualTo("title1");
+        assertThat(dbEntireChannelDataList.get(1).getId()).isEqualTo(2);
+        assertThat(dbEntireChannelDataList.get(1).getDesc()).isEqualTo("desc2");
 
         verify(dbRepository).putEntireChannelList(captor.capture());
         assertThat(captor.getValue()).hasSize(2);
