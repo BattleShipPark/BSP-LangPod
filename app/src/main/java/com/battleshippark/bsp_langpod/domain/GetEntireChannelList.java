@@ -20,10 +20,10 @@ public class GetEntireChannelList implements UseCase<Void, List<EntireChannelDat
     private final ChannelDbRepository dbRepository;
     private final ChannelServerRepository apiRepository;
     private final Executor executor;
-    private final RealmMapper mapper;
+    private final Mapper mapper;
 
     @Inject
-    public GetEntireChannelList(ChannelDbRepository dbRepository, ChannelServerRepository apiRepository, Executor executor, RealmMapper mapper) {
+    public GetEntireChannelList(ChannelDbRepository dbRepository, ChannelServerRepository apiRepository, Executor executor, Mapper mapper) {
         this.dbRepository = dbRepository;
         this.apiRepository = apiRepository;
         this.executor = executor;
@@ -39,22 +39,22 @@ public class GetEntireChannelList implements UseCase<Void, List<EntireChannelDat
     }
 
     private void onDbLoaded(Subscriber<? super List<EntireChannelData>> subscriber, List<EntireChannelRealm> entireChannelRealmList) {
-        subscriber.onNext(mapper.asData(entireChannelRealmList));
+        try {
+            subscriber.onNext(mapper.asData(entireChannelRealmList));
 
-        apiRepository.entireChannelList().subscribe(
-                entireChannelListJson -> onServerLoaded(subscriber, entireChannelListJson),
-                subscriber::onError, subscriber::onCompleted);
+            apiRepository.entireChannelList().subscribe(
+                    entireChannelListJson -> onServerLoaded(subscriber, entireChannelListJson),
+                    subscriber::onError, subscriber::onCompleted);
+        } catch (Exception e) {
+            subscriber.onError(e);
+        }
     }
 
     private void onServerLoaded(Subscriber<? super List<EntireChannelData>> subscriber, EntireChannelListJson entireChannelListJson) {
-        subscriber.onNext(mapper.asData(entireChannelListJson));
-
         try {
             dbRepository.putEntireChannelList(mapper.entireChannelListJsonAsRealm(entireChannelListJson));
         } catch (Exception e) {
             subscriber.onError(e);
         }
-
-        subscriber.onCompleted();
     }
 }

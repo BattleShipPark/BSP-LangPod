@@ -1,10 +1,6 @@
 package com.battleshippark.bsp_langpod.domain;
 
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
-import com.battleshippark.bsp_langpod.data.db.EntireChannelRealm;
-import com.battleshippark.bsp_langpod.data.db.MyChannelRealm;
-import com.battleshippark.bsp_langpod.data.server.ChannelServerRepository;
-import com.battleshippark.bsp_langpod.data.server.EntireChannelListJson;
 
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -12,7 +8,6 @@ import java.util.concurrent.Executor;
 import javax.inject.Inject;
 
 import rx.Observable;
-import rx.Subscriber;
 
 /**
  */
@@ -20,10 +15,10 @@ import rx.Subscriber;
 public class GetMyChannelList implements UseCase<Void, List<MyChannelData>> {
     private final ChannelDbRepository dbRepository;
     private final Executor executor;
-    private final RealmMapper mapper;
+    private final Mapper mapper;
 
     @Inject
-    public GetMyChannelList(ChannelDbRepository dbRepository, Executor executor, RealmMapper mapper) {
+    public GetMyChannelList(ChannelDbRepository dbRepository, Executor executor, Mapper mapper) {
         this.dbRepository = dbRepository;
         this.executor = executor;
         this.mapper = mapper;

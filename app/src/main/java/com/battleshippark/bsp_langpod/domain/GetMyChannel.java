@@ -19,10 +19,10 @@ public class GetMyChannel implements UseCase<MyChannelData, MyChannelData> {
     private final ChannelDbRepository dbRepository;
     private final ChannelServerRepository serverRepository;
     private final Executor executor;
-    private final RealmMapper mapper;
+    private final Mapper mapper;
 
     @Inject
-    public GetMyChannel(ChannelDbRepository dbRepository, ChannelServerRepository serverRepository, Executor executor, RealmMapper mapper) {
+    public GetMyChannel(ChannelDbRepository dbRepository, ChannelServerRepository serverRepository, Executor executor, Mapper mapper) {
         this.dbRepository = dbRepository;
         this.serverRepository = serverRepository;
         this.executor = executor;

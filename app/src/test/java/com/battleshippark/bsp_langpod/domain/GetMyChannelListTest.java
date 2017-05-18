@@ -31,7 +31,7 @@ public class GetMyChannelListTest {
                 new MyChannelRealm(2, 11, "title2", "desc2", "cr2", "image2", "url2", null)
         );
         when(dbRepository.myChannelList()).thenReturn(Observable.just(myChannelRealmList));
-        RealmMapper mapper = new RealmMapper();
+        Mapper mapper = new Mapper();
         UseCase<Void, List<MyChannelData>> useCase = new GetMyChannelList(dbRepository, null, mapper);
         TestSubscriber<List<MyChannelData>> testSubscriber = new TestSubscriber<>();
         useCase.execute(null).subscribe(testSubscriber);

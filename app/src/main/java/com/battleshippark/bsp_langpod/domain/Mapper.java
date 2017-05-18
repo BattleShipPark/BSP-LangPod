@@ -17,7 +17,7 @@ import io.realm.RealmList;
 /**
  */
 
-public class RealmMapper {
+public class Mapper {
     public List<EntireChannelData> asData(List<EntireChannelRealm> entireChannelRealmList) {
         return Stream.of(entireChannelRealmList)
                 .map(entireChannelRealm -> EntireChannelData.create(entireChannelRealm.getId(),
@@ -91,7 +91,9 @@ public class RealmMapper {
     }
 
     public List<EntireChannelRealm> entireChannelListJsonAsRealm(EntireChannelListJson entireChannelListJson) {
-        return null;
+        return Stream.of(entireChannelListJson.items())
+                .map(json -> new EntireChannelRealm(json.id(), json.order(), json.title(), json.desc(), json.image()))
+                .collect(Collectors.toList());
     }
 
     public MyChannelRealm myChannelJsonAsRealm(long id, int order, String url, MyChannelJson myChannelJson) {
