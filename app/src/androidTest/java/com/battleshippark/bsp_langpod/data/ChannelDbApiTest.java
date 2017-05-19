@@ -1,5 +1,8 @@
 package com.battleshippark.bsp_langpod.data;
 
+import android.os.Handler;
+import android.os.HandlerThread;
+
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
 import com.battleshippark.bsp_langpod.data.db.EntireChannelRealm;
@@ -13,6 +16,7 @@ import java.util.List;
 
 import io.realm.Realm;
 import io.realm.RealmList;
+import io.realm.RealmResults;
 import rx.observers.TestSubscriber;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -126,5 +130,54 @@ public class ChannelDbApiTest {
 
 
         assertThat(actualEntireChannelRealmList).containsExactlyElementsOf(entireChannelRealmList);
+    }
+
+    @Test
+    public void putMyChannel() throws InterruptedException {
+        HandlerThread handlerThread = new HandlerThread("ChannelDbApiTest");
+        handlerThread.start();
+        Handler handler = new Handler(handlerThread.getLooper());
+        handler.post(() -> {
+            Realm realm = Realm.getDefaultInstance();
+            ChannelDbRepository repository = new ChannelDbApi(realm);
+
+            //ID1으로 저장해 놓고
+            MyChannelRealm myChannelRealm = new MyChannelRealm(1, 10, "title1", "desc1", "cr1", "image1", "url1",
+                    new RealmList<>(new EpisodeRealm("ep.title1", "ep.desc1", "ep.url1")));
+            realm.executeTransaction(realm1 -> {
+                realm1.delete(MyChannelRealm.class);
+                realm1.copyToRealm(myChannelRealm);
+            });
+
+            TestSubscriber<MyChannelRealm> testSubscriber = new TestSubscriber<>();
+            //ID1을 읽어 보면
+            repository.myChannel(1).subscribe(testSubscriber);
+
+
+            testSubscriber.awaitTerminalEvent();
+            testSubscriber.assertNoErrors();
+            testSubscriber.assertCompleted();
+
+            MyChannelRealm actualMyChannelRealm1 = testSubscriber.getOnNextEvents().get(0);
+            assertThat(actualMyChannelRealm1.getTitle()).isEqualTo("title1");
+            assertThat(actualMyChannelRealm1.getItems()).hasSize(1);
+            assertThat(actualMyChannelRealm1.getItems().get(0).getTitle()).isEqualTo("ep.title1");
+
+            //객체 갱신
+            myChannelRealm.setTitle("title2");
+            myChannelRealm.getItems().add(new EpisodeRealm("ep.title2", "ep.desc2", "ep,url2"));
+
+            repository.putMyChannel(myChannelRealm);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            //title과 items가 수정되어 있는걸 확인
+            assertThat(actualMyChannelRealm1.getTitle()).isEqualTo("title2");
+            assertThat(actualMyChannelRealm1.getItems()).hasSize(2);
+            assertThat(actualMyChannelRealm1.getItems().get(1).getTitle()).isEqualTo("ep.title2");
+        });
     }
 }

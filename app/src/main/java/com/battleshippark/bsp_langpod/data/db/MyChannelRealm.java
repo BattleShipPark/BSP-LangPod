@@ -1,14 +1,17 @@
 package com.battleshippark.bsp_langpod.data.db;
 
 import java.util.Arrays;
+import java.util.List;
 
 import io.realm.RealmList;
 import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
 /**
  */
 
 public class MyChannelRealm extends RealmObject {
+    @PrimaryKey
     private long id;
 
     private int order;
@@ -100,9 +103,9 @@ public class MyChannelRealm extends RealmObject {
         return items;
     }
 
-    public void setItems(EpisodeRealm items) {
+    public void setItems(List<EpisodeRealm> items) {
         this.items.clear();
-        this.items.add(items);
+        this.items.addAll(items);
     }
 
     @Override
