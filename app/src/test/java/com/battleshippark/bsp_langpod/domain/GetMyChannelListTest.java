@@ -32,8 +32,8 @@ public class GetMyChannelListTest {
         );
         when(dbRepository.myChannelList()).thenReturn(Observable.just(myChannelRealmList));
         DomainMapper domainMapper = new DomainMapper();
-        UseCase<Void, List<MyChannelData>> useCase = new GetMyChannelList(dbRepository, null, domainMapper);
-        TestSubscriber<List<MyChannelData>> testSubscriber = new TestSubscriber<>();
+        UseCase<Void, List<MyChannelRealm>> useCase = new GetMyChannelList(dbRepository, domainMapper);
+        TestSubscriber<List<MyChannelRealm>> testSubscriber = new TestSubscriber<>();
         useCase.execute(null).subscribe(testSubscriber);
 
 
@@ -44,7 +44,7 @@ public class GetMyChannelListTest {
 
         assertThat(testSubscriber.getOnNextEvents()).hasSize(1);
 
-        List<MyChannelData> actualMyChannelDataList = testSubscriber.getOnNextEvents().get(0);
+        List<MyChannelRealm> actualMyChannelDataList = testSubscriber.getOnNextEvents().get(0);
         assertThat(actualMyChannelDataList).hasSize(2);
         assertThat(actualMyChannelDataList.get(0))
                 .isEqualTo(MyChannelData.create(1, 10, "title1", "desc1", "cr1", "image1", "url1", null));
