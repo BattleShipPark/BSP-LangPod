@@ -14,12 +14,10 @@ import rx.Observable;
 
 public class GetMyChannelList implements UseCase<Void, List<ChannelRealm>> {
     private final ChannelDbRepository dbRepository;
-    private final DomainMapper domainMapper;
 
     @Inject
-    public GetMyChannelList(ChannelDbRepository dbRepository, DomainMapper domainMapper) {
+    public GetMyChannelList(ChannelDbRepository dbRepository) {
         this.dbRepository = dbRepository;
-        this.domainMapper = domainMapper;
     }
 
     @Override
