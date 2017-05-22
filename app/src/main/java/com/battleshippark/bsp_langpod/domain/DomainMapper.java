@@ -89,9 +89,17 @@ public class DomainMapper {
         );
     }
 
-    public List<ChannelRealm> entireChannelListJsonAsRealm(EntireChannelListJson entireChannelListJson) {
+    public List<ChannelRealm> entireChannelListJsonAsRealm(List<ChannelRealm> channelRealmList, EntireChannelListJson entireChannelListJson) {
+        //json을 사용하는데, 로컬에 있는 같은 id의 isSubscribed()를 참고한다
         return Stream.of(entireChannelListJson.items())
-                .map(json -> new ChannelRealm())//json.id(), json.order(), json.title(), json.desc(), json.image()))
+                .map(json -> {
+                    for (ChannelRealm localRealm : channelRealmList) {
+                        if (localRealm.getId() == json.id()) {
+                            return new ChannelRealm(json.id(), json.order(), json.title(), json.desc(), json.image(), json.url(), localRealm.isSubscribed());
+                        }
+                    }
+                    return new ChannelRealm(json.id(), json.order(), json.title(), json.desc(), json.image(), json.url(), false);
+                })
                 .collect(Collectors.toList());
     }
 

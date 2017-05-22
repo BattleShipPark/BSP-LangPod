@@ -11,8 +11,8 @@ import com.google.gson.TypeAdapter;
 public abstract class ChannelJson {
     public static final long DEFAULT_ID = 0;
 
-    public static ChannelJson create(long id, int order, String title, String desc, String image) {
-        return new AutoValue_ChannelJson(id, order, title, desc, image);
+    public static ChannelJson create(long id, int order, String title, String desc, String image, String url) {
+        return new AutoValue_ChannelJson(id, order, title, desc, image, url);
     }
 
     public abstract long id();
@@ -24,6 +24,8 @@ public abstract class ChannelJson {
     public abstract String desc();
 
     public abstract String image();
+
+    public abstract String url();
 
     public static TypeAdapter<ChannelJson> typeAdapter(Gson gson) {
         return new AutoValue_ChannelJson.GsonTypeAdapter(gson);

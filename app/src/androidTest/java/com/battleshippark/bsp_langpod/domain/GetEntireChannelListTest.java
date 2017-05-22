@@ -7,14 +7,14 @@ import android.support.annotation.NonNull;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
-import com.battleshippark.bsp_langpod.data.server.ChannelServerRepository;
 import com.battleshippark.bsp_langpod.data.server.ChannelJson;
+import com.battleshippark.bsp_langpod.data.server.ChannelServerRepository;
 import com.battleshippark.bsp_langpod.data.server.EntireChannelListJson;
 
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
@@ -57,8 +57,8 @@ public class GetEntireChannelListTest {
                     Observable.just(
                             EntireChannelListJson.create(
                                     Arrays.asList(
-                                            ChannelJson.create(2, 10, "title2", "desc2", "image2"),
-                                            ChannelJson.create(3, 11, "title3", "desc3", "image3")
+                                            ChannelJson.create(2, 10, "title2", "desc2", "image2", "url2"),
+                                            ChannelJson.create(3, 11, "title3", "desc3", "image3", "url3")
                                     )
                                     //DB와 다른 값이 서버에서 내려오면
                             )
@@ -78,14 +78,21 @@ public class GetEntireChannelListTest {
 
         assertThat(testSubscriber.getOnNextEvents()).hasSize(1);
         CountDownLatch latch = new CountDownLatch(1);
+        List<ChannelRealm> actualChannelRealmList = new ArrayList<>();
         handler.post(() -> {
             Realm realm = Realm.getDefaultInstance();
-            List<ChannelRealm> actualChannelRealmList = realm.copyFromRealm(testSubscriber.getOnNextEvents().get(0));
-            assertThat(actualChannelRealmList).hasSize(1);
-            assertThat(actualChannelRealmList.get(0)).isEqualTo(new ChannelRealm(3, 12, "title3", "desc3", "image3", "url3", false));
+            actualChannelRealmList.addAll(realm.copyFromRealm(testSubscriber.getOnNextEvents().get(0)));
             latch.countDown();
         });
         latch.await();
+
+        assertThat(actualChannelRealmList).hasSize(2);
+        assertThat(actualChannelRealmList).containsExactlyElementsOf(
+                Arrays.asList(
+                        new ChannelRealm(2, 10, "title2", "desc2", "image2", "url2", true),
+                        new ChannelRealm(3, 11, "title3", "desc3", "image3", "url3", false)
+                )
+        );
     }
 
     private class TestExecutor implements Executor {

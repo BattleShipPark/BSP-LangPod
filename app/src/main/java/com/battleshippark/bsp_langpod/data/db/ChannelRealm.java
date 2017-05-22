@@ -27,8 +27,7 @@ public class ChannelRealm extends RealmObject {
 
     private String url;
 
-    @Nullable
-    private RealmList<EpisodeRealm> episodes;
+    private RealmList<EpisodeRealm> episodes = new RealmList<>();
 
     public ChannelRealm() {
     }
@@ -133,6 +132,5 @@ public class ChannelRealm extends RealmObject {
         if (image != null ? !image.equals(that.image) : that.image != null) return false;
         if (url != null ? !url.equals(that.url) : that.url != null) return false;
         return episodes != null ? episodes.equals(that.episodes) : that.episodes == null;
-
     }
 }

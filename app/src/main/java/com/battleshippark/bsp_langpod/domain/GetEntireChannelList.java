@@ -46,14 +46,14 @@ public class GetEntireChannelList implements UseCase<Void, List<ChannelRealm>> {
             subscriber.onNext(channelRealmList);
 
             serverRepository.entireChannelList().subscribeOn(scheduler).observeOn(postScheduler).subscribe(
-                    this::onServerLoaded,
+                    channelListJson -> onServerLoaded(channelRealmList, channelListJson),
                     subscriber::onError, subscriber::onCompleted);
         } catch (Exception e) {
             subscriber.onError(e);
         }
     }
 
-    private void onServerLoaded(EntireChannelListJson entireChannelListJson) {
-//        dbRepository.putEntireChannelList(domainMapper.entireChannelListJsonAsRealm(entireChannelListJson));
+    private void onServerLoaded(List<ChannelRealm> channelRealmList, EntireChannelListJson entireChannelListJson) {
+        dbRepository.putEntireChannelList(domainMapper.entireChannelListJsonAsRealm(channelRealmList, entireChannelListJson));
     }
 }
