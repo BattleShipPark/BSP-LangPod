@@ -11,7 +11,7 @@ import rx.Observable;
 public interface ChannelDbRepository {
     Observable<List<ChannelRealm>> entireChannelList();
 
-    Observable<List<MyChannelRealm>> myChannelList();
+    Observable<List<ChannelRealm>> myChannelList();
 
     Observable<MyChannelRealm> myChannel(long id);
 

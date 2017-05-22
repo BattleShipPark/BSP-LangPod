@@ -54,6 +54,6 @@ public class GetEntireChannelList implements UseCase<Void, List<ChannelRealm>> {
     }
 
     private void onServerLoaded(EntireChannelListJson entireChannelListJson) {
-        dbRepository.putEntireChannelList(domainMapper.entireChannelListJsonAsRealm(entireChannelListJson));
+//        dbRepository.putEntireChannelList(domainMapper.entireChannelListJsonAsRealm(entireChannelListJson));
     }
 }

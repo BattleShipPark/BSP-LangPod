@@ -1,7 +1,7 @@
 package com.battleshippark.bsp_langpod.domain;
 
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
-import com.battleshippark.bsp_langpod.data.db.MyChannelRealm;
+import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,14 +26,14 @@ public class GetMyChannelListTest {
 
     @Test
     public void execute() {
-        List<MyChannelRealm> myChannelRealmList = Arrays.asList(
-                new MyChannelRealm(1, 10, "title1", "desc1", "cr1", "image1", "url1", null),
-                new MyChannelRealm(2, 11, "title2", "desc2", "cr2", "image2", "url2", null)
+        List<ChannelRealm> myChannelRealmList = Arrays.asList(
+                new ChannelRealm(1, 10, "title1", "desc1", "image1", "url1", false),
+                new ChannelRealm(2, 11, "title2", "desc2", "image2", "url2", true)
         );
         when(dbRepository.myChannelList()).thenReturn(Observable.just(myChannelRealmList));
         DomainMapper domainMapper = new DomainMapper();
-        UseCase<Void, List<MyChannelRealm>> useCase = new GetMyChannelList(dbRepository, domainMapper);
-        TestSubscriber<List<MyChannelRealm>> testSubscriber = new TestSubscriber<>();
+        UseCase<Void, List<ChannelRealm>> useCase = new GetMyChannelList(dbRepository, domainMapper);
+        TestSubscriber<List<ChannelRealm>> testSubscriber = new TestSubscriber<>();
         useCase.execute(null).subscribe(testSubscriber);
 
 
@@ -44,7 +44,7 @@ public class GetMyChannelListTest {
 
         assertThat(testSubscriber.getOnNextEvents()).hasSize(1);
 
-        List<MyChannelRealm> actualMyChannelDataList = testSubscriber.getOnNextEvents().get(0);
+        List<ChannelRealm> actualMyChannelDataList = testSubscriber.getOnNextEvents().get(0);
         assertThat(actualMyChannelDataList).hasSize(2);
         assertThat(actualMyChannelDataList.get(0))
                 .isEqualTo(MyChannelData.create(1, 10, "title1", "desc1", "cr1", "image1", "url1", null));

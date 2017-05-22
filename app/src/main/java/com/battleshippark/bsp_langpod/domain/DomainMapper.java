@@ -91,7 +91,7 @@ public class DomainMapper {
 
     public List<ChannelRealm> entireChannelListJsonAsRealm(EntireChannelListJson entireChannelListJson) {
         return Stream.of(entireChannelListJson.items())
-                .map(json -> new ChannelRealm(json.id(), json.order(), json.title(), json.desc(), json.image()))
+                .map(json -> new ChannelRealm())//json.id(), json.order(), json.title(), json.desc(), json.image()))
                 .collect(Collectors.toList());
     }
 

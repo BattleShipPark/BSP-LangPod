@@ -38,10 +38,11 @@ public class ChannelDbApi implements ChannelDbRepository {
     }
 
     @Override
-    public Observable<List<MyChannelRealm>> myChannelList() {
+    public Observable<List<ChannelRealm>> myChannelList() {
         return Observable.create(subscriber -> {
-            RealmQuery<MyChannelRealm> query = realm.where(MyChannelRealm.class);
-            RealmResults<MyChannelRealm> results = query.findAllSorted("order");
+            RealmQuery<ChannelRealm> query = realm.where(ChannelRealm.class);
+            RealmResults<ChannelRealm> results = query.equalTo(ChannelRealm.FIELD_SUBSCRIBED, true)
+                    .findAllSorted(ChannelRealm.FIELD_ORDER);
             subscriber.onNext(results);
             subscriber.onCompleted();
         });

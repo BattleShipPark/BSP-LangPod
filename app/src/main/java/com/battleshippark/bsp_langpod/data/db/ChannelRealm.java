@@ -1,11 +1,18 @@
 package com.battleshippark.bsp_langpod.data.db;
 
+import android.support.annotation.Nullable;
+
+import java.util.Arrays;
+
+import io.realm.RealmList;
 import io.realm.RealmObject;
 
 /**
  */
 
 public class ChannelRealm extends RealmObject {
+    public static final String FIELD_ORDER = "order";
+    public static final String FIELD_SUBSCRIBED = "subscribed";
     private long id;
 
     private int order;
@@ -16,15 +23,24 @@ public class ChannelRealm extends RealmObject {
 
     private String image;
 
+    private boolean subscribed;
+
+    private String url;
+
+    @Nullable
+    private RealmList<EpisodeRealm> episodes;
+
     public ChannelRealm() {
     }
 
-    public ChannelRealm(long id, int order, String title, String desc, String image) {
+    public ChannelRealm(long id, int order, String title, String desc, String image, String url, boolean subscribed) {
         this.id = id;
         this.order = order;
         this.title = title;
         this.desc = desc;
         this.image = image;
+        this.url = url;
+        this.subscribed = subscribed;
     }
 
     public long getId() {
@@ -67,14 +83,38 @@ public class ChannelRealm extends RealmObject {
         this.image = image;
     }
 
+    public boolean isSubscribed() {
+        return subscribed;
+    }
+
+    public void setSubscribed(boolean subscribed) {
+        this.subscribed = subscribed;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    @Nullable
+    public RealmList<EpisodeRealm> getEpisodes() {
+        return episodes;
+    }
+
     @Override
     public String toString() {
         return "ChannelRealm{" +
-                "id='" + id + '\'' +
-                ", order='" + order + '\'' +
+                "id=" + id +
+                ", order=" + order +
                 ", title='" + title + '\'' +
                 ", desc='" + desc + '\'' +
                 ", image='" + image + '\'' +
+                ", subscribed=" + subscribed +
+                ", url=" + url +
+                ", episodes=" + ((episodes == null) ? "Null" : Arrays.toString(episodes.toArray())) +
                 '}';
     }
 
@@ -87,9 +127,12 @@ public class ChannelRealm extends RealmObject {
 
         if (id != that.id) return false;
         if (order != that.order) return false;
+        if (subscribed != that.subscribed) return false;
         if (title != null ? !title.equals(that.title) : that.title != null) return false;
         if (desc != null ? !desc.equals(that.desc) : that.desc != null) return false;
-        return image != null ? image.equals(that.image) : that.image == null;
+        if (image != null ? !image.equals(that.image) : that.image != null) return false;
+        if (url != null ? !url.equals(that.url) : that.url != null) return false;
+        return episodes != null ? episodes.equals(that.episodes) : that.episodes == null;
 
     }
 }

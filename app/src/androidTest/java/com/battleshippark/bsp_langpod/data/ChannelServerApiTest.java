@@ -12,11 +12,11 @@ public class ChannelServerApiTest {
     public void entireChannelList() {
         ChannelServerRepository channelApi = DaggerServerApiGraph.create().channelApi();
         channelApi.entireChannelList()
-                .subscribe(channelData -> System.out.println(channelData.toString()));
+                .subscribe(channelListJson -> System.out.println(channelListJson.toString()));
     }
 
     @Test
-    public void channel() {
+    public void myChannel() {
         ChannelServerRepository channelApi = DaggerServerApiGraph.create().channelApi();
         channelApi.myChannel("http://enabler.kbs.co.kr/api/podcast_channel/feed.xml?channel_id=R2017-0027")
                 .subscribe(channelData -> System.out.println(channelData.toString()));

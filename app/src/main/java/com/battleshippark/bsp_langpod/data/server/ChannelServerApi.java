@@ -40,7 +40,7 @@ public class ChannelServerApi implements ChannelServerRepository {
                 .build();
 
         ChannelService service = retrofit.create(ChannelService.class);
-        return service.queryTotalList();
+        return service.queryEntireList();
     }
 
     @Override

@@ -9,7 +9,7 @@ import rx.Observable;
 
 public interface ChannelService {
     @GET("/v1/totalList")
-    Observable<EntireChannelListJson> queryTotalList();
+    Observable<EntireChannelListJson> queryEntireList();
 
     @GET
     Observable<MyChannelJson> queryUrl(@Url String url);

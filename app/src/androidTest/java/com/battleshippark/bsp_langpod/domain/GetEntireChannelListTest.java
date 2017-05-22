@@ -47,8 +47,8 @@ public class GetEntireChannelListTest {
             ChannelDbRepository dbRepository = new ChannelDbApi(realm);
 
             List<ChannelRealm> channelRealmList = Arrays.asList(
-                    new ChannelRealm(1, 10, "title1", "desc1", "image1"),
-                    new ChannelRealm(2, 11, "title2", "desc2", "image2")
+                    new ChannelRealm(1, 10, "title1", "desc1", "image1", "url1", false),
+                    new ChannelRealm(2, 11, "title2", "desc2", "image2", "url2", true)
             );
             dbRepository.putEntireChannelList(channelRealmList); //DB를 읽어 놓고
 
@@ -56,7 +56,10 @@ public class GetEntireChannelListTest {
             when(serverRepository.entireChannelList()).thenReturn(
                     Observable.just(
                             EntireChannelListJson.create(
-                                    Collections.singletonList(ChannelJson.create(3, 12, "title3", "desc3", "image3"))
+                                    Arrays.asList(
+                                            ChannelJson.create(2, 10, "title2", "desc2", "image2"),
+                                            ChannelJson.create(3, 11, "title3", "desc3", "image3")
+                                    )
                                     //DB와 다른 값이 서버에서 내려오면
                             )
                     )
@@ -79,7 +82,7 @@ public class GetEntireChannelListTest {
             Realm realm = Realm.getDefaultInstance();
             List<ChannelRealm> actualChannelRealmList = realm.copyFromRealm(testSubscriber.getOnNextEvents().get(0));
             assertThat(actualChannelRealmList).hasSize(1);
-            assertThat(actualChannelRealmList.get(0)).isEqualTo(new ChannelRealm(3, 12, "title3", "desc3", "image3"));
+            assertThat(actualChannelRealmList.get(0)).isEqualTo(new ChannelRealm(3, 12, "title3", "desc3", "image3", "url3", false));
             latch.countDown();
         });
         latch.await();

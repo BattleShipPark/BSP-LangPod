@@ -1,10 +1,9 @@
 package com.battleshippark.bsp_langpod.domain;
 
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
-import com.battleshippark.bsp_langpod.data.db.MyChannelRealm;
+import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 
 import java.util.List;
-import java.util.concurrent.Executor;
 
 import javax.inject.Inject;
 
@@ -13,7 +12,7 @@ import rx.Observable;
 /**
  */
 
-public class GetMyChannelList implements UseCase<Void, List<MyChannelRealm>> {
+public class GetMyChannelList implements UseCase<Void, List<ChannelRealm>> {
     private final ChannelDbRepository dbRepository;
     private final DomainMapper domainMapper;
 
@@ -24,7 +23,7 @@ public class GetMyChannelList implements UseCase<Void, List<MyChannelRealm>> {
     }
 
     @Override
-    public Observable<List<MyChannelRealm>> execute(Void param) {
+    public Observable<List<ChannelRealm>> execute(Void param) {
         return dbRepository.myChannelList();
     }
 }
