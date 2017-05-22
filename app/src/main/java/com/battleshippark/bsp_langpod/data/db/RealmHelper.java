@@ -34,7 +34,7 @@ public class RealmHelper {
     }
 
     public static void deleteAll(Realm realm) {
-        realm.delete(EntireChannelRealm.class);
+        realm.delete(ChannelRealm.class);
         realm.delete(MyChannelRealm.class);
         realm.delete(EpisodeRealm.class);
     }

@@ -24,11 +24,11 @@ public class ChannelDbApi implements ChannelDbRepository {
     }
 
     @Override
-    public Observable<List<EntireChannelRealm>> entireChannelList() {
+    public Observable<List<ChannelRealm>> entireChannelList() {
         return Observable.create(subscriber -> {
             try {
-                RealmQuery<EntireChannelRealm> query = realm.where(EntireChannelRealm.class);
-                RealmResults<EntireChannelRealm> results = query.findAllSorted("order");
+                RealmQuery<ChannelRealm> query = realm.where(ChannelRealm.class);
+                RealmResults<ChannelRealm> results = query.findAllSorted("order");
                 subscriber.onNext(results);
                 subscriber.onCompleted();
             } catch (Throwable t) {
@@ -57,9 +57,9 @@ public class ChannelDbApi implements ChannelDbRepository {
     }
 
     @Override
-    public void putEntireChannelList(List<EntireChannelRealm> realmList) throws IllegalArgumentException, RealmMigrationNeededException {
+    public void putEntireChannelList(List<ChannelRealm> realmList) throws IllegalArgumentException, RealmMigrationNeededException {
         realm.executeTransactionAsync(realm1 -> {
-            realm1.delete(EntireChannelRealm.class);
+            realm1.delete(ChannelRealm.class);
 
             Stream.of(realmList).forEach(realm1::copyToRealm);
         });

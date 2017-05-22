@@ -11,11 +11,11 @@ import java.util.List;
 
 @AutoValue
 public abstract class EntireChannelListJson {
-    public static EntireChannelListJson create(List<EntireChannelJson> items) {
+    public static EntireChannelListJson create(List<ChannelJson> items) {
         return new AutoValue_EntireChannelListJson(items);
     }
 
-    public abstract List<EntireChannelJson> items();
+    public abstract List<ChannelJson> items();
 
     public static TypeAdapter<EntireChannelListJson> typeAdapter(Gson gson) {
         return new AutoValue_EntireChannelListJson.GsonTypeAdapter(gson);

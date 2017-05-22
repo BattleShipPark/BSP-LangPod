@@ -5,7 +5,7 @@ import io.realm.RealmObject;
 /**
  */
 
-public class EntireChannelRealm extends RealmObject {
+public class ChannelRealm extends RealmObject {
     private long id;
 
     private int order;
@@ -16,10 +16,10 @@ public class EntireChannelRealm extends RealmObject {
 
     private String image;
 
-    public EntireChannelRealm() {
+    public ChannelRealm() {
     }
 
-    public EntireChannelRealm(long id, int order, String title, String desc, String image) {
+    public ChannelRealm(long id, int order, String title, String desc, String image) {
         this.id = id;
         this.order = order;
         this.title = title;
@@ -69,7 +69,7 @@ public class EntireChannelRealm extends RealmObject {
 
     @Override
     public String toString() {
-        return "EntireChannelRealm{" +
+        return "ChannelRealm{" +
                 "id='" + id + '\'' +
                 ", order='" + order + '\'' +
                 ", title='" + title + '\'' +
@@ -83,7 +83,7 @@ public class EntireChannelRealm extends RealmObject {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        EntireChannelRealm that = (EntireChannelRealm) o;
+        ChannelRealm that = (ChannelRealm) o;
 
         if (id != that.id) return false;
         if (order != that.order) return false;

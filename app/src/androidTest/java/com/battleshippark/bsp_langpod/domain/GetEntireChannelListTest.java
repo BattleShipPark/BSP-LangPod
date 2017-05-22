@@ -6,9 +6,9 @@ import android.support.annotation.NonNull;
 
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
-import com.battleshippark.bsp_langpod.data.db.EntireChannelRealm;
+import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.server.ChannelServerRepository;
-import com.battleshippark.bsp_langpod.data.server.EntireChannelJson;
+import com.battleshippark.bsp_langpod.data.server.ChannelJson;
 import com.battleshippark.bsp_langpod.data.server.EntireChannelListJson;
 
 import org.junit.Test;
@@ -41,29 +41,29 @@ public class GetEntireChannelListTest {
         //모양은 예쁘지 않지만, 이렇게 직접 쓰레드와 루퍼를 만들어서 해결한다
         Handler handler = new Handler(handlerThread.getLooper());
         TestExecutor executor = new TestExecutor(handler);
-        TestSubscriber<List<EntireChannelRealm>> testSubscriber = new TestSubscriber<>();
+        TestSubscriber<List<ChannelRealm>> testSubscriber = new TestSubscriber<>();
         handler.post(() -> {
             Realm realm = Realm.getDefaultInstance();
             ChannelDbRepository dbRepository = new ChannelDbApi(realm);
 
-            List<EntireChannelRealm> entireChannelRealmList = Arrays.asList(
-                    new EntireChannelRealm(1, 10, "title1", "desc1", "image1"),
-                    new EntireChannelRealm(2, 11, "title2", "desc2", "image2")
+            List<ChannelRealm> channelRealmList = Arrays.asList(
+                    new ChannelRealm(1, 10, "title1", "desc1", "image1"),
+                    new ChannelRealm(2, 11, "title2", "desc2", "image2")
             );
-            dbRepository.putEntireChannelList(entireChannelRealmList); //DB를 읽어 놓고
+            dbRepository.putEntireChannelList(channelRealmList); //DB를 읽어 놓고
 
             ChannelServerRepository serverRepository = mock(ChannelServerRepository.class);
             when(serverRepository.entireChannelList()).thenReturn(
                     Observable.just(
                             EntireChannelListJson.create(
-                                    Collections.singletonList(EntireChannelJson.create(3, 12, "title3", "desc3", "image3"))
+                                    Collections.singletonList(ChannelJson.create(3, 12, "title3", "desc3", "image3"))
                                     //DB와 다른 값이 서버에서 내려오면
                             )
                     )
             );
             Scheduler scheduler = Schedulers.io();
             DomainMapper domainMapper = new DomainMapper();
-            UseCase<Void, List<EntireChannelRealm>> useCase = new GetEntireChannelList(dbRepository, serverRepository,
+            UseCase<Void, List<ChannelRealm>> useCase = new GetEntireChannelList(dbRepository, serverRepository,
                     scheduler, Schedulers.from(executor), domainMapper);
 
             useCase.execute(null).subscribe(testSubscriber);
@@ -77,9 +77,9 @@ public class GetEntireChannelListTest {
         CountDownLatch latch = new CountDownLatch(1);
         handler.post(() -> {
             Realm realm = Realm.getDefaultInstance();
-            List<EntireChannelRealm> actualEntireChannelRealmList = realm.copyFromRealm(testSubscriber.getOnNextEvents().get(0));
-            assertThat(actualEntireChannelRealmList).hasSize(1);
-            assertThat(actualEntireChannelRealmList.get(0)).isEqualTo(new EntireChannelRealm(3, 12, "title3", "desc3", "image3"));
+            List<ChannelRealm> actualChannelRealmList = realm.copyFromRealm(testSubscriber.getOnNextEvents().get(0));
+            assertThat(actualChannelRealmList).hasSize(1);
+            assertThat(actualChannelRealmList.get(0)).isEqualTo(new ChannelRealm(3, 12, "title3", "desc3", "image3"));
             latch.countDown();
         });
         latch.await();

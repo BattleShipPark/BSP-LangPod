@@ -1,9 +1,9 @@
 package com.battleshippark.bsp_langpod.domain;
 
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
-import com.battleshippark.bsp_langpod.data.db.EntireChannelRealm;
+import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
+import com.battleshippark.bsp_langpod.data.server.ChannelJson;
 import com.battleshippark.bsp_langpod.data.server.ChannelServerRepository;
-import com.battleshippark.bsp_langpod.data.server.EntireChannelJson;
 import com.battleshippark.bsp_langpod.data.server.EntireChannelListJson;
 
 import org.junit.Test;
@@ -32,27 +32,27 @@ public class GetEntireChannelListTest {
     @Mock
     ChannelServerRepository serverRepository;
     @Captor
-    ArgumentCaptor<List<EntireChannelRealm>> captor;
+    ArgumentCaptor<List<ChannelRealm>> captor;
 
     @Test
     public void execute() {
         //1번 ID가 삭제되고 3번 ID가 추가되었다
-        List<EntireChannelRealm> entireChannelRealmList = Arrays.asList(
-                new EntireChannelRealm(1, 10, "title1", "desc1", "image1"),
-                new EntireChannelRealm(2, 11, "title2", "desc2", "image2")
+        List<ChannelRealm> channelRealmList = Arrays.asList(
+                new ChannelRealm(1, 10, "title1", "desc1", "image1"),
+                new ChannelRealm(2, 11, "title2", "desc2", "image2")
         );
         EntireChannelListJson entireChannelListJson = EntireChannelListJson.create(
                 Arrays.asList(
-                        EntireChannelJson.create(2, 10, "title2", "desc2", "image2"),
-                        EntireChannelJson.create(3, 11, "title3", "desc3", "image3")
+                        ChannelJson.create(2, 10, "title2", "desc2", "image2"),
+                        ChannelJson.create(3, 11, "title3", "desc3", "image3")
                 )
         );
-        when(dbRepository.entireChannelList()).thenReturn(Observable.just(entireChannelRealmList));
+        when(dbRepository.entireChannelList()).thenReturn(Observable.just(channelRealmList));
         when(serverRepository.entireChannelList()).thenReturn(Observable.just(entireChannelListJson));
 
         DomainMapper domainMapper = new DomainMapper();
-        UseCase<Void, List<EntireChannelRealm>> useCase = new GetEntireChannelList(dbRepository, serverRepository, null, null, domainMapper);
-        TestSubscriber<List<EntireChannelRealm>> testSubscriber = new TestSubscriber<>();
+        UseCase<Void, List<ChannelRealm>> useCase = new GetEntireChannelList(dbRepository, serverRepository, null, null, domainMapper);
+        TestSubscriber<List<ChannelRealm>> testSubscriber = new TestSubscriber<>();
 
 
 
@@ -66,7 +66,7 @@ public class GetEntireChannelListTest {
 
         assertThat(testSubscriber.getOnNextEvents()).hasSize(1);
 
-        List<EntireChannelRealm> dbEntireChannelDataList = testSubscriber.getOnNextEvents().get(0);
+        List<ChannelRealm> dbEntireChannelDataList = testSubscriber.getOnNextEvents().get(0);
         assertThat(dbEntireChannelDataList).hasSize(2);
         assertThat(dbEntireChannelDataList.get(0).getId()).isEqualTo(1);
         assertThat(dbEntireChannelDataList.get(0).getTitle()).isEqualTo("title1");

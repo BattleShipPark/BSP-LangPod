@@ -9,13 +9,13 @@ import rx.Observable;
  */
 
 public interface ChannelDbRepository {
-    Observable<List<EntireChannelRealm>> entireChannelList();
+    Observable<List<ChannelRealm>> entireChannelList();
 
     Observable<List<MyChannelRealm>> myChannelList();
 
     Observable<MyChannelRealm> myChannel(long id);
 
-    void putEntireChannelList(List<EntireChannelRealm> realmList) throws IllegalArgumentException, RealmMigrationNeededException;
+    void putEntireChannelList(List<ChannelRealm> realmList) throws IllegalArgumentException, RealmMigrationNeededException;
 
     void putMyChannel(MyChannelRealm myChannelRealm) throws IllegalArgumentException, RealmMigrationNeededException;
 }

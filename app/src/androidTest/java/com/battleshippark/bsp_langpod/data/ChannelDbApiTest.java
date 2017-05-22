@@ -5,7 +5,7 @@ import android.os.HandlerThread;
 
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
-import com.battleshippark.bsp_langpod.data.db.EntireChannelRealm;
+import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
 import com.battleshippark.bsp_langpod.data.db.MyChannelRealm;
 
@@ -16,7 +16,6 @@ import java.util.List;
 
 import io.realm.Realm;
 import io.realm.RealmList;
-import io.realm.RealmResults;
 import rx.observers.TestSubscriber;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -24,17 +23,17 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 /**
  */
 public class ChannelDbApiTest {
-    private EntireChannelRealm channelRealm1 = new EntireChannelRealm(1, 10, "title1", "desc1", "image1");
-    private EntireChannelRealm channelRealm2 = new EntireChannelRealm(2, 11, "title2", "desc2", "image2");
+    private ChannelRealm channelRealm1 = new ChannelRealm(1, 10, "title1", "desc1", "image1");
+    private ChannelRealm channelRealm2 = new ChannelRealm(2, 11, "title2", "desc2", "image2");
 
     private Realm realm = Realm.getDefaultInstance();
     private ChannelDbRepository repository = new ChannelDbApi(realm);
-    private TestSubscriber<List<EntireChannelRealm>> testSubscriber = new TestSubscriber<>();
+    private TestSubscriber<List<ChannelRealm>> testSubscriber = new TestSubscriber<>();
 
     @Test
     public void entireChannelList_저장한것을읽어본다() {
         realm.executeTransaction(realm1 -> {
-            realm1.delete(EntireChannelRealm.class);
+            realm1.delete(ChannelRealm.class);
             realm1.copyToRealm(channelRealm1);
             realm1.copyToRealm(channelRealm2);
         });
@@ -48,15 +47,15 @@ public class ChannelDbApiTest {
         testSubscriber.assertCompleted();
 
         assertThat(testSubscriber.getOnNextEvents()).hasSize(1);
-        List<EntireChannelRealm> actualEntireChannelRealmList = realm.copyFromRealm(testSubscriber.getOnNextEvents().get(0));
-        assertThat(actualEntireChannelRealmList.get(0)).isEqualTo(channelRealm1);
-        assertThat(actualEntireChannelRealmList.get(1)).isEqualTo(channelRealm2);
+        List<ChannelRealm> actualChannelRealmList = realm.copyFromRealm(testSubscriber.getOnNextEvents().get(0));
+        assertThat(actualChannelRealmList.get(0)).isEqualTo(channelRealm1);
+        assertThat(actualChannelRealmList.get(1)).isEqualTo(channelRealm2);
     }
 
     @Test
     public void entireChannelList_읽은후에저장하면자동반영된다() {
         realm.executeTransaction(realm1 -> {
-            realm1.delete(EntireChannelRealm.class);
+            realm1.delete(ChannelRealm.class);
             realm1.copyToRealm(channelRealm1);
         });
 
@@ -72,19 +71,19 @@ public class ChannelDbApiTest {
         assertThat(testSubscriber.getOnNextEvents()).hasSize(1);
 
         //지금은 한 건만 존재한다
-        List<EntireChannelRealm> actualEntireChannelRealmList = realm.copyFromRealm(testSubscriber.getOnNextEvents().get(0));
-        assertThat(actualEntireChannelRealmList).hasSize(1);
-        assertThat(actualEntireChannelRealmList.get(0)).isEqualTo(channelRealm1);
+        List<ChannelRealm> actualChannelRealmList = realm.copyFromRealm(testSubscriber.getOnNextEvents().get(0));
+        assertThat(actualChannelRealmList).hasSize(1);
+        assertThat(actualChannelRealmList.get(0)).isEqualTo(channelRealm1);
 
 
         realm.executeTransaction(realm1 -> {
             realm1.copyToRealm(channelRealm2);//한 건 추가하면
         });
         //지금은 두 건 존재한다
-        actualEntireChannelRealmList = realm.copyFromRealm(testSubscriber.getOnNextEvents().get(0));
-        assertThat(actualEntireChannelRealmList).hasSize(2);
-        assertThat(actualEntireChannelRealmList.get(0)).isEqualTo(channelRealm1);
-        assertThat(actualEntireChannelRealmList.get(1)).isEqualTo(channelRealm2);
+        actualChannelRealmList = realm.copyFromRealm(testSubscriber.getOnNextEvents().get(0));
+        assertThat(actualChannelRealmList).hasSize(2);
+        assertThat(actualChannelRealmList.get(0)).isEqualTo(channelRealm1);
+        assertThat(actualChannelRealmList.get(1)).isEqualTo(channelRealm2);
     }
 
     @Test
@@ -119,17 +118,17 @@ public class ChannelDbApiTest {
 
     @Test
     public void putEntireChannelList() {
-        List<EntireChannelRealm> entireChannelRealmList = Arrays.asList(
-                new EntireChannelRealm(1, 10, "title1", "desc1", "image1"),
-                new EntireChannelRealm(2, 11, "title2", "desc2", "image2")
+        List<ChannelRealm> channelRealmList = Arrays.asList(
+                new ChannelRealm(1, 10, "title1", "desc1", "image1"),
+                new ChannelRealm(2, 11, "title2", "desc2", "image2")
         );
-        repository.putEntireChannelList(entireChannelRealmList);
+        repository.putEntireChannelList(channelRealmList);
 
-        List<EntireChannelRealm> actualEntireChannelRealmList = repository.entireChannelList().toBlocking().single();
-        actualEntireChannelRealmList = realm.copyFromRealm(actualEntireChannelRealmList);
+        List<ChannelRealm> actualChannelRealmList = repository.entireChannelList().toBlocking().single();
+        actualChannelRealmList = realm.copyFromRealm(actualChannelRealmList);
 
 
-        assertThat(actualEntireChannelRealmList).containsExactlyElementsOf(entireChannelRealmList);
+        assertThat(actualChannelRealmList).containsExactlyElementsOf(channelRealmList);
     }
 
     @Test
