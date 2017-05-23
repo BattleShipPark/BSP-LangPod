@@ -8,11 +8,11 @@ import com.google.gson.TypeAdapter;
  */
 
 @AutoValue
-public abstract class ChannelJson {
+public abstract class EntireChannelJson {
     public static final long DEFAULT_ID = 0;
 
-    public static ChannelJson create(long id, int order, String title, String desc, String image, String url) {
-        return new AutoValue_ChannelJson(id, order, title, desc, image, url);
+    public static EntireChannelJson create(long id, int order, String title, String desc, String image, String url) {
+        return new AutoValue_EntireChannelJson(id, order, title, desc, image, url);
     }
 
     public abstract long id();
@@ -27,7 +27,7 @@ public abstract class ChannelJson {
 
     public abstract String url();
 
-    public static TypeAdapter<ChannelJson> typeAdapter(Gson gson) {
-        return new AutoValue_ChannelJson.GsonTypeAdapter(gson);
+    public static TypeAdapter<EntireChannelJson> typeAdapter(Gson gson) {
+        return new AutoValue_EntireChannelJson.GsonTypeAdapter(gson);
     }
 }

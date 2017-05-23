@@ -7,7 +7,7 @@ import android.support.annotation.NonNull;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
-import com.battleshippark.bsp_langpod.data.server.ChannelJson;
+import com.battleshippark.bsp_langpod.data.server.EntireChannelJson;
 import com.battleshippark.bsp_langpod.data.server.ChannelServerRepository;
 import com.battleshippark.bsp_langpod.data.server.EntireChannelListJson;
 
@@ -57,8 +57,8 @@ public class GetEntireChannelListTest {
                     Observable.just(
                             EntireChannelListJson.create(
                                     Arrays.asList(
-                                            ChannelJson.create(2, 10, "title2", "desc2", "image2", "url2"),
-                                            ChannelJson.create(3, 11, "title3", "desc3", "image3", "url3")
+                                            EntireChannelJson.create(2, 10, "title2", "desc2", "image2", "url2"),
+                                            EntireChannelJson.create(3, 11, "title3", "desc3", "image3", "url3")
                                     )
                                     //DB와 다른 값이 서버에서 내려오면
                             )

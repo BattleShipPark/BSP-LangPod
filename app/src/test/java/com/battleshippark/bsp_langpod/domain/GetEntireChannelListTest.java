@@ -2,7 +2,7 @@ package com.battleshippark.bsp_langpod.domain;
 
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
-import com.battleshippark.bsp_langpod.data.server.ChannelJson;
+import com.battleshippark.bsp_langpod.data.server.EntireChannelJson;
 import com.battleshippark.bsp_langpod.data.server.ChannelServerRepository;
 import com.battleshippark.bsp_langpod.data.server.EntireChannelListJson;
 
@@ -44,8 +44,8 @@ public class GetEntireChannelListTest {
         );
         EntireChannelListJson entireChannelListJson = EntireChannelListJson.create(
                 Arrays.asList(
-                        ChannelJson.create(2, 10, "title2", "desc2", "image2", "url2"),
-                        ChannelJson.create(3, 11, "title3", "desc3", "image3", "url3")
+                        EntireChannelJson.create(2, 10, "title2", "desc2", "image2", "url2"),
+                        EntireChannelJson.create(3, 11, "title3", "desc3", "image3", "url3")
                 )
         );
         when(dbRepository.entireChannelList()).thenReturn(Observable.just(channelRealmList));
