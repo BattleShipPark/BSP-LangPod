@@ -103,15 +103,15 @@ public class DomainMapper {
                 .collect(Collectors.toList());
     }
 
-    public MyChannelRealm myChannelJsonAsRealm(MyChannelRealm myChannelRealm, MyChannelJson myChannelJson) {
+    public ChannelRealm myChannelJsonAsRealm(ChannelRealm channelRealm, MyChannelJson myChannelJson) {
         RealmList<EpisodeRealm> episodeRealmList = Stream.of(myChannelJson.episodes())
                 .map(episodeJson -> new EpisodeRealm(episodeJson.title(), episodeJson.desc(), episodeJson.url()))
                 .collect(RealmList::new, RealmList::add);
-        myChannelRealm.setTitle(myChannelJson.title());
-        myChannelRealm.setDesc(myChannelJson.desc());
-        myChannelRealm.setCopyright(myChannelJson.copyright());
-        myChannelRealm.setImage(myChannelJson.image());
-        myChannelRealm.setItems(episodeRealmList);
-        return myChannelRealm;
+        channelRealm.setTitle(myChannelJson.title());
+        channelRealm.setDesc(myChannelJson.desc());
+        channelRealm.setCopyright(myChannelJson.copyright());
+        channelRealm.setImage(myChannelJson.image());
+        channelRealm.setEpisodes(episodeRealmList);
+        return channelRealm;
     }
 }

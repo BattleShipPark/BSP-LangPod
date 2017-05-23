@@ -1,8 +1,8 @@
 package com.battleshippark.bsp_langpod.domain;
 
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
+import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
-import com.battleshippark.bsp_langpod.data.db.MyChannelRealm;
 import com.battleshippark.bsp_langpod.data.server.ChannelServerRepository;
 import com.battleshippark.bsp_langpod.data.server.EpisodeJson;
 import com.battleshippark.bsp_langpod.data.server.MyChannelJson;
@@ -19,13 +19,10 @@ import java.util.Date;
 
 import io.realm.RealmList;
 import rx.Observable;
-import rx.Scheduler;
 import rx.observers.TestSubscriber;
 import rx.schedulers.Schedulers;
-import rx.schedulers.TestScheduler;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -38,30 +35,34 @@ public class GetMyChannelTest {
     @Mock
     ChannelServerRepository serverRepository;
     @Captor
-    ArgumentCaptor<MyChannelRealm> captor;
+    ArgumentCaptor<ChannelRealm> captor;
 
     @Test
-    public void execute() {
-        MyChannelRealm myChannelRealm = new MyChannelRealm(1, 10, "title1", "desc1", "cr1", "image1", "url1",
-                new RealmList<>(new EpisodeRealm("ep.title1", "ep.desc1", "ep.url1")));
+    public void execute_전체리스트() {
+        ChannelRealm channelRealm = new ChannelRealm(1, 10, "title1", "desc1", "image1", "url1", "cr1",
+                new RealmList<>(
+                        new EpisodeRealm("ep.title1", "ep.desc1", "ep.url1"),
+                        new EpisodeRealm("ep.title2", "ep.desc2", "ep.url2")
+                ), false
+        );
         MyChannelJson myChannelJson = MyChannelJson.create(
                 "title1", "desc1", "cr1", "image1",
                 Arrays.asList(
                         EpisodeJson.create("ep.title1", "ep.desc1", "ep.url1", 1, new Date()),
-                        EpisodeJson.create("ep.title2", "ep.desc2", "ep.url2", 2, new Date())
+                        EpisodeJson.create("ep.title2", "ep.desc2", "ep.url2", 2, new Date()),
+                        EpisodeJson.create("ep.title3", "ep.desc3", "ep.url3", 3, new Date())
                 )
         );
-        when(dbRepository.myChannel(1)).thenReturn(Observable.just(myChannelRealm));
-        when(serverRepository.myChannel(any())).thenReturn(Observable.just(myChannelJson));
+        when(dbRepository.channel(1)).thenReturn(Observable.just(channelRealm));
+        when(serverRepository.myChannel("url1")).thenReturn(Observable.just(myChannelJson));
 
         DomainMapper domainMapper = new DomainMapper();
-        UseCase<MyChannelData, MyChannelRealm> useCase = new GetMyChannel(dbRepository, serverRepository,
+        UseCase<Long, ChannelRealm> useCase = new GetMyChannel(dbRepository, serverRepository,
                 Schedulers.immediate(), Schedulers.immediate(), domainMapper);
-        TestSubscriber<MyChannelRealm> testSubscriber = new TestSubscriber<>();
+        TestSubscriber<ChannelRealm> testSubscriber = new TestSubscriber<>();
 
 
-        useCase.execute(MyChannelData.create(1, 10, "title1", "desc1", "cr1", "image1", "url1", null))
-                .subscribe(testSubscriber);
+        useCase.execute(1L).subscribe(testSubscriber); //1번ID 조회
 
 
         testSubscriber.awaitTerminalEvent();
@@ -71,12 +72,12 @@ public class GetMyChannelTest {
 
         assertThat(testSubscriber.getOnNextEvents()).hasSize(1);
 
-        MyChannelRealm actualMyChannelRealm = testSubscriber.getOnNextEvents().get(0);
-        assertThat(actualMyChannelRealm).isEqualTo(myChannelRealm);
+        ChannelRealm actualMyChannelRealm = testSubscriber.getOnNextEvents().get(0);
+        assertThat(actualMyChannelRealm).isEqualTo(channelRealm);
+
         verify(dbRepository).putMyChannel(captor.capture());
         assertThat(captor.getValue().getTitle()).isEqualTo("title1");
-        assertThat(captor.getValue().getItems()).hasSize(2);
-        assertThat(captor.getValue().getItems().get(0).getTitle()).isEqualTo("ep.title1");
-        assertThat(captor.getValue().getItems().get(1).getTitle()).isEqualTo("ep.title2");
+        assertThat(captor.getValue().getEpisodes()).hasSize(3);
+        assertThat(captor.getValue().getEpisodes().get(2).getTitle()).isEqualTo("ep.title3");
     }
 }

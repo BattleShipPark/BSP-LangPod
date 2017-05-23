@@ -10,6 +10,7 @@ import io.realm.annotations.PrimaryKey;
 /**
  */
 
+@Deprecated
 public class MyChannelRealm extends RealmObject {
     @PrimaryKey
     private long id;

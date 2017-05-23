@@ -1,7 +1,5 @@
 package com.battleshippark.bsp_langpod.data.db;
 
-import android.support.annotation.Nullable;
-
 import java.util.Arrays;
 
 import io.realm.RealmList;
@@ -13,6 +11,7 @@ import io.realm.RealmObject;
 public class ChannelRealm extends RealmObject {
     public static final String FIELD_ORDER = "order";
     public static final String FIELD_SUBSCRIBED = "subscribed";
+
     private long id;
 
     private int order;
@@ -23,11 +22,13 @@ public class ChannelRealm extends RealmObject {
 
     private String image;
 
-    private boolean subscribed;
-
     private String url;
 
+    private String copyright;
+
     private RealmList<EpisodeRealm> episodes = new RealmList<>();
+
+    private boolean subscribed;
 
     public ChannelRealm() {
     }
@@ -39,6 +40,19 @@ public class ChannelRealm extends RealmObject {
         this.desc = desc;
         this.image = image;
         this.url = url;
+        this.subscribed = subscribed;
+    }
+
+    public ChannelRealm(long id, int order, String title, String desc, String image, String url, String copyright,
+                        RealmList<EpisodeRealm> episodes, boolean subscribed) {
+        this.id = id;
+        this.order = order;
+        this.title = title;
+        this.desc = desc;
+        this.image = image;
+        this.url = url;
+        this.copyright = copyright;
+        this.episodes = episodes;
         this.subscribed = subscribed;
     }
 
@@ -82,14 +96,6 @@ public class ChannelRealm extends RealmObject {
         this.image = image;
     }
 
-    public boolean isSubscribed() {
-        return subscribed;
-    }
-
-    public void setSubscribed(boolean subscribed) {
-        this.subscribed = subscribed;
-    }
-
     public String getUrl() {
         return url;
     }
@@ -98,9 +104,28 @@ public class ChannelRealm extends RealmObject {
         this.url = url;
     }
 
-    @Nullable
+    public String getCopyright() {
+        return copyright;
+    }
+
+    public void setCopyright(String copyright) {
+        this.copyright = copyright;
+    }
+
     public RealmList<EpisodeRealm> getEpisodes() {
         return episodes;
+    }
+
+    public void setEpisodes(RealmList<EpisodeRealm> episodes) {
+        this.episodes = episodes;
+    }
+
+    public boolean isSubscribed() {
+        return subscribed;
+    }
+
+    public void setSubscribed(boolean subscribed) {
+        this.subscribed = subscribed;
     }
 
     @Override
@@ -112,8 +137,9 @@ public class ChannelRealm extends RealmObject {
                 ", desc='" + desc + '\'' +
                 ", image='" + image + '\'' +
                 ", subscribed=" + subscribed +
-                ", url=" + url +
-                ", episodes=" + ((episodes == null) ? "Null" : Arrays.toString(episodes.toArray())) +
+                ", url='" + url + '\'' +
+                ", copyright='" + copyright + '\'' +
+                ", episodes=" + episodes +
                 '}';
     }
 
@@ -131,6 +157,23 @@ public class ChannelRealm extends RealmObject {
         if (desc != null ? !desc.equals(that.desc) : that.desc != null) return false;
         if (image != null ? !image.equals(that.image) : that.image != null) return false;
         if (url != null ? !url.equals(that.url) : that.url != null) return false;
+        if (copyright != null ? !copyright.equals(that.copyright) : that.copyright != null)
+            return false;
         return episodes != null ? episodes.equals(that.episodes) : that.episodes == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (id ^ (id >>> 32));
+        result = 31 * result + order;
+        result = 31 * result + (title != null ? title.hashCode() : 0);
+        result = 31 * result + (desc != null ? desc.hashCode() : 0);
+        result = 31 * result + (image != null ? image.hashCode() : 0);
+        result = 31 * result + (subscribed ? 1 : 0);
+        result = 31 * result + (url != null ? url.hashCode() : 0);
+        result = 31 * result + (copyright != null ? copyright.hashCode() : 0);
+        result = 31 * result + (episodes != null ? episodes.hashCode() : 0);
+        return result;
     }
 }

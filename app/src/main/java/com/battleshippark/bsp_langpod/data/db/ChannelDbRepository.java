@@ -13,9 +13,9 @@ public interface ChannelDbRepository {
 
     Observable<List<ChannelRealm>> myChannelList();
 
-    Observable<MyChannelRealm> myChannel(long id);
+    Observable<ChannelRealm> channel(long id);
 
     void putEntireChannelList(List<ChannelRealm> realmList) throws IllegalArgumentException, RealmMigrationNeededException;
 
-    void putMyChannel(MyChannelRealm myChannelRealm) throws IllegalArgumentException, RealmMigrationNeededException;
+    void putMyChannel(ChannelRealm channelRealm) throws IllegalArgumentException, RealmMigrationNeededException;
 }

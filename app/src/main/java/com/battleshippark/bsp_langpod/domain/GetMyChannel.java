@@ -1,6 +1,7 @@
 package com.battleshippark.bsp_langpod.domain;
 
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
+import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.MyChannelRealm;
 import com.battleshippark.bsp_langpod.data.server.ChannelServerRepository;
 import com.battleshippark.bsp_langpod.data.server.MyChannelJson;
@@ -14,7 +15,7 @@ import rx.Subscriber;
 /**
  */
 
-public class GetMyChannel implements UseCase<MyChannelData, MyChannelRealm> {
+public class GetMyChannel implements UseCase<Long, ChannelRealm> {
     private final ChannelDbRepository dbRepository;
     private final ChannelServerRepository serverRepository;
     private final Scheduler scheduler;
@@ -32,22 +33,22 @@ public class GetMyChannel implements UseCase<MyChannelData, MyChannelRealm> {
     }
 
     @Override
-    public Observable<MyChannelRealm> execute(MyChannelData localMyChannelData) {
+    public Observable<ChannelRealm> execute(Long id) {
         return Observable.create(subscriber ->
-                dbRepository.myChannel(localMyChannelData.id()).subscribe(
-                        myChannelRealm -> onDbLoaded(subscriber, localMyChannelData, myChannelRealm),
+                dbRepository.channel(id).subscribe(
+                        channelRealm -> onDbLoaded(subscriber, channelRealm),
                         subscriber::onError));
     }
 
-    private void onDbLoaded(Subscriber<? super MyChannelRealm> subscriber, MyChannelData localMyChannelData, MyChannelRealm myChannelRealm) {
-        subscriber.onNext(myChannelRealm);
+    private void onDbLoaded(Subscriber<? super ChannelRealm> subscriber, ChannelRealm channelRealm) {
+        subscriber.onNext(channelRealm);
 
-        serverRepository.myChannel(localMyChannelData.url()).subscribeOn(scheduler).observeOn(postScheduler)
-                .subscribe(myChannelJson -> onServerLoaded(myChannelRealm, myChannelJson),
+        serverRepository.myChannel(channelRealm.getUrl()).subscribeOn(scheduler).observeOn(postScheduler)
+                .subscribe(myChannelJson -> onServerLoaded(channelRealm, myChannelJson),
                         subscriber::onError, subscriber::onCompleted);
     }
 
-    private void onServerLoaded(MyChannelRealm myChannelRealm, MyChannelJson myChannelJson) {
-        dbRepository.putMyChannel(domainMapper.myChannelJsonAsRealm(myChannelRealm, myChannelJson));
+    private void onServerLoaded(ChannelRealm channelRealm, MyChannelJson myChannelJson) {
+        dbRepository.putMyChannel(domainMapper.myChannelJsonAsRealm(channelRealm, myChannelJson));
     }
 }
