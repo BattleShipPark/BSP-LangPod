@@ -126,7 +126,7 @@ public class ChannelDbApiTest {
     }
 
     @Test
-    public void putMyChannel() throws InterruptedException {
+    public void putChannel() throws InterruptedException {
         HandlerThread handlerThread = new HandlerThread("ChannelDbApiTest");
         handlerThread.start();
         Handler handler = new Handler(handlerThread.getLooper());
