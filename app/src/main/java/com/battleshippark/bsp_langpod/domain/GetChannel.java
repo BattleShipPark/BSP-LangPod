@@ -2,9 +2,8 @@ package com.battleshippark.bsp_langpod.domain;
 
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
-import com.battleshippark.bsp_langpod.data.db.MyChannelRealm;
+import com.battleshippark.bsp_langpod.data.server.ChannelJson;
 import com.battleshippark.bsp_langpod.data.server.ChannelServerRepository;
-import com.battleshippark.bsp_langpod.data.server.MyChannelJson;
 
 import javax.inject.Inject;
 
@@ -15,7 +14,7 @@ import rx.Subscriber;
 /**
  */
 
-public class GetMyChannel implements UseCase<Long, ChannelRealm> {
+public class GetChannel implements UseCase<Long, ChannelRealm> {
     private final ChannelDbRepository dbRepository;
     private final ChannelServerRepository serverRepository;
     private final Scheduler scheduler;
@@ -23,8 +22,8 @@ public class GetMyChannel implements UseCase<Long, ChannelRealm> {
     private final DomainMapper domainMapper;
 
     @Inject
-    public GetMyChannel(ChannelDbRepository dbRepository, ChannelServerRepository serverRepository,
-                        Scheduler scheduler, Scheduler postScheduler, DomainMapper domainMapper) {
+    public GetChannel(ChannelDbRepository dbRepository, ChannelServerRepository serverRepository,
+                      Scheduler scheduler, Scheduler postScheduler, DomainMapper domainMapper) {
         this.dbRepository = dbRepository;
         this.serverRepository = serverRepository;
         this.scheduler = scheduler;
@@ -48,7 +47,7 @@ public class GetMyChannel implements UseCase<Long, ChannelRealm> {
                         subscriber::onError, subscriber::onCompleted);
     }
 
-    private void onServerLoaded(ChannelRealm channelRealm, MyChannelJson myChannelJson) {
-        dbRepository.putMyChannel(domainMapper.myChannelJsonAsRealm(channelRealm, myChannelJson));
+    private void onServerLoaded(ChannelRealm channelRealm, ChannelJson channelJson) {
+        dbRepository.putChannel(domainMapper.channelJsonAsRealm(channelRealm, channelJson));
     }
 }

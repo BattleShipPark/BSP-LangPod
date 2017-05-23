@@ -12,5 +12,5 @@ public interface ChannelService {
     Observable<EntireChannelListJson> queryEntireList();
 
     @GET
-    Observable<MyChannelJson> queryUrl(@Url String url);
+    Observable<ChannelJson> queryUrl(@Url String url);
 }

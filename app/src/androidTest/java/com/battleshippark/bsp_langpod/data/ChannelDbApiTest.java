@@ -7,7 +7,6 @@ import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
-import com.battleshippark.bsp_langpod.data.db.MyChannelRealm;
 
 import org.junit.Test;
 
@@ -161,7 +160,7 @@ public class ChannelDbApiTest {
             channelRealm.setTitle("title2");
             channelRealm.getEpisodes().add(new EpisodeRealm("ep.title2", "ep.desc2", "ep,url2"));
 
-            repository.putMyChannel(channelRealm);
+            repository.putChannel(channelRealm);
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {

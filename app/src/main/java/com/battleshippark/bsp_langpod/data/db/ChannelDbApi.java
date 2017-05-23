@@ -67,7 +67,7 @@ public class ChannelDbApi implements ChannelDbRepository {
     }
 
     @Override
-    public void putMyChannel(ChannelRealm channelRealm) throws IllegalArgumentException, RealmMigrationNeededException {
+    public void putChannel(ChannelRealm channelRealm) throws IllegalArgumentException, RealmMigrationNeededException {
         realm.executeTransactionAsync(realm1 -> {
             realm1.insertOrUpdate(channelRealm);
         });

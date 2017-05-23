@@ -3,9 +3,9 @@ package com.battleshippark.bsp_langpod.domain;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
+import com.battleshippark.bsp_langpod.data.server.ChannelJson;
 import com.battleshippark.bsp_langpod.data.server.ChannelServerRepository;
 import com.battleshippark.bsp_langpod.data.server.EpisodeJson;
-import com.battleshippark.bsp_langpod.data.server.MyChannelJson;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 /**
  */
 @RunWith(MockitoJUnitRunner.class)
-public class GetMyChannelTest {
+public class GetChannelTest {
     @Mock
     ChannelDbRepository dbRepository;
     @Mock
@@ -38,14 +38,14 @@ public class GetMyChannelTest {
     ArgumentCaptor<ChannelRealm> captor;
 
     @Test
-    public void execute_전체리스트() {
+    public void execute_전체리스트에서_하나_조회() {
         ChannelRealm channelRealm = new ChannelRealm(1, 10, "title1", "desc1", "image1", "url1", "cr1",
                 new RealmList<>(
                         new EpisodeRealm("ep.title1", "ep.desc1", "ep.url1"),
                         new EpisodeRealm("ep.title2", "ep.desc2", "ep.url2")
                 ), false
         );
-        MyChannelJson myChannelJson = MyChannelJson.create(
+        ChannelJson channelJson = ChannelJson.create(
                 "title1", "desc1", "cr1", "image1",
                 Arrays.asList(
                         EpisodeJson.create("ep.title1", "ep.desc1", "ep.url1", 1, new Date()),
@@ -54,10 +54,10 @@ public class GetMyChannelTest {
                 )
         );
         when(dbRepository.channel(1)).thenReturn(Observable.just(channelRealm));
-        when(serverRepository.myChannel("url1")).thenReturn(Observable.just(myChannelJson));
+        when(serverRepository.myChannel("url1")).thenReturn(Observable.just(channelJson));
 
         DomainMapper domainMapper = new DomainMapper();
-        UseCase<Long, ChannelRealm> useCase = new GetMyChannel(dbRepository, serverRepository,
+        UseCase<Long, ChannelRealm> useCase = new GetChannel(dbRepository, serverRepository,
                 Schedulers.immediate(), Schedulers.immediate(), domainMapper);
         TestSubscriber<ChannelRealm> testSubscriber = new TestSubscriber<>();
 
@@ -75,7 +75,7 @@ public class GetMyChannelTest {
         ChannelRealm actualMyChannelRealm = testSubscriber.getOnNextEvents().get(0);
         assertThat(actualMyChannelRealm).isEqualTo(channelRealm);
 
-        verify(dbRepository).putMyChannel(captor.capture());
+        verify(dbRepository).putChannel(captor.capture());
         assertThat(captor.getValue().getTitle()).isEqualTo("title1");
         assertThat(captor.getValue().getEpisodes()).hasSize(3);
         assertThat(captor.getValue().getEpisodes().get(2).getTitle()).isEqualTo("ep.title3");

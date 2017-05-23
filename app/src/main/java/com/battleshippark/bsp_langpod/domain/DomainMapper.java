@@ -5,9 +5,9 @@ import com.annimon.stream.Stream;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
 import com.battleshippark.bsp_langpod.data.db.MyChannelRealm;
+import com.battleshippark.bsp_langpod.data.server.ChannelJson;
 import com.battleshippark.bsp_langpod.data.server.EntireChannelListJson;
 import com.battleshippark.bsp_langpod.data.server.EpisodeJson;
-import com.battleshippark.bsp_langpod.data.server.MyChannelJson;
 
 import java.util.List;
 
@@ -70,14 +70,14 @@ public class DomainMapper {
                 ).collect(Collectors.toList());
     }
 
-    public MyChannelData myChannelJsonAsData(String url, MyChannelJson myChannelJson) {
+    public MyChannelData myChannelJsonAsData(String url, ChannelJson channelJson) {
         return MyChannelData.create(
-                myChannelJson.title(),
-                myChannelJson.desc(),
-                myChannelJson.copyright(),
-                myChannelJson.image(),
+                channelJson.title(),
+                channelJson.desc(),
+                channelJson.copyright(),
+                channelJson.image(),
                 url,
-                Stream.of(myChannelJson.episodes()).map(this::episodeJsonAsData).collect(Collectors.toList())
+                Stream.of(channelJson.episodes()).map(this::episodeJsonAsData).collect(Collectors.toList())
         );
     }
 
@@ -103,14 +103,14 @@ public class DomainMapper {
                 .collect(Collectors.toList());
     }
 
-    public ChannelRealm myChannelJsonAsRealm(ChannelRealm channelRealm, MyChannelJson myChannelJson) {
-        RealmList<EpisodeRealm> episodeRealmList = Stream.of(myChannelJson.episodes())
+    public ChannelRealm channelJsonAsRealm(ChannelRealm channelRealm, ChannelJson channelJson) {
+        RealmList<EpisodeRealm> episodeRealmList = Stream.of(channelJson.episodes())
                 .map(episodeJson -> new EpisodeRealm(episodeJson.title(), episodeJson.desc(), episodeJson.url()))
                 .collect(RealmList::new, RealmList::add);
-        channelRealm.setTitle(myChannelJson.title());
-        channelRealm.setDesc(myChannelJson.desc());
-        channelRealm.setCopyright(myChannelJson.copyright());
-        channelRealm.setImage(myChannelJson.image());
+        channelRealm.setTitle(channelJson.title());
+        channelRealm.setDesc(channelJson.desc());
+        channelRealm.setCopyright(channelJson.copyright());
+        channelRealm.setImage(channelJson.image());
         channelRealm.setEpisodes(episodeRealmList);
         return channelRealm;
     }

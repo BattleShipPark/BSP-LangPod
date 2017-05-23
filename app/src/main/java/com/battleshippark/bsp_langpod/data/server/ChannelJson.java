@@ -10,9 +10,9 @@ import java.util.List;
  */
 
 @AutoValue
-public abstract class MyChannelJson {
-    public static MyChannelJson create(String title, String desc, String copyright, String image, List<EpisodeJson> items) {
-        return new AutoValue_MyChannelJson(title, desc, copyright, image, items);
+public abstract class ChannelJson {
+    public static ChannelJson create(String title, String desc, String copyright, String image, List<EpisodeJson> items) {
+        return new AutoValue_ChannelJson(title, desc, copyright, image, items);
     }
 
     public abstract String title();
@@ -25,7 +25,7 @@ public abstract class MyChannelJson {
 
     public abstract List<EpisodeJson> episodes();
 
-    public static TypeAdapter<MyChannelJson> typeAdapter(Gson gson) {
-        return new AutoValue_MyChannelJson.GsonTypeAdapter(gson);
+    public static TypeAdapter<ChannelJson> typeAdapter(Gson gson) {
+        return new AutoValue_ChannelJson.GsonTypeAdapter(gson);
     }
 }
