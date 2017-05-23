@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
+import java.util.Date;
 
 import io.realm.RealmList;
 import rx.Observable;
@@ -46,8 +47,8 @@ public class GetMyChannelTest {
         MyChannelJson myChannelJson = MyChannelJson.create(
                 "title1", "desc1", "cr1", "image1",
                 Arrays.asList(
-                        EpisodeJson.create("ep.title1", "ep.desc1", "ep.url1"),
-                        EpisodeJson.create("ep.title2", "ep.desc2", "ep.url2")
+                        EpisodeJson.create("ep.title1", "ep.desc1", "ep.url1", 1, new Date()),
+                        EpisodeJson.create("ep.title2", "ep.desc2", "ep.url2", 2, new Date())
                 )
         );
         when(dbRepository.myChannel(1)).thenReturn(Observable.just(myChannelRealm));

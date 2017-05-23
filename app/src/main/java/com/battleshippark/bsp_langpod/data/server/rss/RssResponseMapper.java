@@ -18,9 +18,15 @@ public class RssResponseMapper {
 
         return MyChannelJson.create(
                 feed.getTitle(), feed.getDescription(), feed.getCopyright(), feedInfo.getImage().toString(),
-                Stream.of(feed.getEntries()).map(syndEntry -> EpisodeJson.create(
-                        syndEntry.getTitle(),
-                        syndEntry.getDescription().getValue(),
-                        syndEntry.getUri())).collect(Collectors.toList()));
+                Stream.of(feed.getEntries())
+                        .map(syndEntry ->
+                                EpisodeJson.create(
+                                        syndEntry.getTitle(),
+                                        syndEntry.getDescription().getValue(),
+                                        syndEntry.getUri(),
+                                        syndEntry.getEnclosures().get(0).getLength(),
+                                        syndEntry.getPublishedDate()))
+                        .collect(Collectors.toList())
+        );
     }
 }

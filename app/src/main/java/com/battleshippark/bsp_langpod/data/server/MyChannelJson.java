@@ -23,7 +23,7 @@ public abstract class MyChannelJson {
 
     public abstract String image();
 
-    public abstract List<EpisodeJson> items();
+    public abstract List<EpisodeJson> episodes();
 
     public static TypeAdapter<MyChannelJson> typeAdapter(Gson gson) {
         return new AutoValue_MyChannelJson.GsonTypeAdapter(gson);
