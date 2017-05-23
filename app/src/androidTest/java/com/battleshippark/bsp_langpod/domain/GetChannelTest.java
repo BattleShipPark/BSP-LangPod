@@ -1,9 +1,6 @@
 package com.battleshippark.bsp_langpod.domain;
 
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.support.annotation.NonNull;
-
+import com.battleshippark.bsp_langpod.LooperThread;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
@@ -12,13 +9,11 @@ import com.battleshippark.bsp_langpod.data.server.ChannelServerRepository;
 import com.battleshippark.bsp_langpod.data.server.EpisodeJson;
 
 import org.junit.Test;
-import org.mockito.Mock;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 
 import io.realm.Realm;
@@ -28,14 +23,12 @@ import rx.observers.TestSubscriber;
 import rx.schedulers.Schedulers;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
  */
 public class GetChannelTest {
-    @Mock
-    ChannelServerRepository serverRepository;
-
     @Test
     public void execute_전체리스트에서_조회() throws InterruptedException {
         List<ChannelRealm> channelRealmList = Arrays.asList(
@@ -60,53 +53,42 @@ public class GetChannelTest {
                         EpisodeJson.create("ep.title3", "ep.desc3", "ep.url3", 3, new Date())
                 )
         );
-        HandlerThread handlerThread = new HandlerThread("GetEntireChannelListTest");
-        handlerThread.start();
-        //Realm의 live update를 사용하려면 같은 쓰레드에서 만든 Realm 인스턴스를 사용해야 한다.
-        //거기다 그 쓰레드가 루퍼를 가지고 있어야 하는데, 테스트를 돌리는 쓰레드는 루퍼를 가지고 있지 않다
-        //모양은 예쁘지 않지만, 이렇게 직접 쓰레드와 루퍼를 만들어서 해결한다
-        Handler handler = new Handler(handlerThread.getLooper());
-        TestExecutor executor = new TestExecutor(handler);
+        LooperThread thread = new LooperThread("GetChannelTest");
+        Executor executor = thread.getExecutor();
         TestSubscriber<ChannelRealm> testSubscriber = new TestSubscriber<>();
-        handler.post(() -> {
+        thread.run(() -> {
             Realm realm = Realm.getDefaultInstance();
+            ChannelServerRepository serverRepository = mock(ChannelServerRepository.class);
             when(serverRepository.myChannel("url1")).thenReturn(Observable.just(channelJson));
             UseCase<Long, ChannelRealm> useCase = new GetChannel(new ChannelDbApi(realm), serverRepository,
                     Schedulers.io(), Schedulers.from(executor), new DomainMapper());
+
+            realm.executeTransaction(realm1 -> {
+                realm1.delete(ChannelRealm.class);
+                realm1.copyToRealm(channelRealmList);
+            });
 
 
             useCase.execute(1L).subscribe(testSubscriber);
         });
 
+        Thread.sleep(1000); //DB에 쓰는 비동기 작업이 끝날 시간을 준다
+
         testSubscriber.awaitTerminalEvent();
         testSubscriber.assertNoErrors();
         testSubscriber.assertCompleted();
 
-        assertThat(testSubscriber.getOnNextEvents()).hasSize(1);
-        CountDownLatch latch = new CountDownLatch(1);
         List<ChannelRealm> actualChannelRealmList = new ArrayList<>();
-        handler.post(() -> {
+        thread.run(() -> {
+            assertThat(testSubscriber.getOnNextEvents()).hasSize(1);
+
             Realm realm = Realm.getDefaultInstance();
             actualChannelRealmList.add(realm.copyFromRealm(testSubscriber.getOnNextEvents().get(0)));
-            latch.countDown();
         });
-        latch.await();
+        thread.await();
 
         assertThat(actualChannelRealmList.get(0).getTitle()).isEqualTo("title1");
         assertThat(actualChannelRealmList.get(0).getEpisodes()).hasSize(3);
         assertThat(actualChannelRealmList.get(0).getEpisodes().get(2).getTitle()).isEqualTo("ep.title3");
-    }
-
-    private class TestExecutor implements Executor {
-        private final Handler handler;
-
-        TestExecutor(Handler handler) {
-            this.handler = handler;
-        }
-
-        @Override
-        public void execute(@NonNull Runnable command) {
-            handler.post(command);
-        }
     }
 }

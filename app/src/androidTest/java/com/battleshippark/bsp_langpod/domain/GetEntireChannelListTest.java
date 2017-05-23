@@ -50,7 +50,7 @@ public class GetEntireChannelListTest {
                     new ChannelRealm(1, 10, "title1", "desc1", "image1", "url1", false),
                     new ChannelRealm(2, 11, "title2", "desc2", "image2", "url2", true)
             );
-            dbRepository.putEntireChannelList(channelRealmList); //DB를 읽어 놓고
+            dbRepository.putEntireChannelList(channelRealmList); //DB에 넣어 놓고
 
             ChannelServerRepository serverRepository = mock(ChannelServerRepository.class);
             when(serverRepository.entireChannelList()).thenReturn(

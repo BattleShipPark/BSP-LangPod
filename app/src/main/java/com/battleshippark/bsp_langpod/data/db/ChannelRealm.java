@@ -1,9 +1,8 @@
 package com.battleshippark.bsp_langpod.data.db;
 
-import java.util.Arrays;
-
 import io.realm.RealmList;
 import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
 /**
  */
@@ -12,6 +11,7 @@ public class ChannelRealm extends RealmObject {
     public static final String FIELD_ORDER = "order";
     public static final String FIELD_SUBSCRIBED = "subscribed";
 
+    @PrimaryKey
     private long id;
 
     private int order;
