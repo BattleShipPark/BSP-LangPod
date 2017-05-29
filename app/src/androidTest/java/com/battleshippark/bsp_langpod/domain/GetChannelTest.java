@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 public class GetChannelTest {
     @Test
     public void execute_전체리스트에서_조회() throws InterruptedException {
-        List<ChannelRealm> channelRealmList = Arrays.asList(
+        List<ChannelRealm> channelRealmList = Arrays.asList( //DB에 있는 url1을 대상으로,
                 new ChannelRealm(1, 10, "title1", "desc1", "image1", "url1", "cr1",
                         new RealmList<>(
                                 new EpisodeRealm("ep.title1", "ep.desc1", "ep.url1"),
@@ -45,7 +45,7 @@ public class GetChannelTest {
                         ), true
                 )
         );
-        ChannelJson channelJson = ChannelJson.create(
+        ChannelJson channelJson = ChannelJson.create( //새로운 에피소드가 추가됐다
                 "title1", "desc1", "cr1", "image1",
                 Arrays.asList(
                         EpisodeJson.create("ep.title1", "ep.desc1", "ep.url1", 1, new Date()),
@@ -67,6 +67,7 @@ public class GetChannelTest {
                 realm1.delete(ChannelRealm.class);
                 realm1.copyToRealm(channelRealmList);
             });
+
 
 
             useCase.execute(1L).subscribe(testSubscriber);
