@@ -1,4 +1,4 @@
-package com.battleshippark.bsp_langpod.presentation.entire_list;
+package com.battleshippark.bsp_langpod.presentation;
 
 import android.app.Activity;
 import android.os.Bundle;

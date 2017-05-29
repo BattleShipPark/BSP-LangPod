@@ -5,7 +5,7 @@ import android.support.test.rule.ActivityTestRule;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
 import com.battleshippark.bsp_langpod.data.db.MyChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.RealmHelper;
-import com.battleshippark.bsp_langpod.presentation.entire_list.MainActivity;
+import com.battleshippark.bsp_langpod.presentation.MainActivity;
 import com.rometools.modules.itunes.FeedInformation;
 import com.rometools.rome.feed.module.Module;
 import com.rometools.rome.feed.synd.SyndFeed;

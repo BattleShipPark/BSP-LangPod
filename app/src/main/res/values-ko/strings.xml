@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MoonCast</string>
+    <string name="main_tab_entire">전체 목록</string>
+    <string name="main_tab_my">구독 목록</string>
+    <string name="main_tab_setting">설정</string>
+</resources>
