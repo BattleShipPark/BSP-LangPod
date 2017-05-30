@@ -8,6 +8,8 @@ import com.google.gson.GsonBuilder;
 
 import javax.inject.Inject;
 
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Converter;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
@@ -20,6 +22,7 @@ import rx.Observable;
 public class ChannelServerApi implements ChannelServerRepository {
     private final AppPhase appPhase;
     private final Converter.Factory rssConverterFactory, gsonConverterFactory;
+    private final OkHttpClient client;
 
     @Inject
     public ChannelServerApi(AppPhase appPhase, RssResponseMapper mapper) {
@@ -29,6 +32,9 @@ public class ChannelServerApi implements ChannelServerRepository {
                 new GsonBuilder()
                         .registerTypeAdapterFactory(GsonAvTypeAdapterFactory.create())
                         .create());
+        this.client = new OkHttpClient.Builder()
+                .addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC))
+                .build();
     }
 
     @Override
@@ -37,6 +43,7 @@ public class ChannelServerApi implements ChannelServerRepository {
                 .baseUrl("https://" + appPhase.getServerDomain())
                 .addConverterFactory(gsonConverterFactory)
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .client(client)
                 .build();
 
         ChannelService service = retrofit.create(ChannelService.class);
@@ -49,6 +56,7 @@ public class ChannelServerApi implements ChannelServerRepository {
                 .baseUrl("https://" + appPhase.getServerDomain())
                 .addConverterFactory(rssConverterFactory)
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .client(client)
                 .build();
 
         ChannelService service = retrofit.create(ChannelService.class);

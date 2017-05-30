@@ -7,8 +7,8 @@ import rx.Observable;
 /**
  */
 
-public interface ChannelService {
-    @GET("/v1/totalList")
+interface ChannelService {
+    @GET("/v1/entireList")
     Observable<EntireChannelListJson> queryEntireList();
 
     @GET

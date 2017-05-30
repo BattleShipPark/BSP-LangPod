@@ -7,23 +7,20 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.battleshippark.bsp_langpod.R;
+import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
+import com.battleshippark.bsp_langpod.presentation.RealmRecyclerViewAdapter;
 import com.battleshippark.bsp_langpod.presentation.entire_list.EntireListFragment.OnListFragmentInteractionListener;
-import com.battleshippark.bsp_langpod.presentation.entire_list.dummy.DummyContent.DummyItem;
 
-import java.util.List;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import io.realm.OrderedRealmCollection;
 
-/**
- * {@link RecyclerView.Adapter} that can display a {@link DummyItem} and makes a call to the
- * specified {@link OnListFragmentInteractionListener}.
- * TODO: Replace the implementation with code for your data type.
- */
-public class EntireListAdapter extends RecyclerView.Adapter<EntireListAdapter.ViewHolder> {
+class EntireListAdapter extends RealmRecyclerViewAdapter<ChannelRealm, EntireListAdapter.ViewHolder> {
 
-    private final List<DummyItem> mValues;
     private final OnListFragmentInteractionListener mListener;
 
-    public EntireListAdapter(List<DummyItem> items, OnListFragmentInteractionListener listener) {
-        mValues = items;
+    EntireListAdapter(OrderedRealmCollection<ChannelRealm> items, OnListFragmentInteractionListener listener) {
+        super(items, true);
         mListener = listener;
     }
 
@@ -36,43 +33,30 @@ public class EntireListAdapter extends RecyclerView.Adapter<EntireListAdapter.Vi
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        holder.mItem = mValues.get(position);
-        holder.mIdView.setText(mValues.get(position).id);
-        holder.mContentView.setText(mValues.get(position).content);
+        holder.mIdView.setText(String.valueOf(getData().get(position).getId()));
+        holder.mTitleView.setText(getData().get(position).getTitle());
 
-        holder.mView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (null != mListener) {
-                    // Notify the active callbacks interface (the activity, if the
-                    // fragment is attached to one) that an item has been selected.
-                    mListener.onListFragmentInteraction(holder.mItem);
-                }
+        holder.itemView.setOnClickListener(v -> {
+            if (null != mListener) {
+                mListener.onListFragmentInteraction(getData().get(position));
             }
         });
     }
 
-    @Override
-    public int getItemCount() {
-        return mValues.size();
-    }
+    class ViewHolder extends RecyclerView.ViewHolder {
+        @BindView(R.id.id)
+        TextView mIdView;
+        @BindView(R.id.title_tv)
+        TextView mTitleView;
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
-        public final View mView;
-        public final TextView mIdView;
-        public final TextView mContentView;
-        public DummyItem mItem;
-
-        public ViewHolder(View view) {
+        ViewHolder(View view) {
             super(view);
-            mView = view;
-            mIdView = (TextView) view.findViewById(R.id.id);
-            mContentView = (TextView) view.findViewById(R.id.content);
+            ButterKnife.bind(this, view);
         }
 
         @Override
         public String toString() {
-            return super.toString() + " '" + mContentView.getText() + "'";
+            return super.toString() + " '" + mTitleView.getText() + "'";
         }
     }
 }
