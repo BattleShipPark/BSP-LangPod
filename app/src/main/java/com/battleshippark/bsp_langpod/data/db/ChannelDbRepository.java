@@ -18,4 +18,6 @@ public interface ChannelDbRepository {
     void putEntireChannelList(List<ChannelRealm> realmList) throws IllegalArgumentException, RealmMigrationNeededException;
 
     void putChannel(ChannelRealm channelRealm) throws IllegalArgumentException, RealmMigrationNeededException;
+
+    Observable<Void> switchSubscribe(ChannelRealm channelRealm);
 }

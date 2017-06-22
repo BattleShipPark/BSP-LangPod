@@ -8,6 +8,7 @@ import io.realm.annotations.PrimaryKey;
  */
 
 public class ChannelRealm extends RealmObject {
+    public static final String FIELD_ID = "id";
     public static final String FIELD_ORDER = "order";
     public static final String FIELD_SUBSCRIBED = "subscribed";
 

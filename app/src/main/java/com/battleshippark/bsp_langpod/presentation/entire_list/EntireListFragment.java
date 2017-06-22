@@ -13,11 +13,14 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.battleshippark.bsp_langpod.R;
+import com.battleshippark.bsp_langpod.dagger.DaggerDbApiGraph;
 import com.battleshippark.bsp_langpod.dagger.DaggerServerApiGraph;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.domain.DomainMapper;
 import com.battleshippark.bsp_langpod.domain.GetEntireChannelList;
+import com.battleshippark.bsp_langpod.domain.SubscribeChannel;
+import com.battleshippark.bsp_langpod.domain.UseCase;
 import com.bumptech.glide.Glide;
 
 import java.util.List;
@@ -37,27 +40,15 @@ public class EntireListFragment extends Fragment implements OnItemListener {
     private Subscription subscription;
     private EntireListAdapter adapter;
 
+    private GetEntireChannelList getEntireChannelList;
+    private SubscribeChannel subscribeChannel;
+
     public EntireListFragment() {
     }
 
     public static EntireListFragment newInstance() {
         return new EntireListFragment();
     }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_entire_list, container, false);
-        rv = ButterKnife.findById(view, R.id.entire_list_rv);
-        rv.setLayoutManager(new LinearLayoutManager(getActivity()));
-        return view;
-    }
-
 
     @Override
     public void onAttach(Context context) {
@@ -71,12 +62,32 @@ public class EntireListFragment extends Fragment implements OnItemListener {
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        ChannelDbApi channelDbApi = DaggerDbApiGraph.create().channelApi();
+
+        getEntireChannelList = new GetEntireChannelList(channelDbApi, DaggerServerApiGraph.create().channelApi(),
+                Schedulers.io(), AndroidSchedulers.mainThread(), new DomainMapper());
+
+        subscribeChannel = new SubscribeChannel(channelDbApi);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_entire_list, container, false);
+        rv = ButterKnife.findById(view, R.id.entire_list_rv);
+        rv.setLayoutManager(new LinearLayoutManager(getActivity()));
+        return view;
+    }
+
+
+    @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        subscription = new GetEntireChannelList(new ChannelDbApi(Realm.getDefaultInstance()), DaggerServerApiGraph.create().channelApi(),
-                Schedulers.io(), AndroidSchedulers.mainThread(), new DomainMapper())
-                .execute(null)
+        subscription = getEntireChannelList.execute(null)
                 .subscribe(this::showData, this::showError);
     }
 
@@ -109,6 +120,14 @@ public class EntireListFragment extends Fragment implements OnItemListener {
         Glide.with(holder.imageView.getContext()).load(item.getImage()).into(holder.imageView);
 
         holder.subscribeView.setVisibility(item.isSubscribed() ? View.GONE : View.VISIBLE);
-        holder.subscribeView.setOnClickListener(v -> Toast.makeText(holder.subscribeView.getContext(), "subscribe", Toast.LENGTH_SHORT).show());
+        holder.subscribeView.setOnClickListener(
+                v -> subscribeChannel.execute(item)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                aVoid -> {
+                                },
+                                Throwable::printStackTrace
+                        )
+        );
     }
 }

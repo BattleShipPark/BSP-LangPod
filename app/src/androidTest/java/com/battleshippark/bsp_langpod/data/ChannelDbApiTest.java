@@ -173,4 +173,44 @@ public class ChannelDbApiTest {
             assertThat(actualChannelRealm1.getEpisodes().get(1).getTitle()).isEqualTo("ep.title2");
         });
     }
+
+    @Test
+    public void subscribeChannel_구독상태를해지() {
+        HandlerThread handlerThread = new HandlerThread("ChannelDbApiTest");
+        handlerThread.start();
+        Handler handler = new Handler(handlerThread.getLooper());
+        handler.post(() -> {
+            Realm realm = Realm.getDefaultInstance();
+            ChannelDbRepository repository = new ChannelDbApi(realm);
+
+            //구독상태의 채널 저장
+            realm.executeTransaction(realm1 -> {
+                realm1.delete(ChannelRealm.class);
+                realm1.copyToRealm(channelRealm2);
+            });
+
+            TestSubscriber<ChannelRealm> testSubscriber = new TestSubscriber<>();
+            repository.channel(2).subscribe(testSubscriber);
+
+
+            testSubscriber.awaitTerminalEvent();
+            testSubscriber.assertNoErrors();
+            testSubscriber.assertCompleted();
+
+            ChannelRealm actualChannelRealm1 = testSubscriber.getOnNextEvents().get(0);
+            assertThat(actualChannelRealm1.getId()).isEqualTo(2);
+
+
+            //구독 해지
+            TestSubscriber<Void> testSubscriber2 = new TestSubscriber<>();
+            repository.switchSubscribe(channelRealm1).subscribe(testSubscriber2);
+
+            testSubscriber2.awaitTerminalEvent();
+            testSubscriber2.assertNoErrors();
+            testSubscriber2.assertCompleted();
+
+            //해지 되어 있는걸 확인
+            assertThat(actualChannelRealm1.isSubscribed()).isEqualTo(false);
+        });
+    }
 }

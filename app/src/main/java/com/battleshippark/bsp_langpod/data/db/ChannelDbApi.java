@@ -11,6 +11,7 @@ import io.realm.RealmQuery;
 import io.realm.RealmResults;
 import io.realm.exceptions.RealmMigrationNeededException;
 import rx.Observable;
+import rx.subjects.PublishSubject;
 
 /**
  */
@@ -71,5 +72,20 @@ public class ChannelDbApi implements ChannelDbRepository {
         realm.executeTransactionAsync(realm1 -> {
             realm1.insertOrUpdate(channelRealm);
         });
+    }
+
+    @Override
+    public Observable<Void> switchSubscribe(ChannelRealm channelRealm) {
+        PublishSubject<Void> subject = PublishSubject.create();
+        long id = channelRealm.getId();
+        boolean value = !channelRealm.isSubscribed();
+        realm.executeTransactionAsync(
+                realm1 -> {
+                    ChannelRealm newChannelRealm = realm1.where(ChannelRealm.class).equalTo(ChannelRealm.FIELD_ID, id).findFirst();
+                    newChannelRealm.setSubscribed(value);
+                },
+                () -> subject.onNext(null),
+                subject::onError);
+        return subject;
     }
 }
