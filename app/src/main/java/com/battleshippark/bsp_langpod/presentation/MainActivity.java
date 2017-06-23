@@ -6,13 +6,14 @@ import android.support.design.widget.TabLayout;
 import android.widget.Toast;
 
 import com.battleshippark.bsp_langpod.R;
-import com.battleshippark.bsp_langpod.presentation.entire_list.EntireListFragment;
+import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
+import com.battleshippark.bsp_langpod.presentation.entire_list.EntireChannelListFragment;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements EntireChannelListFragment.EntireListFragmentListener {
     private Unbinder unbinder;
 
     @BindView(R.id.tab_layout)
@@ -26,9 +27,13 @@ public class MainActivity extends Activity {
 
         initUI();
 
+        showEntireList();
+    }
+
+    private void showEntireList() {
         getFragmentManager()
                 .beginTransaction()
-                .add(R.id.main_fragment_layout, EntireListFragment.newInstance())
+                .replace(R.id.main_fragment_layout, EntireChannelListFragment.newInstance())
                 .commit();
     }
 
@@ -57,8 +62,8 @@ public class MainActivity extends Activity {
         super.onDestroy();
     }
 
-/*    @Override
-    public void onListFragmentInteraction(ChannelRealm item) {
-        
-    }*/
+    @Override
+    public void onClickEntireListItem(ChannelRealm item) {
+        Toast.makeText(this, "CLICK", Toast.LENGTH_SHORT).show();
+    }
 }

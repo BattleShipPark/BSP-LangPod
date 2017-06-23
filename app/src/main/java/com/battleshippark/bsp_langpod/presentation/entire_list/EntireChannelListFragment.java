@@ -10,7 +10,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.battleshippark.bsp_langpod.R;
 import com.battleshippark.bsp_langpod.dagger.DaggerDbApiGraph;
@@ -20,45 +19,43 @@ import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.domain.DomainMapper;
 import com.battleshippark.bsp_langpod.domain.GetEntireChannelList;
 import com.battleshippark.bsp_langpod.domain.SubscribeChannel;
-import com.battleshippark.bsp_langpod.domain.UseCase;
 import com.bumptech.glide.Glide;
 
 import java.util.List;
 
 import butterknife.ButterKnife;
 import io.realm.OrderedRealmCollection;
-import io.realm.Realm;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
-public class EntireListFragment extends Fragment implements OnItemListener {
-    private static final String TAG = EntireListFragment.class.getSimpleName();
+public class EntireChannelListFragment extends Fragment implements OnItemListener {
+    private static final String TAG = EntireChannelListFragment.class.getSimpleName();
     private RecyclerView rv;
 
-    //    private OnListFragmentInteractionListener mListener;
+    private EntireListFragmentListener mListener;
     private Subscription subscription;
-    private EntireListAdapter adapter;
+    private EntireChannelListAdapter adapter;
 
     private GetEntireChannelList getEntireChannelList;
     private SubscribeChannel subscribeChannel;
 
-    public EntireListFragment() {
+    public EntireChannelListFragment() {
     }
 
-    public static EntireListFragment newInstance() {
-        return new EntireListFragment();
+    public static EntireChannelListFragment newInstance() {
+        return new EntireChannelListFragment();
     }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-/*        if (context instanceof OnListFragmentInteractionListener) {
-            mListener = (OnListFragmentInteractionListener) context;
+        if (context instanceof EntireListFragmentListener) {
+            mListener = (EntireListFragmentListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnListFragmentInteractionListener");
-        }*/
+        }
     }
 
     @Override
@@ -100,11 +97,11 @@ public class EntireListFragment extends Fragment implements OnItemListener {
     @Override
     public void onDetach() {
         super.onDetach();
-//        mListener = null;
+        mListener = null;
     }
 
     void showData(List<ChannelRealm> channelRealmList) {
-        adapter = new EntireListAdapter((OrderedRealmCollection<ChannelRealm>) channelRealmList, this);
+        adapter = new EntireChannelListAdapter((OrderedRealmCollection<ChannelRealm>) channelRealmList, this);
         rv.setAdapter(adapter);
     }
 
@@ -113,8 +110,8 @@ public class EntireListFragment extends Fragment implements OnItemListener {
     }
 
     @Override
-    public void onBindViewHolder(EntireListAdapter.ViewHolder holder, ChannelRealm item) {
-        holder.itemView.setOnClickListener(v -> Toast.makeText(holder.itemView.getContext(), "CLICK", Toast.LENGTH_SHORT).show());
+    public void onBindViewHolder(EntireChannelListAdapter.ViewHolder holder, ChannelRealm item) {
+        holder.itemView.setOnClickListener(v -> mListener.onClickEntireListItem(item));
         holder.titleView.setText(item.getTitle());
 
         Glide.with(holder.imageView.getContext()).load(item.getImage()).into(holder.imageView);
@@ -129,5 +126,9 @@ public class EntireListFragment extends Fragment implements OnItemListener {
                                 Throwable::printStackTrace
                         )
         );
+    }
+
+    public interface EntireListFragmentListener {
+        void onClickEntireListItem(ChannelRealm item);
     }
 }

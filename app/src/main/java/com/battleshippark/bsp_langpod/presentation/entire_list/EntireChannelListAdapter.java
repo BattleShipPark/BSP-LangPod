@@ -15,11 +15,11 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.realm.OrderedRealmCollection;
 
-class EntireListAdapter extends RealmRecyclerViewAdapter<ChannelRealm, EntireListAdapter.ViewHolder> {
+class EntireChannelListAdapter extends RealmRecyclerViewAdapter<ChannelRealm, EntireChannelListAdapter.ViewHolder> {
 
     private final OnItemListener mListener;
 
-    EntireListAdapter(OrderedRealmCollection<ChannelRealm> items, OnItemListener listener) {
+    EntireChannelListAdapter(OrderedRealmCollection<ChannelRealm> items, OnItemListener listener) {
         super(items, true);
         mListener = listener;
     }
