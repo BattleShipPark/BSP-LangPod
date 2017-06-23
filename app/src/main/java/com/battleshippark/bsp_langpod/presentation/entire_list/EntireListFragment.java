@@ -119,10 +119,10 @@ public class EntireListFragment extends Fragment implements OnItemListener {
 
         Glide.with(holder.imageView.getContext()).load(item.getImage()).into(holder.imageView);
 
-        holder.subscribeView.setVisibility(item.isSubscribed() ? View.GONE : View.VISIBLE);
+        holder.subscribeView.setSelected(item.isSubscribed());
         holder.subscribeView.setOnClickListener(
                 v -> subscribeChannel.execute(item)
-                        .observeOn(AndroidSchedulers.mainThread())
+//                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 aVoid -> {
                                 },
