@@ -73,6 +73,24 @@ public class MyListFragment extends Fragment implements OnItemListener {
         rv = ButterKnife.findById(view, R.id.my_list_rv);
         rv.setLayoutManager(new LinearLayoutManager(getActivity()));
 
+        adapter = new MyListAdapter(null, this);
+        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                super.onChanged();
+                if (adapter.getItemCount() == 0) {
+                    rv.setVisibility(View.GONE);
+                    msgTextView.setVisibility(View.VISIBLE);
+                    msgTextView.setText(R.string.my_list_empty_msg);
+                } else {
+                    rv.setVisibility(View.VISIBLE);
+                    msgTextView.setVisibility(View.GONE);
+                }
+            }
+        });
+
+        rv.setAdapter(adapter);
+
         msgTextView = ButterKnife.findById(view, R.id.msg_tv);
 
         return view;
@@ -100,16 +118,7 @@ public class MyListFragment extends Fragment implements OnItemListener {
     }
 
     void showData(List<ChannelRealm> channelRealmList) {
-        if (channelRealmList.isEmpty()) {
-            rv.setVisibility(View.GONE);
-            msgTextView.setVisibility(View.VISIBLE);
-            msgTextView.setText(R.string.my_list_empty_msg);
-        } else {
-            adapter = new MyListAdapter((OrderedRealmCollection<ChannelRealm>) channelRealmList, this);
-            rv.setAdapter(adapter);
-            rv.setVisibility(View.VISIBLE);
-            msgTextView.setVisibility(View.GONE);
-        }
+        adapter.updateData((OrderedRealmCollection<ChannelRealm>) channelRealmList);
     }
 
     void showError(Throwable throwable) {
@@ -132,7 +141,7 @@ public class MyListFragment extends Fragment implements OnItemListener {
                         .subscribe(
                                 aVoid -> {
                                 },
-                                Throwable::printStackTrace
+                                throwable -> Log.w(TAG, throwable)
                         )
         );
     }
