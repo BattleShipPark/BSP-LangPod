@@ -15,10 +15,10 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.realm.OrderedRealmCollection;
 
-class MyListAdapter extends RealmRecyclerViewAdapter<ChannelRealm, MyListAdapter.ViewHolder> {
+class MyChannelListAdapter extends RealmRecyclerViewAdapter<ChannelRealm, MyChannelListAdapter.ViewHolder> {
     private final OnItemListener mListener;
 
-    MyListAdapter(OrderedRealmCollection<ChannelRealm> items, OnItemListener listener) {
+    MyChannelListAdapter(OrderedRealmCollection<ChannelRealm> items, OnItemListener listener) {
         super(items, true);
         mListener = listener;
     }
@@ -26,7 +26,7 @@ class MyListAdapter extends RealmRecyclerViewAdapter<ChannelRealm, MyListAdapter
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.fragment_my_list_item, parent, false);
+                .inflate(R.layout.fragment_my_channel_list_item, parent, false);
         return new ViewHolder(view);
     }
 

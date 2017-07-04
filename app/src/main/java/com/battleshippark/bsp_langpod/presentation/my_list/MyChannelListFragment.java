@@ -26,23 +26,23 @@ import butterknife.ButterKnife;
 import io.realm.OrderedRealmCollection;
 import rx.Subscription;
 
-public class MyListFragment extends Fragment implements OnItemListener {
-    private static final String TAG = MyListFragment.class.getSimpleName();
+public class MyChannelListFragment extends Fragment implements OnItemListener {
+    private static final String TAG = MyChannelListFragment.class.getSimpleName();
     private RecyclerView rv;
     private TextView msgTextView;
 
     private MyListFragmentListener mListener;
     private Subscription subscription;
-    private MyListAdapter adapter;
+    private MyChannelListAdapter adapter;
 
     private GetMyChannelList getMyChannelList;
     private SubscribeChannel subscribeChannel;
 
-    public MyListFragment() {
+    public MyChannelListFragment() {
     }
 
-    public static MyListFragment newInstance() {
-        return new MyListFragment();
+    public static MyChannelListFragment newInstance() {
+        return new MyChannelListFragment();
     }
 
     @Override
@@ -69,11 +69,11 @@ public class MyListFragment extends Fragment implements OnItemListener {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_my_list, container, false);
+        View view = inflater.inflate(R.layout.fragment_my_channel_list, container, false);
         rv = ButterKnife.findById(view, R.id.my_list_rv);
         rv.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        adapter = new MyListAdapter(null, this);
+        adapter = new MyChannelListAdapter(null, this);
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onChanged() {
@@ -129,7 +129,7 @@ public class MyListFragment extends Fragment implements OnItemListener {
     }
 
     @Override
-    public void onBindViewHolder(MyListAdapter.ViewHolder holder, ChannelRealm item) {
+    public void onBindViewHolder(MyChannelListAdapter.ViewHolder holder, ChannelRealm item) {
 //        holder.itemView.setOnClickListener(v -> mListener.onClickEntireListItem(item));
         holder.titleView.setText(item.getTitle());
 

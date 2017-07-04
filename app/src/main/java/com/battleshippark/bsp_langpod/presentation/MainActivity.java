@@ -8,7 +8,7 @@ import android.widget.Toast;
 import com.battleshippark.bsp_langpod.R;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.presentation.entire_list.EntireChannelListFragment;
-import com.battleshippark.bsp_langpod.presentation.my_list.MyListFragment;
+import com.battleshippark.bsp_langpod.presentation.my_list.MyChannelListFragment;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -41,7 +41,7 @@ public class MainActivity extends Activity implements EntireChannelListFragment.
     private void showMyList() {
         getFragmentManager()
                 .beginTransaction()
-                .replace(R.id.main_fragment_layout, MyListFragment.newInstance())
+                .replace(R.id.main_fragment_layout, MyChannelListFragment.newInstance())
                 .commit();
     }
 
