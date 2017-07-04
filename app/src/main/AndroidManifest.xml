@@ -19,6 +19,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".presentation.channel.ChannelActivity"
+            android:theme="@style/ToolBarTheme" />
 
         <service android:name=".fcm.MyFirebaseMessagingService">
             <intent-filter>

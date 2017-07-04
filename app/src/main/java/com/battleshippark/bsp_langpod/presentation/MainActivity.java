@@ -1,12 +1,14 @@
 package com.battleshippark.bsp_langpod.presentation;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.widget.Toast;
 
 import com.battleshippark.bsp_langpod.R;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
+import com.battleshippark.bsp_langpod.presentation.channel.ChannelActivity;
 import com.battleshippark.bsp_langpod.presentation.entire_list.EntireChannelListFragment;
 import com.battleshippark.bsp_langpod.presentation.my_list.MyChannelListFragment;
 
@@ -14,7 +16,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
-public class MainActivity extends Activity implements EntireChannelListFragment.EntireListFragmentListener {
+public class MainActivity extends Activity implements EntireChannelListFragment.EntireListFragmentListener, MyChannelListFragment.MyListFragmentListener {
     private Unbinder unbinder;
 
     @BindView(R.id.tab_layout)
@@ -79,6 +81,12 @@ public class MainActivity extends Activity implements EntireChannelListFragment.
 
     @Override
     public void onClickEntireListItem(ChannelRealm item) {
+        startActivity(new Intent(this, ChannelActivity.class));
         Toast.makeText(this, "CLICK", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onClickMyChannelItem(ChannelRealm item) {
+
     }
 }

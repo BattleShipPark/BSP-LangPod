@@ -5,6 +5,8 @@ import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.server.ChannelJson;
 import com.battleshippark.bsp_langpod.data.server.ChannelServerRepository;
 
+import java.util.List;
+
 import javax.inject.Inject;
 
 import rx.Observable;
@@ -14,7 +16,7 @@ import rx.Subscriber;
 /**
  */
 
-public class GetChannel implements UseCase<Long, ChannelRealm> {
+public class GetChannel implements UseCase<Long, List<ChannelRealm>> {
     private final ChannelDbRepository dbRepository;
     private final ChannelServerRepository serverRepository;
     private final Scheduler scheduler;
@@ -32,18 +34,18 @@ public class GetChannel implements UseCase<Long, ChannelRealm> {
     }
 
     @Override
-    public Observable<ChannelRealm> execute(Long id) {
+    public Observable<List<ChannelRealm>> execute(Long id) {
         return Observable.create(subscriber ->
                 dbRepository.channel(id).subscribe(
-                        channelRealm -> onDbLoaded(subscriber, channelRealm),
+                        channelRealmList -> onDbLoaded(subscriber, channelRealmList),
                         subscriber::onError));
     }
 
-    private void onDbLoaded(Subscriber<? super ChannelRealm> subscriber, ChannelRealm channelRealm) {
-        subscriber.onNext(channelRealm);
+    private void onDbLoaded(Subscriber<? super List<ChannelRealm>> subscriber, List<ChannelRealm> channelRealmList) {
+        subscriber.onNext(channelRealmList);
 
-        serverRepository.myChannel(channelRealm.getUrl()).subscribeOn(scheduler).observeOn(postScheduler)
-                .subscribe(myChannelJson -> onServerLoaded(channelRealm, myChannelJson),
+        serverRepository.myChannel(channelRealmList.get(0).getUrl()).subscribeOn(scheduler).observeOn(postScheduler)
+                .subscribe(myChannelJson -> onServerLoaded(channelRealmList.get(0), myChannelJson),
                         subscriber::onError, subscriber::onCompleted);
     }
 

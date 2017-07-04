@@ -1,6 +1,6 @@
-package com.battleshippark.bsp_langpod.presentation.my_list;
+package com.battleshippark.bsp_langpod.presentation.channel;
 
-import android.app.Fragment;
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -11,69 +11,70 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toolbar;
 
 import com.battleshippark.bsp_langpod.R;
 import com.battleshippark.bsp_langpod.dagger.DaggerDbApiGraph;
+import com.battleshippark.bsp_langpod.dagger.DaggerServerApiGraph;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
+import com.battleshippark.bsp_langpod.data.server.ChannelServerApi;
+import com.battleshippark.bsp_langpod.domain.DomainMapper;
+import com.battleshippark.bsp_langpod.domain.GetChannel;
 import com.battleshippark.bsp_langpod.domain.GetMyChannelList;
 import com.battleshippark.bsp_langpod.domain.SubscribeChannel;
 import com.bumptech.glide.Glide;
 
 import java.util.List;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.Unbinder;
 import io.realm.OrderedRealmCollection;
+import io.realm.RealmList;
 import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
-public class MyChannelListFragment extends Fragment implements OnItemListener {
-    private static final String TAG = MyChannelListFragment.class.getSimpleName();
-    private RecyclerView rv;
-    private TextView msgTextView;
+public class ChannelActivity extends Activity implements OnItemListener {
+    private static final String TAG = ChannelActivity.class.getSimpleName();
 
     private MyListFragmentListener mListener;
     private Subscription subscription;
-    private MyChannelListAdapter adapter;
+    private ChannelAdapter adapter;
 
-    private GetMyChannelList getMyChannelList;
+    private GetChannel getChannel;
     private SubscribeChannel subscribeChannel;
+    private Unbinder unbinder;
 
-    public MyChannelListFragment() {
-    }
-
-    public static MyChannelListFragment newInstance() {
-        return new MyChannelListFragment();
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof MyListFragmentListener) {
-            mListener = (MyListFragmentListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnListFragmentInteractionListener");
-        }
-    }
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
+    @BindView(R.id.channel_rv)
+    RecyclerView rv;
+    @BindView(R.id.msg_tv)
+    TextView msgTextView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_channel);
 
-        ChannelDbApi channelDbApi = DaggerDbApiGraph.create().channelApi();
+        unbinder = ButterKnife.bind(this);
 
-        getMyChannelList = new GetMyChannelList(channelDbApi);
-        subscribeChannel = new SubscribeChannel(channelDbApi);
+        initData();
+        initUI();
+
+        showChannel();
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_my_channel_list, container, false);
-        rv = ButterKnife.findById(view, R.id.my_list_rv);
-        rv.setLayoutManager(new LinearLayoutManager(getActivity()));
+    private void initData() {
+        ChannelDbApi channelDbApi = DaggerDbApiGraph.create().channelApi();
+        ChannelServerApi channelServerApi = DaggerServerApiGraph.create().channelApi();
 
-        adapter = new MyChannelListAdapter(null, this);
+        getChannel = new GetChannel(channelDbApi, channelServerApi, Schedulers.io(), AndroidSchedulers.mainThread(), new DomainMapper());
+        subscribeChannel = new SubscribeChannel(channelDbApi);
+
+        adapter = new ChannelAdapter(this);
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onChanged() {
@@ -88,20 +89,19 @@ public class MyChannelListFragment extends Fragment implements OnItemListener {
                 }
             }
         });
-
-        rv.setAdapter(adapter);
-
-        msgTextView = ButterKnife.findById(view, R.id.msg_tv);
-
-        return view;
     }
 
+    private void initUI() {
+        setActionBar(toolbar);
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setDisplayShowHomeEnabled(true);
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+        rv.setLayoutManager(new LinearLayoutManager(this));
+        rv.setAdapter(adapter);
+    }
 
-        subscription = getMyChannelList.execute(null)
+    private void showChannel() {
+        subscription = getChannel.execute(null)
                 .subscribe(this::showData, this::showError);
     }
 
@@ -109,12 +109,6 @@ public class MyChannelListFragment extends Fragment implements OnItemListener {
     public void onDestroy() {
         subscription.unsubscribe();
         super.onDestroy();
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
     }
 
     void showData(List<ChannelRealm> channelRealmList) {
@@ -129,7 +123,25 @@ public class MyChannelListFragment extends Fragment implements OnItemListener {
     }
 
     @Override
-    public void onBindViewHolder(MyChannelListAdapter.ViewHolder holder, ChannelRealm item) {
+    public void onBindHeaderViewHolder(ChannelAdapter.HeaderViewHolder holder, ChannelRealm item) {
+        holder.itemView.setOnClickListener(v -> mListener.onClickMyChannelItem(item));
+        holder.titleView.setText(item.getTitle());
+
+        Glide.with(holder.imageView.getContext()).load(item.getImage()).into(holder.imageView);
+
+        holder.subscribeView.setSelected(item.isSubscribed());
+        holder.subscribeView.setOnClickListener(
+                v -> subscribeChannel.execute(item)
+                        .subscribe(
+                                aVoid -> {
+                                },
+                                throwable -> Log.w(TAG, throwable)
+                        )
+        );
+    }
+
+    @Override
+    public void onBindEpisodeViewHolder(ChannelAdapter.EpisodeViewHolder holder, ChannelRealm item) {
         holder.itemView.setOnClickListener(v -> mListener.onClickMyChannelItem(item));
         holder.titleView.setText(item.getTitle());
 

@@ -50,10 +50,10 @@ public class ChannelDbApi implements ChannelDbRepository {
     }
 
     @Override
-    public Observable<ChannelRealm> channel(long id) {
+    public Observable<List<ChannelRealm>> channel(long id) {
         return Observable.create(subscriber -> {
-            ChannelRealm channelRealm = realm.where(ChannelRealm.class).equalTo("id", id).findFirst();
-            subscriber.onNext(channelRealm);
+            RealmResults<ChannelRealm> results = realm.where(ChannelRealm.class).equalTo("id", id).findAll();
+            subscriber.onNext(results);
             subscriber.onCompleted();
         });
     }
