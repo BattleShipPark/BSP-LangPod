@@ -8,6 +8,7 @@ import android.widget.Toast;
 import com.battleshippark.bsp_langpod.R;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.presentation.entire_list.EntireChannelListFragment;
+import com.battleshippark.bsp_langpod.presentation.my_list.MyListFragment;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -37,11 +38,25 @@ public class MainActivity extends Activity implements EntireChannelListFragment.
                 .commit();
     }
 
+    private void showMyList() {
+        getFragmentManager()
+                .beginTransaction()
+                .replace(R.id.main_fragment_layout, MyListFragment.newInstance())
+                .commit();
+    }
+
     private void initUI() {
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                Toast.makeText(MainActivity.this, tab.getText(), Toast.LENGTH_SHORT).show();
+                switch (tab.getPosition()) {
+                    case 0:
+                        showEntireList();
+                        break;
+                    case 1:
+                        showMyList();
+                        break;
+                }
             }
 
             @Override

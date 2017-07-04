@@ -5,6 +5,6 @@ import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 /**
  */
 
-public interface OnItemListener {
+interface OnItemListener {
     void onBindViewHolder(EntireChannelListAdapter.ViewHolder holder, ChannelRealm item);
 }
