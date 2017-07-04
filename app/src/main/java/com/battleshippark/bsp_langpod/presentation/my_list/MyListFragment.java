@@ -10,12 +10,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.battleshippark.bsp_langpod.R;
 import com.battleshippark.bsp_langpod.dagger.DaggerDbApiGraph;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.domain.GetMyChannelList;
+import com.battleshippark.bsp_langpod.domain.SubscribeChannel;
 import com.bumptech.glide.Glide;
 
 import java.util.List;
@@ -27,12 +29,14 @@ import rx.Subscription;
 public class MyListFragment extends Fragment implements OnItemListener {
     private static final String TAG = MyListFragment.class.getSimpleName();
     private RecyclerView rv;
+    private TextView msgTextView;
 
     private MyListFragmentListener mListener;
     private Subscription subscription;
     private MyListAdapter adapter;
 
     private GetMyChannelList getMyChannelList;
+    private SubscribeChannel subscribeChannel;
 
     public MyListFragment() {
     }
@@ -59,6 +63,7 @@ public class MyListFragment extends Fragment implements OnItemListener {
         ChannelDbApi channelDbApi = DaggerDbApiGraph.create().channelApi();
 
         getMyChannelList = new GetMyChannelList(channelDbApi);
+        subscribeChannel = new SubscribeChannel(channelDbApi);
     }
 
     @Override
@@ -67,6 +72,9 @@ public class MyListFragment extends Fragment implements OnItemListener {
         View view = inflater.inflate(R.layout.fragment_my_list, container, false);
         rv = ButterKnife.findById(view, R.id.my_list_rv);
         rv.setLayoutManager(new LinearLayoutManager(getActivity()));
+
+        msgTextView = ButterKnife.findById(view, R.id.msg_tv);
+
         return view;
     }
 
@@ -92,11 +100,22 @@ public class MyListFragment extends Fragment implements OnItemListener {
     }
 
     void showData(List<ChannelRealm> channelRealmList) {
-        adapter = new MyListAdapter((OrderedRealmCollection<ChannelRealm>) channelRealmList, this);
-        rv.setAdapter(adapter);
+        if (channelRealmList.isEmpty()) {
+            rv.setVisibility(View.GONE);
+            msgTextView.setVisibility(View.VISIBLE);
+            msgTextView.setText(R.string.my_list_empty_msg);
+        } else {
+            adapter = new MyListAdapter((OrderedRealmCollection<ChannelRealm>) channelRealmList, this);
+            rv.setAdapter(adapter);
+            rv.setVisibility(View.VISIBLE);
+            msgTextView.setVisibility(View.GONE);
+        }
     }
 
     void showError(Throwable throwable) {
+        rv.setVisibility(View.GONE);
+        msgTextView.setVisibility(View.VISIBLE);
+        msgTextView.setText(R.string.my_list_error_msg);
         Log.w(TAG, throwable);
     }
 
@@ -107,16 +126,15 @@ public class MyListFragment extends Fragment implements OnItemListener {
 
         Glide.with(holder.imageView.getContext()).load(item.getImage()).into(holder.imageView);
 
-/*        holder.subscribeView.setSelected(item.isSubscribed());
+        holder.subscribeView.setSelected(item.isSubscribed());
         holder.subscribeView.setOnClickListener(
                 v -> subscribeChannel.execute(item)
-//                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 aVoid -> {
                                 },
                                 Throwable::printStackTrace
                         )
-        );*/
+        );
     }
 
     public interface MyListFragmentListener {

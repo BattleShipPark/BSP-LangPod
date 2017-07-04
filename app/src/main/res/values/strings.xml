@@ -3,4 +3,6 @@
     <string name="main_tab_entire">EntireList</string>
     <string name="main_tab_my">MyList</string>
     <string name="main_tab_setting">Setting</string>
+    <string name="my_list_empty_msg" >You have no subscription list. Please add it from EntireList.</string>
+    <string name="my_list_error_msg" >Error occurred while loading list.</string>
 </resources>
