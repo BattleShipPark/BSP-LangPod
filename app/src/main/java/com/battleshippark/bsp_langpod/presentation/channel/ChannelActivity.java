@@ -2,6 +2,7 @@ package com.battleshippark.bsp_langpod.presentation.channel;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -23,6 +24,7 @@ import com.battleshippark.bsp_langpod.domain.DomainMapper;
 import com.battleshippark.bsp_langpod.domain.GetChannel;
 import com.battleshippark.bsp_langpod.domain.GetMyChannelList;
 import com.battleshippark.bsp_langpod.domain.SubscribeChannel;
+import com.battleshippark.bsp_langpod.presentation.MainActivity;
 import com.bumptech.glide.Glide;
 
 import java.util.List;
@@ -38,6 +40,14 @@ import rx.schedulers.Schedulers;
 
 public class ChannelActivity extends Activity implements OnItemListener {
     private static final String TAG = ChannelActivity.class.getSimpleName();
+    private static final String KEY_ID = "keyId";
+
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
+    @BindView(R.id.channel_rv)
+    RecyclerView rv;
+    @BindView(R.id.msg_tv)
+    TextView msgTextView;
 
     private MyListFragmentListener mListener;
     private Subscription subscription;
@@ -47,12 +57,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
     private SubscribeChannel subscribeChannel;
     private Unbinder unbinder;
 
-    @BindView(R.id.toolbar)
-    Toolbar toolbar;
-    @BindView(R.id.channel_rv)
-    RecyclerView rv;
-    @BindView(R.id.msg_tv)
-    TextView msgTextView;
+    private long channelId;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -61,13 +66,13 @@ public class ChannelActivity extends Activity implements OnItemListener {
 
         unbinder = ButterKnife.bind(this);
 
-        initData();
+        initData(savedInstanceState);
         initUI();
 
-//        showChannel();
+        showChannel();
     }
 
-    private void initData() {
+    private void initData(Bundle savedInstanceState) {
         ChannelDbApi channelDbApi = DaggerDbApiGraph.create().channelApi();
         ChannelServerApi channelServerApi = DaggerServerApiGraph.create().channelApi();
 
@@ -89,6 +94,12 @@ public class ChannelActivity extends Activity implements OnItemListener {
                 }
             }
         });
+
+        if (savedInstanceState == null) {
+            channelId = getIntent().getLongExtra(KEY_ID, 0);
+        } else {
+            channelId = savedInstanceState.getLong(KEY_ID);
+        }
     }
 
     private void initUI() {
@@ -101,7 +112,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
     }
 
     private void showChannel() {
-        subscription = getChannel.execute(null)
+        subscription = getChannel.execute(channelId)
                 .subscribe(this::showData, this::showError);
     }
 
@@ -124,10 +135,13 @@ public class ChannelActivity extends Activity implements OnItemListener {
 
     @Override
     public void onBindHeaderViewHolder(ChannelAdapter.HeaderViewHolder holder, ChannelRealm item) {
-/*        holder.itemView.setOnClickListener(v -> mListener.onClickMyChannelItem(item));
-        holder.titleView.setText(item.getTitle());
+        holder.itemView.setOnClickListener(v -> mListener.onClickMyChannelItem(item));
 
         Glide.with(holder.imageView.getContext()).load(item.getImage()).into(holder.imageView);
+
+        holder.descView.setText(item.getDesc());
+        holder.copyrightView.setText(item.getCopyright());
+        holder.episodeCountView.setText("" + item.getEpisodes().size());
 
         holder.subscribeView.setSelected(item.isSubscribed());
         holder.subscribeView.setOnClickListener(
@@ -137,7 +151,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
                                 },
                                 throwable -> Log.w(TAG, throwable)
                         )
-        );*/
+        );
     }
 
     @Override
@@ -156,6 +170,12 @@ public class ChannelActivity extends Activity implements OnItemListener {
                                 throwable -> Log.w(TAG, throwable)
                         )
         );*/
+    }
+
+    public static Intent createIntent(Context context, long id) {
+        Intent intent = new Intent(context, ChannelActivity.class);
+        intent.putExtra(KEY_ID, id);
+        return intent;
     }
 
     public interface MyListFragmentListener {

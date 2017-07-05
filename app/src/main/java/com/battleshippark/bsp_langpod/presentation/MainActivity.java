@@ -81,8 +81,7 @@ public class MainActivity extends Activity implements EntireChannelListFragment.
 
     @Override
     public void onClickEntireListItem(ChannelRealm item) {
-        startActivity(new Intent(this, ChannelActivity.class));
-        Toast.makeText(this, "CLICK", Toast.LENGTH_SHORT).show();
+        startActivity(ChannelActivity.createIntent(this, item.getId()));
     }
 
     @Override

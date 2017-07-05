@@ -43,9 +43,9 @@ class ChannelAdapter extends RealmRecyclerViewAdapter<ChannelRealm, RecyclerView
 
     @Override
     public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
-/*        ChannelRealm channelRealm = getData().get(position);
+        ChannelRealm channelRealm = getData().get(position);
 
-        switch (ViewType.values()[getItemViewType(position)]) {
+/*        switch (ViewType.values()[getItemViewType(position)]) {
             case HEADER:
                 mListener.onBindHeaderViewHolder((HeaderViewHolder) holder, channelRealm);
                 break;
@@ -53,7 +53,7 @@ class ChannelAdapter extends RealmRecyclerViewAdapter<ChannelRealm, RecyclerView
                 mListener.onBindEpisodeViewHolder((EpisodeViewHolder) holder, channelRealm);
                 break;
         }*/
-        mListener.onBindHeaderViewHolder((HeaderViewHolder) holder, null);
+        mListener.onBindHeaderViewHolder((HeaderViewHolder) holder, channelRealm);
     }
 
     @Override
@@ -63,7 +63,7 @@ class ChannelAdapter extends RealmRecyclerViewAdapter<ChannelRealm, RecyclerView
 
     @Override
     public int getItemCount() {
-        int itemCount = super.getItemCount();
+//        int itemCount = super.getItemCount();
 //        return itemCount == 0 ? 0 : itemCount + getData().get(0).getEpisodes().size();
         return 1;
     }
@@ -71,16 +71,20 @@ class ChannelAdapter extends RealmRecyclerViewAdapter<ChannelRealm, RecyclerView
     enum ViewType {HEADER, EPISODE}
 
     public class HeaderViewHolder extends RecyclerView.ViewHolder {
-/*        @BindView(R.id.title_tv)
-        TextView titleView;
         @BindView(R.id.image_iv)
         ImageView imageView;
+        @BindView(R.id.desc_tv)
+        TextView descView;
+        @BindView(R.id.copyright_tv)
+        TextView copyrightView;
+        @BindView(R.id.episode_count_tv)
+        TextView episodeCountView;
         @BindView(R.id.subscribe_iv)
-        ImageView subscribeView;*/
+        ImageView subscribeView;
 
         HeaderViewHolder(View view) {
             super(view);
-//            ButterKnife.bind(this, view);
+            ButterKnife.bind(this, view);
         }
     }
 
