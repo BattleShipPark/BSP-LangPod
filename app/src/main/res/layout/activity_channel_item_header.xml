@@ -7,27 +7,61 @@
 
     <ImageView
         android:id="@+id/image_iv"
-        android:layout_width="68dp"
-        android:layout_height="68dp"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginStart="8dp"
+        android:background="@android:color/holo_red_light"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:background="@android:color/holo_red_light" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/title_tv"
+        android:id="@+id/desc_tv"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:text="This is very long long title. This is very long long title."
+        android:textAppearance="?attr/textAppearanceListItem"
+        app:layout_constraintLeft_toRightOf="@+id/image_iv"
+        app:layout_constraintRight_toLeftOf="@+id/subscribe_iv"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/episode_count_tv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
         android:ellipsize="end"
         android:maxLines="1"
+        android:text="This is very long long title. This is very long long title."
         android:textAppearance="?attr/textAppearanceListItem"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toRightOf="@+id/image_iv"
+        app:layout_constraintRight_toLeftOf="@+id/subscribe_iv" />
+
+    <TextView
+        android:id="@+id/copyright_tv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:text="This is very long long title. This is very long long title."
+        android:textAppearance="?attr/textAppearanceListItem"
+        app:layout_constraintBottom_toTopOf="@+id/episode_count_tv"
+        app:layout_constraintLeft_toRightOf="@+id/image_iv"
         app:layout_constraintRight_toLeftOf="@+id/subscribe_iv"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="This is very long long title. This is very long long title." />
+        app:layout_constraintTop_toBottomOf="@+id/desc_tv" />
+
 
     <ImageView
         android:id="@+id/subscribe_iv"

@@ -43,7 +43,7 @@ class ChannelAdapter extends RealmRecyclerViewAdapter<ChannelRealm, RecyclerView
 
     @Override
     public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
-        ChannelRealm channelRealm = getData().get(position);
+/*        ChannelRealm channelRealm = getData().get(position);
 
         switch (ViewType.values()[getItemViewType(position)]) {
             case HEADER:
@@ -52,7 +52,8 @@ class ChannelAdapter extends RealmRecyclerViewAdapter<ChannelRealm, RecyclerView
             case EPISODE:
                 mListener.onBindEpisodeViewHolder((EpisodeViewHolder) holder, channelRealm);
                 break;
-        }
+        }*/
+        mListener.onBindHeaderViewHolder((HeaderViewHolder) holder, null);
     }
 
     @Override
@@ -63,36 +64,37 @@ class ChannelAdapter extends RealmRecyclerViewAdapter<ChannelRealm, RecyclerView
     @Override
     public int getItemCount() {
         int itemCount = super.getItemCount();
-        return itemCount == 0 ? 0 : itemCount + getData().get(0).getEpisodes().size();
+//        return itemCount == 0 ? 0 : itemCount + getData().get(0).getEpisodes().size();
+        return 1;
     }
 
     enum ViewType {HEADER, EPISODE}
 
     public class HeaderViewHolder extends RecyclerView.ViewHolder {
-        @BindView(R.id.title_tv)
+/*        @BindView(R.id.title_tv)
         TextView titleView;
         @BindView(R.id.image_iv)
         ImageView imageView;
         @BindView(R.id.subscribe_iv)
-        ImageView subscribeView;
+        ImageView subscribeView;*/
 
         HeaderViewHolder(View view) {
             super(view);
-            ButterKnife.bind(this, view);
+//            ButterKnife.bind(this, view);
         }
     }
 
     public class EpisodeViewHolder extends RecyclerView.ViewHolder {
-        @BindView(R.id.title_tv)
+/*        @BindView(R.id.title_tv)
         TextView titleView;
         @BindView(R.id.image_iv)
         ImageView imageView;
         @BindView(R.id.subscribe_iv)
-        ImageView subscribeView;
+        ImageView subscribeView;*/
 
         EpisodeViewHolder(View view) {
             super(view);
-            ButterKnife.bind(this, view);
+//            ButterKnife.bind(this, view);
         }
     }
 }

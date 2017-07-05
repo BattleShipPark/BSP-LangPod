@@ -64,7 +64,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
         initData();
         initUI();
 
-        showChannel();
+//        showChannel();
     }
 
     private void initData() {
@@ -124,7 +124,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
 
     @Override
     public void onBindHeaderViewHolder(ChannelAdapter.HeaderViewHolder holder, ChannelRealm item) {
-        holder.itemView.setOnClickListener(v -> mListener.onClickMyChannelItem(item));
+/*        holder.itemView.setOnClickListener(v -> mListener.onClickMyChannelItem(item));
         holder.titleView.setText(item.getTitle());
 
         Glide.with(holder.imageView.getContext()).load(item.getImage()).into(holder.imageView);
@@ -137,12 +137,12 @@ public class ChannelActivity extends Activity implements OnItemListener {
                                 },
                                 throwable -> Log.w(TAG, throwable)
                         )
-        );
+        );*/
     }
 
     @Override
     public void onBindEpisodeViewHolder(ChannelAdapter.EpisodeViewHolder holder, ChannelRealm item) {
-        holder.itemView.setOnClickListener(v -> mListener.onClickMyChannelItem(item));
+/*        holder.itemView.setOnClickListener(v -> mListener.onClickMyChannelItem(item));
         holder.titleView.setText(item.getTitle());
 
         Glide.with(holder.imageView.getContext()).load(item.getImage()).into(holder.imageView);
@@ -155,7 +155,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
                                 },
                                 throwable -> Log.w(TAG, throwable)
                         )
-        );
+        );*/
     }
 
     public interface MyListFragmentListener {
