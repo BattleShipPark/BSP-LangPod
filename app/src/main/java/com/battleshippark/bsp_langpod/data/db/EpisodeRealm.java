@@ -19,10 +19,11 @@ public class EpisodeRealm extends RealmObject {
     public EpisodeRealm() {
     }
 
-    public EpisodeRealm(String title, String desc, String url) {
+    public EpisodeRealm(String title, String desc, String url, Date date) {
         this.title = title;
         this.desc = desc;
         this.url = url;
+        this.date = date;
     }
 
     public String getTitle() {
@@ -58,7 +59,7 @@ public class EpisodeRealm extends RealmObject {
     }
 
     public Date getDate() {
-        return date;
+        return new Date(date.getTime());
     }
 
     public void setDate(Date date) {
@@ -112,11 +113,11 @@ public class EpisodeRealm extends RealmObject {
 
     }
 
-    private enum PlayState {
+    public enum PlayState {
         NOT_PLAYED, PLAYING, PLAYED
     }
 
-    private enum DownloadState {
+    public enum DownloadState {
         NOT_DOWNLOADED, DOWNLOADING, DOWNLOADED
     }
 }

@@ -43,17 +43,16 @@ class ChannelAdapter extends RealmRecyclerViewAdapter<ChannelRealm, RecyclerView
 
     @Override
     public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
-        ChannelRealm channelRealm = getData().get(position);
+        ChannelRealm channelRealm = getData().get(0);
 
-/*        switch (ViewType.values()[getItemViewType(position)]) {
+        switch (ViewType.values()[getItemViewType(position)]) {
             case HEADER:
                 mListener.onBindHeaderViewHolder((HeaderViewHolder) holder, channelRealm);
                 break;
             case EPISODE:
-                mListener.onBindEpisodeViewHolder((EpisodeViewHolder) holder, channelRealm);
+                mListener.onBindEpisodeViewHolder((EpisodeViewHolder) holder, channelRealm.getEpisodes().get(position - 1));
                 break;
-        }*/
-        mListener.onBindHeaderViewHolder((HeaderViewHolder) holder, channelRealm);
+        }
     }
 
     @Override
@@ -63,9 +62,8 @@ class ChannelAdapter extends RealmRecyclerViewAdapter<ChannelRealm, RecyclerView
 
     @Override
     public int getItemCount() {
-//        int itemCount = super.getItemCount();
-//        return itemCount == 0 ? 0 : itemCount + getData().get(0).getEpisodes().size();
-        return 1;
+        int itemCount = super.getItemCount();
+        return itemCount == 0 ? 0 : itemCount + getData().get(0).getEpisodes().size();
     }
 
     enum ViewType {HEADER, EPISODE}
@@ -89,16 +87,18 @@ class ChannelAdapter extends RealmRecyclerViewAdapter<ChannelRealm, RecyclerView
     }
 
     public class EpisodeViewHolder extends RecyclerView.ViewHolder {
-/*        @BindView(R.id.title_tv)
-        TextView titleView;
-        @BindView(R.id.image_iv)
-        ImageView imageView;
-        @BindView(R.id.subscribe_iv)
-        ImageView subscribeView;*/
+        @BindView(R.id.desc_tv)
+        TextView descView;
+        @BindView(R.id.date_tv)
+        TextView dateView;
+        @BindView(R.id.status_tv)
+        TextView statusView;
+        @BindView(R.id.play_iv)
+        ImageView playView;
 
         EpisodeViewHolder(View view) {
             super(view);
-//            ButterKnife.bind(this, view);
+            ButterKnife.bind(this, view);
         }
     }
 }

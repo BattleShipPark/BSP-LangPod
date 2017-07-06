@@ -4,13 +4,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toolbar;
 
@@ -19,12 +16,11 @@ import com.battleshippark.bsp_langpod.dagger.DaggerDbApiGraph;
 import com.battleshippark.bsp_langpod.dagger.DaggerServerApiGraph;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
+import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
 import com.battleshippark.bsp_langpod.data.server.ChannelServerApi;
 import com.battleshippark.bsp_langpod.domain.DomainMapper;
 import com.battleshippark.bsp_langpod.domain.GetChannel;
-import com.battleshippark.bsp_langpod.domain.GetMyChannelList;
 import com.battleshippark.bsp_langpod.domain.SubscribeChannel;
-import com.battleshippark.bsp_langpod.presentation.MainActivity;
 import com.bumptech.glide.Glide;
 
 import java.util.List;
@@ -33,7 +29,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import io.realm.OrderedRealmCollection;
-import io.realm.RealmList;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -134,18 +129,18 @@ public class ChannelActivity extends Activity implements OnItemListener {
     }
 
     @Override
-    public void onBindHeaderViewHolder(ChannelAdapter.HeaderViewHolder holder, ChannelRealm item) {
-        holder.itemView.setOnClickListener(v -> mListener.onClickMyChannelItem(item));
+    public void onBindHeaderViewHolder(ChannelAdapter.HeaderViewHolder holder, ChannelRealm channel) {
+//        holder.itemView.setOnClickListener(v -> mListener.onClickMyChannelItem(item));
 
-        Glide.with(holder.imageView.getContext()).load(item.getImage()).into(holder.imageView);
+        Glide.with(holder.imageView.getContext()).load(channel.getImage()).into(holder.imageView);
 
-        holder.descView.setText(item.getDesc());
-        holder.copyrightView.setText(item.getCopyright());
-        holder.episodeCountView.setText("" + item.getEpisodes().size());
+        holder.descView.setText(channel.getDesc());
+        holder.copyrightView.setText(channel.getCopyright());
+        holder.episodeCountView.setText("" + channel.getEpisodes().size());
 
-        holder.subscribeView.setSelected(item.isSubscribed());
+        holder.subscribeView.setSelected(channel.isSubscribed());
         holder.subscribeView.setOnClickListener(
-                v -> subscribeChannel.execute(item)
+                v -> subscribeChannel.execute(channel)
                         .subscribe(
                                 aVoid -> {
                                 },
@@ -155,14 +150,16 @@ public class ChannelActivity extends Activity implements OnItemListener {
     }
 
     @Override
-    public void onBindEpisodeViewHolder(ChannelAdapter.EpisodeViewHolder holder, ChannelRealm item) {
-/*        holder.itemView.setOnClickListener(v -> mListener.onClickMyChannelItem(item));
-        holder.titleView.setText(item.getTitle());
+    public void onBindEpisodeViewHolder(ChannelAdapter.EpisodeViewHolder holder, EpisodeRealm episode) {
+//        holder.itemView.setOnClickListener(v -> mListener.onClickMyChannelItem(item));
 
-        Glide.with(holder.imageView.getContext()).load(item.getImage()).into(holder.imageView);
+        holder.descView.setText(episode.getDesc());
+        holder.dateView.setText(episode.getDate().toString());
+        holder.statusView.setText(episode.getDownloadState().toString());
 
-        holder.subscribeView.setSelected(item.isSubscribed());
-        holder.subscribeView.setOnClickListener(
+
+//        holder.playView.setSelected(item.isSubscribed());
+/*        holder.subscribeView.setOnClickListener(
                 v -> subscribeChannel.execute(item)
                         .subscribe(
                                 aVoid -> {

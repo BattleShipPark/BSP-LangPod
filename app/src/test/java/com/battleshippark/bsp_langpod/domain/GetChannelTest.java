@@ -14,10 +14,14 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import io.realm.RealmList;
+import io.realm.RealmResults;
 import rx.Observable;
 import rx.observers.TestSubscriber;
 import rx.schedulers.Schedulers;
@@ -41,8 +45,8 @@ public class GetChannelTest {
     public void execute_전체리스트에서_하나_조회() {
         ChannelRealm channelRealm = new ChannelRealm(1, 10, "title1", "desc1", "image1", "url1", "cr1",
                 new RealmList<>(
-                        new EpisodeRealm("ep.title1", "ep.desc1", "ep.url1"),
-                        new EpisodeRealm("ep.title2", "ep.desc2", "ep.url2")
+                        new EpisodeRealm("ep.title1", "ep.desc1", "ep.url1", new Date()),
+                        new EpisodeRealm("ep.title2", "ep.desc2", "ep.url2", new Date())
                 ), false
         );
         ChannelJson channelJson = ChannelJson.create(
@@ -53,13 +57,13 @@ public class GetChannelTest {
                         EpisodeJson.create("ep.title3", "ep.desc3", "ep.url3", 3, new Date())
                 )
         );
-        when(dbRepository.channel(1)).thenReturn(Observable.just(channelRealm));
+        when(dbRepository.channel(1)).thenReturn(Observable.just(Collections.singletonList(channelRealm)));
         when(serverRepository.myChannel("url1")).thenReturn(Observable.just(channelJson));
 
         DomainMapper domainMapper = new DomainMapper();
-        UseCase<Long, ChannelRealm> useCase = new GetChannel(dbRepository, serverRepository,
+        UseCase<Long, List<ChannelRealm>> useCase = new GetChannel(dbRepository, serverRepository,
                 Schedulers.immediate(), Schedulers.immediate(), domainMapper);
-        TestSubscriber<ChannelRealm> testSubscriber = new TestSubscriber<>();
+        TestSubscriber<List<ChannelRealm>> testSubscriber = new TestSubscriber<>();
 
 
         useCase.execute(1L).subscribe(testSubscriber); //1번ID 조회
@@ -72,7 +76,7 @@ public class GetChannelTest {
 
         assertThat(testSubscriber.getOnNextEvents()).hasSize(1);
 
-        ChannelRealm actualMyChannelRealm = testSubscriber.getOnNextEvents().get(0);
+        ChannelRealm actualMyChannelRealm = testSubscriber.getOnNextEvents().get(0).get(0);
         assertThat(actualMyChannelRealm).isEqualTo(channelRealm);
 
         verify(dbRepository).putChannel(captor.capture());

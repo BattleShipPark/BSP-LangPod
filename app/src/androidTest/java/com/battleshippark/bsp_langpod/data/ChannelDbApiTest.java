@@ -11,6 +11,7 @@ import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import io.realm.Realm;
@@ -136,13 +137,13 @@ public class ChannelDbApiTest {
 
             //ID1으로 저장해 놓고
             ChannelRealm channelRealm = new ChannelRealm(1, 10, "title1", "desc1", "image1", "url1", "cr1",
-                    new RealmList<>(new EpisodeRealm("ep.title1", "ep.desc1", "ep.url1")), false);
+                    new RealmList<>(new EpisodeRealm("ep.title1", "ep.desc1", "ep.url1", new Date())), false);
             realm.executeTransaction(realm1 -> {
                 realm1.delete(ChannelRealm.class);
                 realm1.copyToRealm(channelRealm);
             });
 
-            TestSubscriber<ChannelRealm> testSubscriber = new TestSubscriber<>();
+            TestSubscriber<List<ChannelRealm>> testSubscriber = new TestSubscriber<>();
             //ID1을 읽어 보면
             repository.channel(1).subscribe(testSubscriber);
 
@@ -151,14 +152,14 @@ public class ChannelDbApiTest {
             testSubscriber.assertNoErrors();
             testSubscriber.assertCompleted();
 
-            ChannelRealm actualChannelRealm1 = testSubscriber.getOnNextEvents().get(0);
+            ChannelRealm actualChannelRealm1 = testSubscriber.getOnNextEvents().get(0).get(0);
             assertThat(actualChannelRealm1.getTitle()).isEqualTo("title1");
             assertThat(actualChannelRealm1.getEpisodes()).hasSize(1);
             assertThat(actualChannelRealm1.getEpisodes().get(0).getTitle()).isEqualTo("ep.title1");
 
             //객체 갱신
             channelRealm.setTitle("title2");
-            channelRealm.getEpisodes().add(new EpisodeRealm("ep.title2", "ep.desc2", "ep,url2"));
+            channelRealm.getEpisodes().add(new EpisodeRealm("ep.title2", "ep.desc2", "ep,url2", new Date()));
 
             repository.putChannel(channelRealm);
             try {
@@ -189,7 +190,7 @@ public class ChannelDbApiTest {
                 realm1.copyToRealm(channelRealm2);
             });
 
-            TestSubscriber<ChannelRealm> testSubscriber = new TestSubscriber<>();
+            TestSubscriber<List<ChannelRealm>> testSubscriber = new TestSubscriber<>();
             repository.channel(2).subscribe(testSubscriber);
 
 
@@ -197,7 +198,7 @@ public class ChannelDbApiTest {
             testSubscriber.assertNoErrors();
             testSubscriber.assertCompleted();
 
-            ChannelRealm actualChannelRealm1 = testSubscriber.getOnNextEvents().get(0);
+            ChannelRealm actualChannelRealm1 = testSubscriber.getOnNextEvents().get(0).get(0);
             assertThat(actualChannelRealm1.getId()).isEqualTo(2);
 
 

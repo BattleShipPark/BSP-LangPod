@@ -105,7 +105,7 @@ public class DomainMapper {
 
     public ChannelRealm channelJsonAsRealm(ChannelRealm channelRealm, ChannelJson channelJson) {
         RealmList<EpisodeRealm> episodeRealmList = Stream.of(channelJson.episodes())
-                .map(episodeJson -> new EpisodeRealm(episodeJson.title(), episodeJson.desc(), episodeJson.url()))
+                .map(episodeJson -> new EpisodeRealm(episodeJson.title(), episodeJson.desc(), episodeJson.url(), episodeJson.date()))
                 .collect(RealmList::new, RealmList::add);
         return new ChannelRealm(
                 channelRealm.getId(),
