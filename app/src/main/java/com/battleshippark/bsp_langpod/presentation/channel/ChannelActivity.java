@@ -23,7 +23,9 @@ import com.battleshippark.bsp_langpod.domain.GetChannel;
 import com.battleshippark.bsp_langpod.domain.SubscribeChannel;
 import com.bumptech.glide.Glide;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -154,8 +156,8 @@ public class ChannelActivity extends Activity implements OnItemListener {
 //        holder.itemView.setOnClickListener(v -> mListener.onClickMyChannelItem(item));
 
         holder.descView.setText(episode.getDesc());
-        holder.dateView.setText(episode.getDate().toString());
-        holder.statusView.setText(episode.getDownloadState().toString());
+        holder.dateView.setText(new SimpleDateFormat("MM/dd", Locale.US).format(episode.getDate()));
+        holder.statusView.setText(episode.getDownloadState().resId);
 
 
 //        holder.playView.setSelected(item.isSubscribed());

@@ -1,5 +1,7 @@
 package com.battleshippark.bsp_langpod.data.db;
 
+import com.battleshippark.bsp_langpod.R;
+
 import java.util.Date;
 
 import io.realm.RealmObject;
@@ -118,6 +120,14 @@ public class EpisodeRealm extends RealmObject {
     }
 
     public enum DownloadState {
-        NOT_DOWNLOADED, DOWNLOADING, DOWNLOADED
+        NOT_DOWNLOADED(R.string.episode_not_downloaded),
+        DOWNLOADING(R.string.episode_downloading),
+        DOWNLOADED(R.string.episode_downloaded);
+
+        public int resId;
+
+        DownloadState(int resId) {
+            this.resId = resId;
+        }
     }
 }
