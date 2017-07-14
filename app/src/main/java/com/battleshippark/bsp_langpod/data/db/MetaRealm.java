@@ -9,6 +9,7 @@ public class MetaRealm extends RealmObject {
     static final String ENTIRE_CHANNEL_ID = "entireChannelId";
 
     private long entireChannelId;
+    private long episodeId = 1;
 
     public MetaRealm() {
     }
@@ -19,5 +20,13 @@ public class MetaRealm extends RealmObject {
 
     public void setEntireChannelId(long entireChannelId) {
         this.entireChannelId = entireChannelId;
+    }
+
+    public long getEpisodeId() {
+        return episodeId;
+    }
+
+    public void setEpisodeId(long episodeId) {
+        this.episodeId = episodeId;
     }
 }

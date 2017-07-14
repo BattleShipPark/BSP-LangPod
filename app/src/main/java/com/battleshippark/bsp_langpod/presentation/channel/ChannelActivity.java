@@ -13,6 +13,7 @@ import android.widget.Toolbar;
 
 import com.battleshippark.bsp_langpod.R;
 import com.battleshippark.bsp_langpod.dagger.DaggerDbApiGraph;
+import com.battleshippark.bsp_langpod.dagger.DaggerDomainMapperGraph;
 import com.battleshippark.bsp_langpod.dagger.DaggerServerApiGraph;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
@@ -72,8 +73,9 @@ public class ChannelActivity extends Activity implements OnItemListener {
     private void initData(Bundle savedInstanceState) {
         ChannelDbApi channelDbApi = DaggerDbApiGraph.create().channelApi();
         ChannelServerApi channelServerApi = DaggerServerApiGraph.create().channelApi();
+        DomainMapper domainMapper = DaggerDomainMapperGraph.create().domainMapper();
 
-        getChannel = new GetChannel(channelDbApi, channelServerApi, Schedulers.io(), AndroidSchedulers.mainThread(), new DomainMapper());
+        getChannel = new GetChannel(channelDbApi, channelServerApi, Schedulers.io(), AndroidSchedulers.mainThread(), domainMapper);
         subscribeChannel = new SubscribeChannel(channelDbApi);
 
         adapter = new ChannelAdapter(this);

@@ -1,5 +1,6 @@
 package com.battleshippark.bsp_langpod.domain;
 
+import com.battleshippark.bsp_langpod.dagger.DaggerDomainMapperGraph;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
@@ -45,8 +46,8 @@ public class GetChannelTest {
     public void execute_전체리스트에서_하나_조회() {
         ChannelRealm channelRealm = new ChannelRealm(1, 10, "title1", "desc1", "image1", "url1", "cr1",
                 new RealmList<>(
-                        new EpisodeRealm("ep.title1", "ep.desc1", "ep.url1", new Date()),
-                        new EpisodeRealm("ep.title2", "ep.desc2", "ep.url2", new Date())
+                        new EpisodeRealm(1, "ep.title1", "ep.desc1", "ep.url1", 11, new Date()),
+                        new EpisodeRealm(2, "ep.title2", "ep.desc2", "ep.url2", 22, new Date())
                 ), false
         );
         ChannelJson channelJson = ChannelJson.create(
@@ -60,7 +61,7 @@ public class GetChannelTest {
         when(dbRepository.channel(1)).thenReturn(Observable.just(Collections.singletonList(channelRealm)));
         when(serverRepository.myChannel("url1")).thenReturn(Observable.just(channelJson));
 
-        DomainMapper domainMapper = new DomainMapper();
+        DomainMapper domainMapper = DaggerDomainMapperGraph.create().domainMapper();
         UseCase<Long, List<ChannelRealm>> useCase = new GetChannel(dbRepository, serverRepository,
                 Schedulers.immediate(), Schedulers.immediate(), domainMapper);
         TestSubscriber<List<ChannelRealm>> testSubscriber = new TestSubscriber<>();

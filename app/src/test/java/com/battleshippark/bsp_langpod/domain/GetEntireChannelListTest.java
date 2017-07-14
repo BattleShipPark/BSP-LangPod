@@ -1,5 +1,6 @@
 package com.battleshippark.bsp_langpod.domain;
 
+import com.battleshippark.bsp_langpod.dagger.DaggerDomainMapperGraph;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.server.EntireChannelJson;
@@ -51,7 +52,8 @@ public class GetEntireChannelListTest {
         when(dbRepository.entireChannelList()).thenReturn(Observable.just(channelRealmList));
         when(serverRepository.entireChannelList()).thenReturn(Observable.just(entireChannelListJson));
 
-        DomainMapper domainMapper = new DomainMapper();
+        DomainMapper domainMapper = DaggerDomainMapperGraph.create().domainMapper();
+
         UseCase<Void, List<ChannelRealm>> useCase = new GetEntireChannelList(dbRepository, serverRepository,
                 Schedulers.immediate(), Schedulers.immediate(), domainMapper);
         TestSubscriber<List<ChannelRealm>> testSubscriber = new TestSubscriber<>();

@@ -13,9 +13,11 @@ import android.view.ViewGroup;
 
 import com.battleshippark.bsp_langpod.R;
 import com.battleshippark.bsp_langpod.dagger.DaggerDbApiGraph;
+import com.battleshippark.bsp_langpod.dagger.DaggerDomainMapperGraph;
 import com.battleshippark.bsp_langpod.dagger.DaggerServerApiGraph;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
+import com.battleshippark.bsp_langpod.data.db.RealmHelperImpl;
 import com.battleshippark.bsp_langpod.domain.DomainMapper;
 import com.battleshippark.bsp_langpod.domain.GetEntireChannelList;
 import com.battleshippark.bsp_langpod.domain.SubscribeChannel;
@@ -25,6 +27,7 @@ import java.util.List;
 
 import butterknife.ButterKnife;
 import io.realm.OrderedRealmCollection;
+import io.realm.Realm;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -63,9 +66,10 @@ public class EntireChannelListFragment extends Fragment implements OnItemListene
         super.onCreate(savedInstanceState);
 
         ChannelDbApi channelDbApi = DaggerDbApiGraph.create().channelApi();
+        DomainMapper domainMapper = DaggerDomainMapperGraph.create().domainMapper();
 
         getEntireChannelList = new GetEntireChannelList(channelDbApi, DaggerServerApiGraph.create().channelApi(),
-                Schedulers.io(), AndroidSchedulers.mainThread(), new DomainMapper());
+                Schedulers.io(), AndroidSchedulers.mainThread(), domainMapper);
 
         subscribeChannel = new SubscribeChannel(channelDbApi);
     }

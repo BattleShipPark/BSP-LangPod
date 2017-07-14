@@ -137,9 +137,10 @@ public class ChannelDbApiTest {
 
             //ID1으로 저장해 놓고
             ChannelRealm channelRealm = new ChannelRealm(1, 10, "title1", "desc1", "image1", "url1", "cr1",
-                    new RealmList<>(new EpisodeRealm("ep.title1", "ep.desc1", "ep.url1", new Date())), false);
+                    new RealmList<>(new EpisodeRealm(1, "ep.title1", "ep.desc1", "ep.url1", 11, new Date(111))), false);
             realm.executeTransaction(realm1 -> {
                 realm1.delete(ChannelRealm.class);
+                realm1.delete(EpisodeRealm.class);
                 realm1.copyToRealm(channelRealm);
             });
 
@@ -159,7 +160,7 @@ public class ChannelDbApiTest {
 
             //객체 갱신
             channelRealm.setTitle("title2");
-            channelRealm.getEpisodes().add(new EpisodeRealm("ep.title2", "ep.desc2", "ep,url2", new Date()));
+            channelRealm.getEpisodes().add(new EpisodeRealm(2, "ep.title2", "ep.desc2", "ep,url2", 22, new Date(222)));
 
             repository.putChannel(channelRealm);
             try {
@@ -171,7 +172,11 @@ public class ChannelDbApiTest {
             //title과 items가 수정되어 있는걸 확인
             assertThat(actualChannelRealm1.getTitle()).isEqualTo("title2");
             assertThat(actualChannelRealm1.getEpisodes()).hasSize(2);
+            assertThat(actualChannelRealm1.getEpisodes().get(0).getTitle()).isEqualTo("ep.title1");
             assertThat(actualChannelRealm1.getEpisodes().get(1).getTitle()).isEqualTo("ep.title2");
+
+            //에피소드가 2개인 것을 확인
+            assertThat(realm.where(EpisodeRealm.class).count()).isEqualTo(2);
         });
     }
 

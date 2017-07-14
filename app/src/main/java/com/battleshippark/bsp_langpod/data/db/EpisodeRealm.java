@@ -5,11 +5,14 @@ import com.battleshippark.bsp_langpod.R;
 import java.util.Date;
 
 import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
 /**
  */
 
 public class EpisodeRealm extends RealmObject {
+    @PrimaryKey
+    private long id;
     private String title;
     private String desc;
     private String url;
@@ -21,11 +24,21 @@ public class EpisodeRealm extends RealmObject {
     public EpisodeRealm() {
     }
 
-    public EpisodeRealm(String title, String desc, String url, Date date) {
+    public EpisodeRealm(long id, String title, String desc, String url, long length, Date date) {
+        this.id = id;
         this.title = title;
         this.desc = desc;
         this.url = url;
+        this.length = length;
         this.date = date;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getTitle() {
@@ -87,7 +100,8 @@ public class EpisodeRealm extends RealmObject {
     @Override
     public String toString() {
         return "EpisodeRealm{" +
-                "title='" + title + '\'' +
+                "id='" + id + '\'' +
+                ", title='" + title + '\'' +
                 ", desc='" + desc + '\'' +
                 ", url='" + url + '\'' +
                 ", length=" + length +
@@ -112,7 +126,6 @@ public class EpisodeRealm extends RealmObject {
         if (playState != null ? !playState.equals(that.playState) : that.playState != null)
             return false;
         return downloadState != null ? downloadState.equals(that.downloadState) : that.downloadState == null;
-
     }
 
     public enum PlayState {

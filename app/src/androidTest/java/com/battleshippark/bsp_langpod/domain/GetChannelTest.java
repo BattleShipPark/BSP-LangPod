@@ -4,6 +4,7 @@ import com.battleshippark.bsp_langpod.LooperThread;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
+import com.battleshippark.bsp_langpod.data.db.RealmHelper;
 import com.battleshippark.bsp_langpod.data.server.ChannelJson;
 import com.battleshippark.bsp_langpod.data.server.ChannelServerRepository;
 import com.battleshippark.bsp_langpod.data.server.EpisodeJson;
@@ -34,14 +35,14 @@ public class GetChannelTest {
         List<ChannelRealm> channelRealmList = Arrays.asList( //DB에 있는 url1을 대상으로,
                 new ChannelRealm(1, 10, "title1", "desc1", "image1", "url1", "cr1",
                         new RealmList<>(
-                                new EpisodeRealm("ep.title1", "ep.desc1", "ep.url1", new Date()),
-                                new EpisodeRealm("ep.title2", "ep.desc2", "ep.url2", new Date())
+                                new EpisodeRealm(1, "ep.title1", "ep.desc1", "ep.url1", 11, new Date()),
+                                new EpisodeRealm(2, "ep.title2", "ep.desc2", "ep.url2", 22, new Date())
                         ), false
                 ),
                 new ChannelRealm(2, 11, "title2", "desc2", "image2", "url2", "cr2",
                         new RealmList<>(
-                                new EpisodeRealm("ep2.title1", "ep2.desc1", "ep2.url1", new Date()),
-                                new EpisodeRealm("ep2.title2", "ep2.desc2", "ep2.url2", new Date())
+                                new EpisodeRealm(3, "ep2.title1", "ep2.desc1", "ep2.url1", 33, new Date()),
+                                new EpisodeRealm(4, "ep2.title2", "ep2.desc2", "ep2.url2", 44, new Date())
                         ), true
                 )
         );
@@ -61,7 +62,7 @@ public class GetChannelTest {
             ChannelServerRepository serverRepository = mock(ChannelServerRepository.class);
             when(serverRepository.myChannel("url1")).thenReturn(Observable.just(channelJson));
             UseCase<Long, List<ChannelRealm>> useCase = new GetChannel(new ChannelDbApi(realm), serverRepository,
-                    Schedulers.io(), Schedulers.from(executor), new DomainMapper());
+                    Schedulers.io(), Schedulers.from(executor), new DomainMapper(mock(RealmHelper.class)));
 
             realm.executeTransaction(realm1 -> {
                 realm1.delete(ChannelRealm.class);

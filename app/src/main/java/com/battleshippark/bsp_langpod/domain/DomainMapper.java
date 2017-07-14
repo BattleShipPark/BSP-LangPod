@@ -5,11 +5,13 @@ import com.annimon.stream.Stream;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
 import com.battleshippark.bsp_langpod.data.db.MyChannelRealm;
+import com.battleshippark.bsp_langpod.data.db.RealmHelper;
 import com.battleshippark.bsp_langpod.data.server.ChannelJson;
 import com.battleshippark.bsp_langpod.data.server.EntireChannelListJson;
 import com.battleshippark.bsp_langpod.data.server.EpisodeJson;
 
 import java.util.List;
+import java.util.Map;
 
 import io.realm.RealmList;
 
@@ -17,6 +19,12 @@ import io.realm.RealmList;
  */
 
 public class DomainMapper {
+    private RealmHelper realmHelper;
+
+    public DomainMapper(RealmHelper realmHelper) {
+        this.realmHelper = realmHelper;
+    }
+
     public List<EntireChannelData> asData(List<ChannelRealm> channelRealmList) {
         return Stream.of(channelRealmList)
                 .map(entireChannelRealm -> EntireChannelData.create(entireChannelRealm.getId(),
@@ -104,8 +112,19 @@ public class DomainMapper {
     }
 
     public ChannelRealm channelJsonAsRealm(ChannelRealm channelRealm, ChannelJson channelJson) {
+        Map<Integer, Long> curEpisodeHashId = Stream.of(channelRealm.getEpisodes())
+                .collect(
+                        Collectors.toMap(
+                                episodeRealm -> (episodeRealm.getTitle() + episodeRealm.getDesc()).hashCode(),
+                                EpisodeRealm::getId
+                        ));
+
         RealmList<EpisodeRealm> episodeRealmList = Stream.of(channelJson.episodes())
-                .map(episodeJson -> new EpisodeRealm(episodeJson.title(), episodeJson.desc(), episodeJson.url(), episodeJson.date()))
+                .map(episodeJson -> {
+                    int hash = (episodeJson.title() + episodeJson.desc()).hashCode();
+                    long id = curEpisodeHashId.get(hash) == null ? realmHelper.getNextEpisodeId() : curEpisodeHashId.get(hash);
+                    return new EpisodeRealm(id, episodeJson.title(), episodeJson.desc(), episodeJson.url(), episodeJson.length(), episodeJson.date());
+                })
                 .collect(RealmList::new, RealmList::add);
         return new ChannelRealm(
                 channelRealm.getId(),

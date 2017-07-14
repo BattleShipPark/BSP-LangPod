@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
+import com.battleshippark.bsp_langpod.data.db.RealmHelper;
 import com.battleshippark.bsp_langpod.data.server.EntireChannelJson;
 import com.battleshippark.bsp_langpod.data.server.ChannelServerRepository;
 import com.battleshippark.bsp_langpod.data.server.EntireChannelListJson;
@@ -65,7 +66,7 @@ public class GetEntireChannelListTest {
                     )
             );
             Scheduler scheduler = Schedulers.io();
-            DomainMapper domainMapper = new DomainMapper();
+            DomainMapper domainMapper = new DomainMapper(mock(RealmHelper.class));
             UseCase<Void, List<ChannelRealm>> useCase = new GetEntireChannelList(dbRepository, serverRepository,
                     scheduler, Schedulers.from(executor), domainMapper);
 
