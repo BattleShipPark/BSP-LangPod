@@ -176,7 +176,8 @@ public class ChannelDbApiTest {
             assertThat(actualChannelRealm1.getEpisodes().get(1).getTitle()).isEqualTo("ep.title2");
 
             //에피소드가 2개인 것을 확인
-            assertThat(realm.where(EpisodeRealm.class).count()).isEqualTo(2);
+            repository.channel(1).subscribe(testSubscriber);
+            assertThat(testSubscriber.getOnNextEvents().get(0).get(0).getEpisodes()).hasSize(2);
         });
     }
 

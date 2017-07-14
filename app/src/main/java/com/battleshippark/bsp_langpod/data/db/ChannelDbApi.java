@@ -63,7 +63,7 @@ public class ChannelDbApi implements ChannelDbRepository {
         realm.executeTransactionAsync(realm1 -> {
             realm1.delete(ChannelRealm.class);
 
-            Stream.of(realmList).forEach(realm1::copyToRealm);
+            Stream.of(realmList).forEach(realm1::insertOrUpdate);
         });
     }
 

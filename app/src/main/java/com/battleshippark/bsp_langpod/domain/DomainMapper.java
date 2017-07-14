@@ -97,13 +97,18 @@ public class DomainMapper {
         );
     }
 
-    public List<ChannelRealm> entireChannelListJsonAsRealm(List<ChannelRealm> channelRealmList, EntireChannelListJson entireChannelListJson) {
-        //json을 사용하는데, 로컬에 있는 같은 id의 isSubscribed()를 참고한다
+    List<ChannelRealm> entireChannelListJsonAsRealm(List<ChannelRealm> channelRealmList, EntireChannelListJson entireChannelListJson) {
+        //json을 사용하는데, 로컬에 있는 같은 id의 에피소드와 구독 여부를 참고한다
         return Stream.of(entireChannelListJson.items())
                 .map(json -> {
                     for (ChannelRealm localRealm : channelRealmList) {
                         if (localRealm.getId() == json.id()) {
-                            return new ChannelRealm(json.id(), json.order(), json.title(), json.desc(), json.image(), json.url(), localRealm.isSubscribed());
+                            RealmList<EpisodeRealm> episodeRealmList = new RealmList<>();
+                            episodeRealmList.addAll(realmHelper.fromRealm(localRealm.getEpisodes()));
+
+                            return new ChannelRealm(json.id(), json.order(), json.title(), json.desc(),
+                                    json.image(), json.url(), localRealm.getCopyright(),
+                                    episodeRealmList, localRealm.isSubscribed());
                         }
                     }
                     return new ChannelRealm(json.id(), json.order(), json.title(), json.desc(), json.image(), json.url(), false);
@@ -111,7 +116,7 @@ public class DomainMapper {
                 .collect(Collectors.toList());
     }
 
-    public ChannelRealm channelJsonAsRealm(ChannelRealm channelRealm, ChannelJson channelJson) {
+    ChannelRealm channelJsonAsRealm(ChannelRealm channelRealm, ChannelJson channelJson) {
         Map<Integer, Long> curEpisodeHashId = Stream.of(channelRealm.getEpisodes())
                 .collect(
                         Collectors.toMap(

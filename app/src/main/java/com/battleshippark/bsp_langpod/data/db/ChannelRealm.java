@@ -1,5 +1,7 @@
 package com.battleshippark.bsp_langpod.data.db;
 
+import java.util.Arrays;
+
 import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
@@ -140,7 +142,7 @@ public class ChannelRealm extends RealmObject {
                 ", subscribed=" + subscribed +
                 ", url='" + url + '\'' +
                 ", copyright='" + copyright + '\'' +
-                ", episodes=" + episodes +
+                ", episodes=" + Arrays.toString(episodes.toArray()) +
                 '}';
     }
 

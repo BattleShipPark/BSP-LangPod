@@ -1,6 +1,10 @@
 package com.battleshippark.bsp_langpod.data.db;
 
+import java.util.List;
+
 import io.realm.Realm;
+import io.realm.RealmList;
+import io.realm.RealmModel;
 import io.realm.RealmQuery;
 
 /**
@@ -33,5 +37,10 @@ public class RealmHelperImpl implements RealmHelper {
         });
 
         return id;
+    }
+
+    @Override
+    public <T extends RealmModel> List<T> fromRealm(RealmList<T> episodes) {
+        return realm.copyFromRealm(episodes);
     }
 }
