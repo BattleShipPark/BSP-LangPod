@@ -7,7 +7,9 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toolbar;
 
@@ -42,6 +44,8 @@ public class ChannelActivity extends Activity implements OnItemListener {
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
+    @BindView(R.id.progressbar)
+    ProgressBar progressBar;
     @BindView(R.id.channel_rv)
     RecyclerView rv;
     @BindView(R.id.msg_tv)
@@ -111,13 +115,26 @@ public class ChannelActivity extends Activity implements OnItemListener {
     }
 
     private void showChannel() {
+        progressBar.setVisibility(View.VISIBLE);
         subscription = getChannel.execute(channelId)
-                .subscribe(this::showData, this::showError);
+                .subscribe(this::showData, this::showError, this::dataCompleted);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
     public void onDestroy() {
         subscription.unsubscribe();
+        unbinder.unbind();
         super.onDestroy();
     }
 
@@ -126,10 +143,15 @@ public class ChannelActivity extends Activity implements OnItemListener {
     }
 
     void showError(Throwable throwable) {
+        progressBar.setVisibility(View.GONE);
         rv.setVisibility(View.GONE);
         msgTextView.setVisibility(View.VISIBLE);
         msgTextView.setText(R.string.my_list_error_msg);
         Log.w(TAG, throwable);
+    }
+
+    void dataCompleted() {
+        progressBar.setVisibility(View.GONE);
     }
 
     @Override
