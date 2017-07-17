@@ -86,7 +86,9 @@ public class ChannelActivity extends Activity implements OnItemListener {
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onChanged() {
-                super.onChanged();
+                if (isFinishing() || isDestroyed()) {
+                    return;
+                }
                 if (adapter.getItemCount() == 0) {
                     rv.setVisibility(View.GONE);
                     msgTextView.setVisibility(View.VISIBLE);
@@ -139,10 +141,16 @@ public class ChannelActivity extends Activity implements OnItemListener {
     }
 
     void showData(List<ChannelRealm> channelRealmList) {
+        if (isFinishing() || isDestroyed()) {
+            return;
+        }
         adapter.updateData((OrderedRealmCollection<ChannelRealm>) channelRealmList);
     }
 
     void showError(Throwable throwable) {
+        if (isFinishing() || isDestroyed()) {
+            return;
+        }
         progressBar.setVisibility(View.GONE);
         rv.setVisibility(View.GONE);
         msgTextView.setVisibility(View.VISIBLE);
@@ -151,6 +159,9 @@ public class ChannelActivity extends Activity implements OnItemListener {
     }
 
     void dataCompleted() {
+        if (isFinishing() || isDestroyed()) {
+            return;
+        }
         progressBar.setVisibility(View.GONE);
     }
 
@@ -162,7 +173,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
 
         holder.descView.setText(channel.getDesc());
         holder.copyrightView.setText(channel.getCopyright());
-        holder.episodeCountView.setText("" + channel.getEpisodes().size());
+        holder.episodeCountView.setText(String.valueOf(channel.getEpisodes().size()));
 
         holder.subscribeView.setSelected(channel.isSubscribed());
         holder.subscribeView.setOnClickListener(
