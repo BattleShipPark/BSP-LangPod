@@ -17,7 +17,7 @@ import rx.Scheduler;
 /**
  * https://blog.playmoweb.com/view-download-progress-on-android-using-retrofit2-and-okhttp3-83ed704cb968
  */
-public class Downloader {
+class Downloader {
     private final Scheduler scheduler;
     private final Scheduler postScheduler;
     private final AppPhase appPhase;
@@ -33,7 +33,7 @@ public class Downloader {
                 .build();
     }
 
-    public Observable<File> download(String url, String outputPath) {
+    Observable<File> download(String url, String outputPath) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://" + appPhase.getServerDomain())
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())

@@ -24,7 +24,7 @@ public class DownloaderTest {
         );
 
         TestSubscriber<File> testSubscriber = new TestSubscriber<>();
-        downloader.download(url, new File(getTargetContext().getExternalFilesDir(null), "download_test").getAbsolutePath()).subscribe(testSubscriber);
+        downloader.download(url, new File(getTargetContext().getExternalFilesDir("1"), "download_test").getAbsolutePath()).subscribe(testSubscriber);
 
         testSubscriber.awaitTerminalEvent();
         testSubscriber.assertCompleted();
