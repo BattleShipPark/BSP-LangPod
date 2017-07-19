@@ -13,9 +13,6 @@ import com.battleshippark.bsp_langpod.presentation.RealmRecyclerViewAdapter;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.realm.OrderedRealmCollection;
-import io.realm.RealmList;
-import io.realm.RealmResults;
 
 class ChannelAdapter extends RealmRecyclerViewAdapter<ChannelRealm, RecyclerView.ViewHolder> {
     private final OnItemListener mListener;
@@ -92,9 +89,9 @@ class ChannelAdapter extends RealmRecyclerViewAdapter<ChannelRealm, RecyclerView
         @BindView(R.id.date_tv)
         TextView dateView;
         @BindView(R.id.status_tv)
-        TextView statusView;
-        @BindView(R.id.play_iv)
-        ImageView playView;
+        TextView statusTv;
+        @BindView(R.id.status_iv)
+        ImageView statusIv;
 
         EpisodeViewHolder(View view) {
             super(view);

@@ -192,10 +192,9 @@ public class ChannelActivity extends Activity implements OnItemListener {
 
         holder.descView.setText(episode.getDesc());
         holder.dateView.setText(new SimpleDateFormat("MM/dd", Locale.US).format(episode.getDate()));
-        holder.statusView.setText(episode.getDownloadState().resId);
+        holder.statusTv.setText(episode.getDownloadState().resId);
 
-
-//        holder.playView.setSelected(item.isSubscribed());
+        Glide.with(this).load(getStatusImage(episode)).into(holder.statusIv);
 /*        holder.subscribeView.setOnClickListener(
                 v -> subscribeChannel.execute(item)
                         .subscribe(
@@ -204,6 +203,22 @@ public class ChannelActivity extends Activity implements OnItemListener {
                                 throwable -> Log.w(TAG, throwable)
                         )
         );*/
+    }
+
+    private int getStatusImage(EpisodeRealm episode) {
+        if (episode.getDownloadState() == EpisodeRealm.DownloadState.NOT_DOWNLOADED) {
+            return R.drawable.download;
+        } else if (episode.getDownloadState() == EpisodeRealm.DownloadState.DOWNLOADING) {
+            return R.drawable.downloading;
+        } else if (episode.getDownloadState() == EpisodeRealm.DownloadState.DOWNLOADED) {
+            if (episode.getPlayState() == EpisodeRealm.PlayState.NOT_PLAYED
+                    || episode.getPlayState() == EpisodeRealm.PlayState.PLAYED) {
+                return R.drawable.play;
+            } else if (episode.getPlayState() == EpisodeRealm.PlayState.PLAYING) {
+                return R.drawable.pause;
+            }
+        }
+        return R.drawable.play;
     }
 
     public static Intent createIntent(Context context, long id) {
