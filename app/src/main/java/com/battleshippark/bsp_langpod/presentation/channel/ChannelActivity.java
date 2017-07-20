@@ -250,10 +250,12 @@ public class ChannelActivity extends Activity implements OnItemListener {
             if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
                 Realm.getDefaultInstance().copyFromRealm(episode).setDownloadState(EpisodeRealm.DownloadState.DOWNLOADING);
 
-                downloadMedia.download(episode.getId(), episode.getUrl())
-                        .subscribe(file -> Log.w("", "download"),
-                                Throwable::getStackTrace,
-                                () -> Log.w("", "downloaded"));
+                subscription.add(
+                        downloadMedia.execute(new DownloadMedia.Param(episode.getId(), episode.getUrl()))
+                                .subscribe(file -> Log.w("", "download"),
+                                        Throwable::getStackTrace,
+                                        () -> Log.w("", "downloaded"))
+                );
             } else {
                 Toast.makeText(this, "NOT WIFI", Toast.LENGTH_SHORT).show();
                 new AlertDialog.Builder(this).setMessage(R.string.download_in_mobile_network)
@@ -294,6 +296,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
     }
 
     private void onDownloadProgress(DownloadProgressParam param) {
+        Log.w("TEST", String.valueOf(param.bytesRead));
 /*        Stream.of(adapter.getData().get(0).getEpisodes())
                 .map(episode -> new Pair<>(episode.getId(), episode))
                 .filter(pair -> pair.first.equals(Long.valueOf(param.identifier)))
