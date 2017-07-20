@@ -4,15 +4,16 @@ import java.io.IOException;
 
 import okhttp3.Interceptor;
 import okhttp3.Response;
+import rx.subjects.PublishSubject;
 
 /**
  */
 
 class DownloadInterceptor implements Interceptor {
-    private DownloadListener downloadListener;
+    private PublishSubject<DownloadProgressParam> downloadProgress;
 
-    DownloadInterceptor(DownloadListener downloadListener) {
-        this.downloadListener = downloadListener;
+    DownloadInterceptor(PublishSubject<DownloadProgressParam> downloadProgress) {
+        this.downloadProgress = downloadProgress;
     }
 
     @Override
@@ -21,7 +22,7 @@ class DownloadInterceptor implements Interceptor {
         Response.Builder builder = originalResponse.newBuilder();
 
         String downloadIdentifier = originalResponse.request().header(Downloader.HEADER_IDENTIFIER);
-        builder.body(new DownloadResponseBody(downloadIdentifier, originalResponse.body(), downloadListener));
+        builder.body(new DownloadResponseBody(downloadIdentifier, originalResponse.body(), downloadProgress));
 
         return builder.build();
 

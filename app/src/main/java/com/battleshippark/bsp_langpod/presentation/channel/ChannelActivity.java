@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.support.v4.util.Pair;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
+import com.annimon.stream.Stream;
 import com.battleshippark.bsp_langpod.AppPhase;
 import com.battleshippark.bsp_langpod.BuildConfig;
 import com.battleshippark.bsp_langpod.R;
@@ -26,7 +28,7 @@ import com.battleshippark.bsp_langpod.dagger.DaggerServerApiGraph;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
-import com.battleshippark.bsp_langpod.data.download.DownloadListener;
+import com.battleshippark.bsp_langpod.data.download.DownloadProgressParam;
 import com.battleshippark.bsp_langpod.data.server.ChannelServerApi;
 import com.battleshippark.bsp_langpod.domain.DomainMapper;
 import com.battleshippark.bsp_langpod.domain.DownloadMedia;
@@ -37,18 +39,22 @@ import com.bumptech.glide.Glide;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import io.realm.OrderedRealmCollection;
-import rx.Subscription;
+import io.realm.Realm;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
+import rx.subjects.PublishSubject;
+import rx.subscriptions.CompositeSubscription;
 
-public class ChannelActivity extends Activity implements OnItemListener, DownloadListener {
+public class ChannelActivity extends Activity implements OnItemListener {
     private static final String TAG = ChannelActivity.class.getSimpleName();
     private static final String KEY_ID = "keyId";
+    private static final float MEGA_BYTE = 1024 * 1024 * 1.0f;
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -59,7 +65,7 @@ public class ChannelActivity extends Activity implements OnItemListener, Downloa
     @BindView(R.id.msg_tv)
     TextView msgTextView;
 
-    private Subscription subscription;
+    private CompositeSubscription subscription = new CompositeSubscription();
     private ChannelAdapter adapter;
 
     private GetChannel getChannel;
@@ -68,6 +74,7 @@ public class ChannelActivity extends Activity implements OnItemListener, Downloa
 
     private long channelId;
     private DownloadMedia downloadMedia;
+    private PublishSubject<DownloadProgressParam> downloadProgress = PublishSubject.create();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -89,7 +96,13 @@ public class ChannelActivity extends Activity implements OnItemListener, Downloa
 
         getChannel = new GetChannel(channelDbApi, channelServerApi, Schedulers.io(), AndroidSchedulers.mainThread(), domainMapper);
         subscribeChannel = new SubscribeChannel(channelDbApi);
-        downloadMedia = new DownloadMedia(this, Schedulers.io(), AndroidSchedulers.mainThread(), new AppPhase(BuildConfig.DEBUG), this);
+        downloadMedia = new DownloadMedia(this, Schedulers.io(), AndroidSchedulers.mainThread(), new AppPhase(BuildConfig.DEBUG), downloadProgress);
+
+        subscription.add(
+                downloadProgress
+                        .throttleFirst(500, TimeUnit.MILLISECONDS, Schedulers.computation())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(this::onDownloadProgress));
 
         adapter = new ChannelAdapter(this);
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
@@ -127,8 +140,9 @@ public class ChannelActivity extends Activity implements OnItemListener, Downloa
 
     private void showChannel() {
         progressBar.setVisibility(View.VISIBLE);
-        subscription = getChannel.execute(channelId)
-                .subscribe(this::showData, this::showError, this::dataCompleted);
+        subscription.add(
+                getChannel.execute(channelId)
+                        .subscribe(this::showData, this::showError, this::dataCompleted));
     }
 
     @Override
@@ -201,7 +215,7 @@ public class ChannelActivity extends Activity implements OnItemListener, Downloa
 
         holder.descView.setText(episode.getDesc());
         holder.dateView.setText(new SimpleDateFormat("MM/dd", Locale.US).format(episode.getDate()));
-        holder.statusTv.setText(episode.getDownloadState().resId);
+        holder.statusTv.setText(getStatusText(episode));
 
         Glide.with(this).load(getStatusImage(episode)).into(holder.statusIv);
 /*        holder.subscribeView.setOnClickListener(
@@ -234,6 +248,8 @@ public class ChannelActivity extends Activity implements OnItemListener, Downloa
                     .show();
         } else {
             if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+                Realm.getDefaultInstance().copyFromRealm(episode).setDownloadState(EpisodeRealm.DownloadState.DOWNLOADING);
+
                 downloadMedia.download(episode.getId(), episode.getUrl())
                         .subscribe(file -> Log.w("", "download"),
                                 Throwable::getStackTrace,
@@ -252,6 +268,15 @@ public class ChannelActivity extends Activity implements OnItemListener, Downloa
         }
     }
 
+    private String getStatusText(EpisodeRealm episode) {
+        if (episode.getDownloadState() == EpisodeRealm.DownloadState.NOT_DOWNLOADED) {
+            return getString(R.string.episode_not_downloaded);
+        } else if (episode.getDownloadState() == EpisodeRealm.DownloadState.DOWNLOADING) {
+            return getString(R.string.episode_downloading, episode.getDownloadedBytes() / MEGA_BYTE, episode.getTotalBytes() / MEGA_BYTE);
+        }
+        return "";
+    }
+
     private int getStatusImage(EpisodeRealm episode) {
         if (episode.getDownloadState() == EpisodeRealm.DownloadState.NOT_DOWNLOADED) {
             return R.drawable.download;
@@ -268,14 +293,21 @@ public class ChannelActivity extends Activity implements OnItemListener, Downloa
         return R.drawable.play;
     }
 
+    private void onDownloadProgress(DownloadProgressParam param) {
+/*        Stream.of(adapter.getData().get(0).getEpisodes())
+                .map(episode -> new Pair<>(episode.getId(), episode))
+                .filter(pair -> pair.first.equals(Long.valueOf(param.identifier)))
+                .findFirst().ifPresent(pair -> {
+                    pair.second.setDownloadedBytes(param.bytesRead);
+                    pair.second.setTotalBytes(param.contentLength);
+                    adapter.notifyDataSetChanged();
+                }
+        );*/
+    }
+
     public static Intent createIntent(Context context, long id) {
         Intent intent = new Intent(context, ChannelActivity.class);
         intent.putExtra(KEY_ID, id);
         return intent;
-    }
-
-    @Override
-    public void update(String identifier, long bytesRead, long contentLength, boolean done) {
-        Log.w("", String.format("%s, %s, %s, %s", identifier, bytesRead, contentLength, done));
     }
 }

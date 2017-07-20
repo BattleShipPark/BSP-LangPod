@@ -12,6 +12,7 @@ import okio.Okio;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import rx.Observable;
+import rx.subjects.PublishSubject;
 
 /**
  * https://blog.playmoweb.com/view-download-progress-on-android-using-retrofit2-and-okhttp3-83ed704cb968
@@ -21,11 +22,11 @@ public class Downloader {
     private final AppPhase appPhase;
     private final OkHttpClient client;
 
-    public Downloader(AppPhase appPhase, DownloadListener downloadListener) {
+    public Downloader(AppPhase appPhase, PublishSubject<DownloadProgressParam> downloadProgress) {
         this.appPhase = appPhase;
         this.client = new OkHttpClient.Builder()
                 .addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC))
-                .addInterceptor(new DownloadInterceptor(downloadListener))
+                .addInterceptor(new DownloadInterceptor(downloadProgress))
                 .build();
     }
 

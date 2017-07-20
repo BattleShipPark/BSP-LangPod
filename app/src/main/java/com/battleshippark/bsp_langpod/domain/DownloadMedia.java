@@ -3,13 +3,14 @@ package com.battleshippark.bsp_langpod.domain;
 import android.content.Context;
 
 import com.battleshippark.bsp_langpod.AppPhase;
-import com.battleshippark.bsp_langpod.data.download.DownloadListener;
+import com.battleshippark.bsp_langpod.data.download.DownloadProgressParam;
 import com.battleshippark.bsp_langpod.data.download.Downloader;
 
 import java.io.File;
 
 import rx.Observable;
 import rx.Scheduler;
+import rx.subjects.PublishSubject;
 
 /**
  */
@@ -18,17 +19,15 @@ public class DownloadMedia {
     private final Context context;
     private final Scheduler scheduler;
     private final Scheduler postScheduler;
+    private final PublishSubject<DownloadProgressParam> reposDownloadProgress = PublishSubject.create();
 
-    public DownloadMedia(Context context, Scheduler scheduler, Scheduler postScheduler, AppPhase appPhase, DownloadListener downloadListener) {
+    public DownloadMedia(Context context, Scheduler scheduler, Scheduler postScheduler, AppPhase appPhase, PublishSubject<DownloadProgressParam> downloadProgress) {
         this.context = context;
         this.scheduler = scheduler;
         this.postScheduler = postScheduler;
-        Scheduler.Worker worker = postScheduler.createWorker();
-        this.downloader = new Downloader(appPhase,
-                (identifier, bytesRead, contentLength, done) -> {
-                    worker.schedule(() ->
-                            downloadListener.update(identifier, bytesRead, contentLength, done));
-                });
+        this.downloader = new Downloader(appPhase, reposDownloadProgress);
+
+        this.reposDownloadProgress.subscribe(downloadProgress::onNext);
     }
 
     public Observable<File> download(long identifier, String url) {

@@ -9,6 +9,7 @@ import okio.BufferedSource;
 import okio.ForwardingSource;
 import okio.Okio;
 import okio.Source;
+import rx.subjects.PublishSubject;
 
 /**
  */
@@ -16,13 +17,13 @@ import okio.Source;
 class DownloadResponseBody extends ResponseBody {
     private final String identifier;
     private final ResponseBody responseBody;
-    private final DownloadListener downloadListener;
+    private final PublishSubject<DownloadProgressParam> downloadProgress;
     private BufferedSource bufferedSource;
 
-    DownloadResponseBody(String identifier, ResponseBody responseBody, DownloadListener downloadListener) {
+    DownloadResponseBody(String identifier, ResponseBody responseBody, PublishSubject<DownloadProgressParam> downloadProgress) {
         this.identifier = identifier;
         this.responseBody = responseBody;
-        this.downloadListener = downloadListener;
+        this.downloadProgress = downloadProgress;
     }
 
     @Override
@@ -56,9 +57,7 @@ class DownloadResponseBody extends ResponseBody {
                     totalBytesRead += bytesRead;
                 }
 
-                if (downloadListener != null) {
-                    downloadListener.update(identifier, totalBytesRead, responseBody.contentLength(), bytesRead == -1);
-                }
+                downloadProgress.onNext(new DownloadProgressParam(identifier, totalBytesRead, responseBody.contentLength(), bytesRead == -1));
 
                 return bytesRead;
             }

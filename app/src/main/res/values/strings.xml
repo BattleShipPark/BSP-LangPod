@@ -6,7 +6,7 @@
     <string name="my_list_empty_msg" >You have no subscription list. Please add it from EntireList.</string>
     <string name="my_list_error_msg" >Error occurred while loading list.</string>
     <string name="episode_not_downloaded" >Not Downloaded</string>
-    <string name="episode_downloading" >Downloading</string>
+    <string name="episode_downloading" >Downloading (%1$.1f/%2$.1fKB)</string>
     <string name="episode_downloaded" >Downloaded</string>
     <string name="download_in_mobile_network" >You are not connected with Wifi. Will you continue to download?</string>
     <string name="unavailable_network" >Network is unavailable. Please retry a while later.</string>

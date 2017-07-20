@@ -5,6 +5,7 @@ import com.battleshippark.bsp_langpod.R;
 import java.util.Date;
 
 import io.realm.RealmObject;
+import io.realm.annotations.Ignore;
 import io.realm.annotations.PrimaryKey;
 
 /**
@@ -20,6 +21,8 @@ public class EpisodeRealm extends RealmObject {
     private Date date;
     private String playState = PlayState.NOT_PLAYED.name();
     private String downloadState = DownloadState.NOT_DOWNLOADED.name();
+    @Ignore
+    private long downloadedBytes, totalBytes;
 
     public EpisodeRealm() {
     }
@@ -126,6 +129,22 @@ public class EpisodeRealm extends RealmObject {
         if (playState != null ? !playState.equals(that.playState) : that.playState != null)
             return false;
         return downloadState != null ? downloadState.equals(that.downloadState) : that.downloadState == null;
+    }
+
+    public long getDownloadedBytes() {
+        return downloadedBytes;
+    }
+
+    public void setDownloadedBytes(long downloadedBytes) {
+        this.downloadedBytes = downloadedBytes;
+    }
+
+    public long getTotalBytes() {
+        return totalBytes;
+    }
+
+    public void setTotalBytes(long totalBytes) {
+        this.totalBytes = totalBytes;
     }
 
     public enum PlayState {
