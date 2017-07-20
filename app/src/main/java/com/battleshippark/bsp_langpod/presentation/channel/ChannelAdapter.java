@@ -13,9 +13,11 @@ import com.battleshippark.bsp_langpod.presentation.RealmRecyclerViewAdapter;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.realm.Realm;
 
 class ChannelAdapter extends RealmRecyclerViewAdapter<ChannelRealm, RecyclerView.ViewHolder> {
     private final OnItemListener mListener;
+    private ChannelRealm channelRealm;
 
     ChannelAdapter(OnItemListener listener) {
         super(null, true);
@@ -40,8 +42,10 @@ class ChannelAdapter extends RealmRecyclerViewAdapter<ChannelRealm, RecyclerView
 
     @Override
     public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
-        ChannelRealm channelRealm = getData().get(0);
-
+        ChannelRealm channelRealm = getItem(0);
+        if (channelRealm == null) {
+            return;
+        }
         switch (ViewType.values()[getItemViewType(position)]) {
             case HEADER:
                 mListener.onBindHeaderViewHolder((HeaderViewHolder) holder, channelRealm);
@@ -53,14 +57,26 @@ class ChannelAdapter extends RealmRecyclerViewAdapter<ChannelRealm, RecyclerView
     }
 
     @Override
+    public ChannelRealm getItem(int index) {
+        return channelRealm == null ? null : channelRealm;
+    }
+
+    @Override
     public int getItemViewType(int position) {
         return position == 0 ? ViewType.HEADER.ordinal() : ViewType.EPISODE.ordinal();
     }
 
     @Override
     public int getItemCount() {
-        int itemCount = super.getItemCount();
-        return itemCount == 0 ? 0 : itemCount + getData().get(0).getEpisodes().size();
+        int itemCount = channelRealm == null ? 0 : 1;
+        return itemCount == 0 ? 0 : 1 + channelRealm.getEpisodes().size();
+    }
+
+    @Override
+    protected void refreshData() {
+        if (super.getItemCount() != 0) {
+            this.channelRealm = Realm.getDefaultInstance().copyFromRealm(super.getItem(0));
+        }
     }
 
     enum ViewType {HEADER, EPISODE}

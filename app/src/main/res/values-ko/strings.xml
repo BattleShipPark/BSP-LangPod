@@ -7,7 +7,7 @@
     <string name="my_list_empty_msg" >구독 목록이 비어 있습니다. 전체 목록에서 추가해 주세요.</string>
     <string name="my_list_error_msg" >리스트를 읽으면서 에러가 발생했습니다.</string>
     <string name="episode_not_downloaded" >다운로드전</string>
-    <string name="episode_downloading" >다운로드중 (%1$.1f/%2$.1fKB)</string>
+    <string name="episode_downloading" >다운로드중 (%1$.1f/%2$.1fMB)</string>
     <string name="episode_downloaded" >다운로드 완료</string>
     <string name="download_in_mobile_network" >와이파이 환경이 아닙니다. 다운로드를 하시겠습니까?</string>
     <string name="unavailable_network" >네트워크를 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.</string>

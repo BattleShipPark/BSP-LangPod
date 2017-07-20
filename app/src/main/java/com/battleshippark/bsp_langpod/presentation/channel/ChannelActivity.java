@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.support.v4.util.Pair;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -18,7 +17,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
-import com.annimon.stream.Stream;
 import com.battleshippark.bsp_langpod.AppPhase;
 import com.battleshippark.bsp_langpod.BuildConfig;
 import com.battleshippark.bsp_langpod.R;
@@ -66,15 +64,16 @@ public class ChannelActivity extends Activity implements OnItemListener {
     TextView msgTextView;
 
     private CompositeSubscription subscription = new CompositeSubscription();
+    private Unbinder unbinder;
     private ChannelAdapter adapter;
 
     private GetChannel getChannel;
     private SubscribeChannel subscribeChannel;
-    private Unbinder unbinder;
+    private DownloadMedia downloadMedia;
 
     private long channelId;
-    private DownloadMedia downloadMedia;
     private PublishSubject<DownloadProgressParam> downloadProgress = PublishSubject.create();
+    private ChannelRealm channelRealm;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -100,7 +99,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
 
         subscription.add(
                 downloadProgress
-                        .throttleFirst(500, TimeUnit.MILLISECONDS, Schedulers.computation())
+                        .throttleLast(500, TimeUnit.MILLISECONDS, Schedulers.computation())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(this::onDownloadProgress));
 
@@ -116,6 +115,8 @@ public class ChannelActivity extends Activity implements OnItemListener {
                     msgTextView.setVisibility(View.VISIBLE);
                     msgTextView.setText(R.string.my_list_empty_msg);
                 } else {
+                    channelRealm = adapter.getItem(0);
+
                     rv.setVisibility(View.VISIBLE);
                     msgTextView.setVisibility(View.GONE);
                 }
@@ -248,7 +249,8 @@ public class ChannelActivity extends Activity implements OnItemListener {
                     .show();
         } else {
             if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
-                Realm.getDefaultInstance().copyFromRealm(episode).setDownloadState(EpisodeRealm.DownloadState.DOWNLOADING);
+                episode.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADING);
+                adapter.notifyDataSetChanged();
 
                 subscription.add(
                         downloadMedia.execute(new DownloadMedia.Param(episode.getId(), episode.getUrl()))
@@ -296,16 +298,18 @@ public class ChannelActivity extends Activity implements OnItemListener {
     }
 
     private void onDownloadProgress(DownloadProgressParam param) {
-        Log.w("TEST", String.valueOf(param.bytesRead));
-/*        Stream.of(adapter.getData().get(0).getEpisodes())
-                .map(episode -> new Pair<>(episode.getId(), episode))
-                .filter(pair -> pair.first.equals(Long.valueOf(param.identifier)))
-                .findFirst().ifPresent(pair -> {
-                    pair.second.setDownloadedBytes(param.bytesRead);
-                    pair.second.setTotalBytes(param.contentLength);
-                    adapter.notifyDataSetChanged();
+        for (EpisodeRealm episodeRealm : channelRealm.getEpisodes()) {
+            if (episodeRealm.getId() == Long.valueOf(param.identifier)) {
+                if (param.done) {
+                    episodeRealm.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADED);
+                } else {
+                    episodeRealm.setDownloadedBytes(param.bytesRead);
+                    episodeRealm.setTotalBytes(param.contentLength);
                 }
-        );*/
+                adapter.notifyDataSetChanged();
+                return;
+            }
+        }
     }
 
     public static Intent createIntent(Context context, long id) {

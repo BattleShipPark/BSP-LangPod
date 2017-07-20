@@ -52,9 +52,13 @@ public abstract class RealmRecyclerViewAdapter<T extends RealmModel, S extends R
         return new OrderedRealmCollectionChangeListener() {
             @Override
             public void onChange(Object collection, OrderedCollectionChangeSet changeSet) {
+                refreshData();
                 notifyDataSetChanged();
             }
         };
+    }
+
+    protected void refreshData() {
     }
 
     /**
@@ -67,9 +71,9 @@ public abstract class RealmRecyclerViewAdapter<T extends RealmModel, S extends R
     }
 
     /**
-     * @param data collection data to be used by this adapter.
-     * @param autoUpdate when it is {@code false}, the adapter won't be automatically updated when collection data
-     *                   changes.
+     * @param data                 collection data to be used by this adapter.
+     * @param autoUpdate           when it is {@code false}, the adapter won't be automatically updated when collection data
+     *                             changes.
      * @param updateOnModification when it is {@code true}, this adapter will be updated when deletions, insertions or
      *                             modifications happen to the collection data. When it is {@code false}, only
      *                             deletions and insertions will trigger the updates. This param will be ignored if
@@ -165,6 +169,7 @@ public abstract class RealmRecyclerViewAdapter<T extends RealmModel, S extends R
         }
 
         this.adapterData = data;
+        refreshData();
         notifyDataSetChanged();
     }
 
