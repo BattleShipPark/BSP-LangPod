@@ -2,8 +2,8 @@ package com.battleshippark.bsp_langpod.data.server.rss;
 
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
-import com.battleshippark.bsp_langpod.data.server.EpisodeJson;
 import com.battleshippark.bsp_langpod.data.server.ChannelJson;
+import com.battleshippark.bsp_langpod.data.server.EpisodeJson;
 import com.rometools.modules.itunes.FeedInformation;
 import com.rometools.rome.feed.module.Module;
 import com.rometools.rome.feed.synd.SyndFeed;

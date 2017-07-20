@@ -12,20 +12,16 @@ import okio.Okio;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import rx.Observable;
-import rx.Scheduler;
 
 /**
  * https://blog.playmoweb.com/view-download-progress-on-android-using-retrofit2-and-okhttp3-83ed704cb968
  */
-class Downloader {
-    private final Scheduler scheduler;
-    private final Scheduler postScheduler;
+public class Downloader {
+    static final String HEADER_IDENTIFIER = "header-identifier";
     private final AppPhase appPhase;
     private final OkHttpClient client;
 
-    Downloader(Scheduler scheduler, Scheduler postScheduler, AppPhase appPhase, DownloadListener downloadListener) {
-        this.scheduler = scheduler;
-        this.postScheduler = postScheduler;
+    public Downloader(AppPhase appPhase, DownloadListener downloadListener) {
         this.appPhase = appPhase;
         this.client = new OkHttpClient.Builder()
                 .addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC))
@@ -33,7 +29,7 @@ class Downloader {
                 .build();
     }
 
-    Observable<File> download(String url, String outputPath) {
+    public Observable<File> download(String identifier, String url, String outputPath) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://" + appPhase.getServerDomain())
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
@@ -42,7 +38,7 @@ class Downloader {
 
         DownloadService service = retrofit.create(DownloadService.class);
 
-        return service.download(url)
+        return service.download(identifier, url)
                 .flatMap(response -> {
                     try {
                         File file = new File(outputPath);

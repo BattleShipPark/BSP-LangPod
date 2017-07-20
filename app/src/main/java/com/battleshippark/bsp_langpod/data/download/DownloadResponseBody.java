@@ -14,11 +14,13 @@ import okio.Source;
  */
 
 class DownloadResponseBody extends ResponseBody {
+    private final String identifier;
     private final ResponseBody responseBody;
     private final DownloadListener downloadListener;
     private BufferedSource bufferedSource;
 
-    DownloadResponseBody(ResponseBody responseBody, DownloadListener downloadListener) {
+    DownloadResponseBody(String identifier, ResponseBody responseBody, DownloadListener downloadListener) {
+        this.identifier = identifier;
         this.responseBody = responseBody;
         this.downloadListener = downloadListener;
     }
@@ -55,7 +57,7 @@ class DownloadResponseBody extends ResponseBody {
                 }
 
                 if (downloadListener != null) {
-                    downloadListener.update(totalBytesRead, responseBody.contentLength(), bytesRead == -1);
+                    downloadListener.update(identifier, totalBytesRead, responseBody.contentLength(), bytesRead == -1);
                 }
 
                 return bytesRead;

@@ -8,4 +8,6 @@
     <string name="episode_not_downloaded" >Not Downloaded</string>
     <string name="episode_downloading" >Downloading</string>
     <string name="episode_downloaded" >Downloaded</string>
+    <string name="download_in_mobile_network" >You are not connected with Wifi. Will you continue to download?</string>
+    <string name="unavailable_network" >Network is unavailable. Please retry a while later.</string>
 </resources>

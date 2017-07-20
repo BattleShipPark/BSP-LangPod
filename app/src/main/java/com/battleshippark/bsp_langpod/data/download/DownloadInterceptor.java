@@ -20,7 +20,8 @@ class DownloadInterceptor implements Interceptor {
         Response originalResponse = chain.proceed(chain.request());
         Response.Builder builder = originalResponse.newBuilder();
 
-        builder.body(new DownloadResponseBody(originalResponse.body(), downloadListener));
+        String downloadIdentifier = originalResponse.request().header(Downloader.HEADER_IDENTIFIER);
+        builder.body(new DownloadResponseBody(downloadIdentifier, originalResponse.body(), downloadListener));
 
         return builder.build();
 

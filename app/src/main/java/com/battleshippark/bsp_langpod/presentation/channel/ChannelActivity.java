@@ -3,7 +3,10 @@ package com.battleshippark.bsp_langpod.presentation.channel;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -11,8 +14,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.Toolbar;
 
+import com.battleshippark.bsp_langpod.AppPhase;
+import com.battleshippark.bsp_langpod.BuildConfig;
 import com.battleshippark.bsp_langpod.R;
 import com.battleshippark.bsp_langpod.dagger.DaggerDbApiGraph;
 import com.battleshippark.bsp_langpod.dagger.DaggerDomainMapperGraph;
@@ -20,8 +26,10 @@ import com.battleshippark.bsp_langpod.dagger.DaggerServerApiGraph;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
+import com.battleshippark.bsp_langpod.data.download.DownloadListener;
 import com.battleshippark.bsp_langpod.data.server.ChannelServerApi;
 import com.battleshippark.bsp_langpod.domain.DomainMapper;
+import com.battleshippark.bsp_langpod.domain.DownloadMedia;
 import com.battleshippark.bsp_langpod.domain.GetChannel;
 import com.battleshippark.bsp_langpod.domain.SubscribeChannel;
 import com.bumptech.glide.Glide;
@@ -38,7 +46,7 @@ import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
-public class ChannelActivity extends Activity implements OnItemListener {
+public class ChannelActivity extends Activity implements OnItemListener, DownloadListener {
     private static final String TAG = ChannelActivity.class.getSimpleName();
     private static final String KEY_ID = "keyId";
 
@@ -51,7 +59,6 @@ public class ChannelActivity extends Activity implements OnItemListener {
     @BindView(R.id.msg_tv)
     TextView msgTextView;
 
-    private MyListFragmentListener mListener;
     private Subscription subscription;
     private ChannelAdapter adapter;
 
@@ -60,6 +67,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
     private Unbinder unbinder;
 
     private long channelId;
+    private DownloadMedia downloadMedia;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -81,6 +89,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
 
         getChannel = new GetChannel(channelDbApi, channelServerApi, Schedulers.io(), AndroidSchedulers.mainThread(), domainMapper);
         subscribeChannel = new SubscribeChannel(channelDbApi);
+        downloadMedia = new DownloadMedia(this, Schedulers.io(), AndroidSchedulers.mainThread(), new AppPhase(BuildConfig.DEBUG), this);
 
         adapter = new ChannelAdapter(this);
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
@@ -188,7 +197,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
 
     @Override
     public void onBindEpisodeViewHolder(ChannelAdapter.EpisodeViewHolder holder, EpisodeRealm episode) {
-//        holder.itemView.setOnClickListener(v -> mListener.onClickMyChannelItem(item));
+        holder.itemView.setOnClickListener(v -> onClickEpisode(episode));
 
         holder.descView.setText(episode.getDesc());
         holder.dateView.setText(new SimpleDateFormat("MM/dd", Locale.US).format(episode.getDate()));
@@ -203,6 +212,44 @@ public class ChannelActivity extends Activity implements OnItemListener {
                                 throwable -> Log.w(TAG, throwable)
                         )
         );*/
+    }
+
+    private void onClickEpisode(EpisodeRealm episode) {
+        if (episode.getDownloadState() == EpisodeRealm.DownloadState.NOT_DOWNLOADED) {
+            startDownload(episode);
+        } else if (episode.getDownloadState() == EpisodeRealm.DownloadState.DOWNLOADING) {
+        } else if (episode.getDownloadState() == EpisodeRealm.DownloadState.DOWNLOADED) {
+            if (episode.getPlayState() == EpisodeRealm.PlayState.NOT_PLAYED
+                    || episode.getPlayState() == EpisodeRealm.PlayState.PLAYED) {
+            } else if (episode.getPlayState() == EpisodeRealm.PlayState.PLAYING) {
+            }
+        }
+    }
+
+    private void startDownload(EpisodeRealm episode) {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+        if (networkInfo == null || !networkInfo.isAvailable() || !networkInfo.isConnected()) {
+            new AlertDialog.Builder(this).setMessage(R.string.unavailable_network)
+                    .show();
+        } else {
+            if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+                downloadMedia.download(episode.getId(), episode.getUrl())
+                        .subscribe(file -> Log.w("", "download"),
+                                Throwable::getStackTrace,
+                                () -> Log.w("", "downloaded"));
+            } else {
+                Toast.makeText(this, "NOT WIFI", Toast.LENGTH_SHORT).show();
+                new AlertDialog.Builder(this).setMessage(R.string.download_in_mobile_network)
+                        .setPositiveButton(android.R.string.yes, (dialog, which) -> {
+                            Toast.makeText(this, "YES", Toast.LENGTH_SHORT).show();
+                        })
+                        .setNegativeButton(android.R.string.no, (dialog, which) -> {
+                            Toast.makeText(this, "NO", Toast.LENGTH_SHORT).show();
+                        })
+                        .show();
+            }
+        }
     }
 
     private int getStatusImage(EpisodeRealm episode) {
@@ -227,7 +274,8 @@ public class ChannelActivity extends Activity implements OnItemListener {
         return intent;
     }
 
-    public interface MyListFragmentListener {
-        void onClickMyChannelItem(ChannelRealm item);
+    @Override
+    public void update(String identifier, long bytesRead, long contentLength, boolean done) {
+        Log.w("", String.format("%s, %s, %s, %s", identifier, bytesRead, contentLength, done));
     }
 }
