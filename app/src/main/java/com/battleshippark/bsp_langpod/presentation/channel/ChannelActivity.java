@@ -72,7 +72,6 @@ public class ChannelActivity extends Activity implements OnItemListener {
     private DownloadMedia downloadMedia;
 
     private long channelId;
-    private PublishSubject<DownloadProgressParam> downloadProgress = PublishSubject.create();
     private ChannelRealm channelRealm;
 
     @Override
@@ -95,13 +94,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
 
         getChannel = new GetChannel(channelDbApi, channelServerApi, Schedulers.io(), AndroidSchedulers.mainThread(), domainMapper);
         subscribeChannel = new SubscribeChannel(channelDbApi);
-        downloadMedia = new DownloadMedia(this, Schedulers.io(), AndroidSchedulers.mainThread(), new AppPhase(BuildConfig.DEBUG), downloadProgress);
-
-        subscription.add(
-                downloadProgress
-                        .throttleLast(500, TimeUnit.MILLISECONDS, Schedulers.computation())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(this::onDownloadProgress));
+        downloadMedia = new DownloadMedia(this, Schedulers.io(), AndroidSchedulers.mainThread(), new AppPhase(BuildConfig.DEBUG));
 
         adapter = new ChannelAdapter(this);
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
@@ -252,10 +245,17 @@ public class ChannelActivity extends Activity implements OnItemListener {
                 episode.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADING);
                 adapter.notifyDataSetChanged();
 
+                PublishSubject<DownloadProgressParam> downloadProgress = PublishSubject.create();
                 subscription.add(
-                        downloadMedia.execute(new DownloadMedia.Param(episode.getId(), episode.getUrl()))
+                        downloadProgress
+                                .throttleLast(1000, TimeUnit.MILLISECONDS, Schedulers.computation())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(this::onDownloadProgress, Throwable::printStackTrace));
+
+                subscription.add(
+                        downloadMedia.execute(new DownloadMedia.Param(episode.getId(), episode.getUrl(), downloadProgress))
                                 .subscribe(file -> Log.w("", "download"),
-                                        Throwable::getStackTrace,
+                                        Throwable::printStackTrace,
                                         () -> Log.w("", "downloaded"))
                 );
             } else {

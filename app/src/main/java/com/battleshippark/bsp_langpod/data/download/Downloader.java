@@ -20,17 +20,17 @@ import rx.subjects.PublishSubject;
 public class Downloader {
     static final String HEADER_IDENTIFIER = "header-identifier";
     private final AppPhase appPhase;
-    private final OkHttpClient client;
+    private final OkHttpClient.Builder clientBuilder;
 
     public Downloader(AppPhase appPhase, PublishSubject<DownloadProgressParam> downloadProgress) {
         this.appPhase = appPhase;
-        this.client = new OkHttpClient.Builder()
-                .addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC))
-                .addInterceptor(new DownloadInterceptor(downloadProgress))
-                .build();
+        this.clientBuilder = new OkHttpClient.Builder()
+                .addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC));
     }
 
-    public Observable<File> download(String identifier, String url, String outputPath) {
+    public Observable<File> download(String identifier, String url, String outputPath, PublishSubject<DownloadProgressParam> downloadProgress) {
+        OkHttpClient client = clientBuilder.addInterceptor(new DownloadInterceptor(downloadProgress)).build();
+
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://" + appPhase.getServerDomain())
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
