@@ -18,23 +18,20 @@ import rx.subjects.PublishSubject;
  */
 
 public class ChannelDbApi implements ChannelDbRepository {
-    private final Realm realm;
-
     @Inject
-    public ChannelDbApi(Realm realm) {
-        this.realm = realm;
+    public ChannelDbApi() {
     }
 
     @Override
     public Observable<List<ChannelRealm>> entireChannelList() {
         return Observable.create(subscriber -> {
-            try {
+            try (Realm realm = Realm.getDefaultInstance()) {
                 RealmQuery<ChannelRealm> query = realm.where(ChannelRealm.class);
                 RealmResults<ChannelRealm> results = query.findAllSorted("order");
                 subscriber.onNext(results);
                 subscriber.onCompleted();
-            } catch (Throwable t) {
-                subscriber.onError(t);
+            } catch (Exception e) {
+                subscriber.onError(e);
             }
         });
     }
@@ -42,50 +39,61 @@ public class ChannelDbApi implements ChannelDbRepository {
     @Override
     public Observable<List<ChannelRealm>> myChannelList() {
         return Observable.create(subscriber -> {
-            RealmQuery<ChannelRealm> query = realm.where(ChannelRealm.class);
-            RealmResults<ChannelRealm> results = query.equalTo(ChannelRealm.FIELD_SUBSCRIBED, true)
-                    .findAllSorted(ChannelRealm.FIELD_ORDER);
-            subscriber.onNext(results);
-            subscriber.onCompleted();
+            try (Realm realm = Realm.getDefaultInstance()) {
+                RealmQuery<ChannelRealm> query = realm.where(ChannelRealm.class);
+                RealmResults<ChannelRealm> results = query.equalTo(ChannelRealm.FIELD_SUBSCRIBED, true)
+                        .findAllSorted(ChannelRealm.FIELD_ORDER);
+                subscriber.onNext(results);
+                subscriber.onCompleted();
+            }
         });
     }
 
     @Override
     public Observable<List<ChannelRealm>> channel(long id) {
         return Observable.create(subscriber -> {
-            RealmResults<ChannelRealm> results = realm.where(ChannelRealm.class).equalTo("id", id).findAll();
-            subscriber.onNext(results);
-            subscriber.onCompleted();
+            try (Realm realm = Realm.getDefaultInstance()) {
+                RealmResults<ChannelRealm> results = realm.where(ChannelRealm.class).equalTo("id", id).findAll();
+                subscriber.onNext(results);
+                subscriber.onCompleted();
+            }
         });
     }
 
     @Override
     public void putEntireChannelList(List<ChannelRealm> realmList) throws IllegalArgumentException, RealmMigrationNeededException {
-        realm.executeTransactionAsync(realm1 -> {
-            realm1.delete(ChannelRealm.class);
+        try (Realm realm = Realm.getDefaultInstance()) {
+            realm.executeTransactionAsync(realm1 -> {
+                realm1.delete(ChannelRealm.class);
 
-            Stream.of(realmList).forEach(realm1::insertOrUpdate);
-        });
+                Stream.of(realmList).forEach(realm1::insertOrUpdate);
+            });
+        }
     }
 
     @Override
-    public void putChannel(ChannelRealm channelRealm) throws IllegalArgumentException, RealmMigrationNeededException {
-        realm.executeTransactionAsync(realm1 -> {
-            realm1.insertOrUpdate(channelRealm);
-        });
+    public void putChannel(ChannelRealm channelRealm) throws
+            IllegalArgumentException, RealmMigrationNeededException {
+        try (Realm realm = Realm.getDefaultInstance()) {
+            realm.executeTransactionAsync(realm1 -> {
+                realm1.insertOrUpdate(channelRealm);
+            });
+        }
     }
 
     @Override
     public Observable<Void> putEpisode(EpisodeRealm episodeRealm) {
         return Observable.create(subscriber -> {
-            realm.beginTransaction();
-            try {
-                realm.insertOrUpdate(episodeRealm);
-                realm.commitTransaction();
-                subscriber.onCompleted();
-            } catch (Throwable e) {
-                realm.cancelTransaction();
-                subscriber.onError(e);
+            try (Realm realm = Realm.getDefaultInstance()) {
+                realm.beginTransaction();
+                try {
+                    realm.insertOrUpdate(episodeRealm);
+                    realm.commitTransaction();
+                    subscriber.onCompleted();
+                } catch (Exception e) {
+                    realm.cancelTransaction();
+                    subscriber.onError(e);
+                }
             }
         });
     }
@@ -95,13 +103,15 @@ public class ChannelDbApi implements ChannelDbRepository {
         PublishSubject<Void> subject = PublishSubject.create();
         long id = channelRealm.getId();
         boolean value = !channelRealm.isSubscribed();
-        realm.executeTransactionAsync(
-                realm1 -> {
-                    ChannelRealm newChannelRealm = realm1.where(ChannelRealm.class).equalTo(ChannelRealm.FIELD_ID, id).findFirst();
-                    newChannelRealm.setSubscribed(value);
-                },
-                () -> subject.onNext(null),
-                subject::onError);
-        return subject;
+        try (Realm realm = Realm.getDefaultInstance()) {
+            realm.executeTransactionAsync(
+                    realm1 -> {
+                        ChannelRealm newChannelRealm = realm1.where(ChannelRealm.class).equalTo(ChannelRealm.FIELD_ID, id).findFirst();
+                        newChannelRealm.setSubscribed(value);
+                    },
+                    () -> subject.onNext(null),
+                    subject::onError);
+            return subject;
+        }
     }
 }

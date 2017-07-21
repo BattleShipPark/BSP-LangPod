@@ -27,7 +27,7 @@ public class ChannelDbApiTest {
     private ChannelRealm channelRealm2 = new ChannelRealm(2, 11, "title2", "desc2", "image2", "url2", true);
 
     private Realm realm = Realm.getDefaultInstance();
-    private ChannelDbRepository repository = new ChannelDbApi(realm);
+    private ChannelDbRepository repository = new ChannelDbApi();
     private TestSubscriber<List<ChannelRealm>> testSubscriber = new TestSubscriber<>();
 
     @Test
@@ -133,7 +133,7 @@ public class ChannelDbApiTest {
         Handler handler = new Handler(handlerThread.getLooper());
         handler.post(() -> {
             Realm realm = Realm.getDefaultInstance();
-            ChannelDbRepository repository = new ChannelDbApi(realm);
+            ChannelDbRepository repository = new ChannelDbApi();
 
             //ID1으로 저장해 놓고
             ChannelRealm channelRealm = new ChannelRealm(1, 10, "title1", "desc1", "image1", "url1", "cr1",
@@ -184,7 +184,7 @@ public class ChannelDbApiTest {
     @Test
     public void putEpisode() throws InterruptedException {
         Realm realm = Realm.getDefaultInstance();
-        ChannelDbRepository repository = new ChannelDbApi(realm);
+        ChannelDbRepository repository = new ChannelDbApi();
 
         //ID1으로 저장해 놓고
         EpisodeRealm episodeRealm = new EpisodeRealm(1, "ep.title1", "ep.desc1", "ep.url1", 11, new Date(111));
@@ -199,7 +199,7 @@ public class ChannelDbApiTest {
         //객체 갱신
         episodeRealm.setTitle("ep.title2");
 
-        repository.putEpisode(episodeRealm);
+        repository.putEpisode(episodeRealm).subscribe();
 
         //title이 수정되어 있는걸 확인
         actualEpisodeRealm = realm.copyFromRealm(realm.where(EpisodeRealm.class).findFirst());
@@ -213,7 +213,7 @@ public class ChannelDbApiTest {
         Handler handler = new Handler(handlerThread.getLooper());
         handler.post(() -> {
             Realm realm = Realm.getDefaultInstance();
-            ChannelDbRepository repository = new ChannelDbApi(realm);
+            ChannelDbRepository repository = new ChannelDbApi();
 
             //구독상태의 채널 저장
             realm.executeTransaction(realm1 -> {

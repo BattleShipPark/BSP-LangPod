@@ -44,7 +44,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import io.realm.OrderedRealmCollection;
-import io.realm.Realm;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
@@ -248,7 +247,10 @@ public class ChannelActivity extends Activity implements OnItemListener {
                 episode.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADING);
                 adapter.notifyDataSetChanged();
 
-                PublishSubject<DownloadProgressParam> downloadProgress = PublishSubject.create();
+                episode.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADED);
+                updateEpisode.execute(episode).subscribe(aVoid -> {}, Throwable::printStackTrace);
+
+/*                PublishSubject<DownloadProgressParam> downloadProgress = PublishSubject.create();
                 subscription.add(
                         downloadProgress
                                 .throttleLast(1000, TimeUnit.MILLISECONDS, Schedulers.computation())
@@ -260,7 +262,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
                                 .subscribe(file -> Log.w("", "download"),
                                         Throwable::printStackTrace,
                                         () -> Log.w("", "downloaded"))
-                );
+                );*/
             } else {
                 Toast.makeText(this, "NOT WIFI", Toast.LENGTH_SHORT).show();
                 new AlertDialog.Builder(this).setMessage(R.string.download_in_mobile_network)

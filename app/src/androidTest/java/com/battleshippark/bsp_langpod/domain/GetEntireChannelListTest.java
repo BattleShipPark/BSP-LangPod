@@ -45,7 +45,7 @@ public class GetEntireChannelListTest {
         TestSubscriber<List<ChannelRealm>> testSubscriber = new TestSubscriber<>();
         handler.post(() -> {
             Realm realm = Realm.getDefaultInstance();
-            ChannelDbRepository dbRepository = new ChannelDbApi(realm);
+            ChannelDbRepository dbRepository = new ChannelDbApi();
 
             List<ChannelRealm> channelRealmList = Arrays.asList(
                     new ChannelRealm(1, 10, "title1", "desc1", "image1", "url1", false),

@@ -61,7 +61,7 @@ public class GetChannelTest {
             Realm realm = Realm.getDefaultInstance();
             ChannelServerRepository serverRepository = mock(ChannelServerRepository.class);
             when(serverRepository.myChannel("url1")).thenReturn(Observable.just(channelJson));
-            UseCase<Long, List<ChannelRealm>> useCase = new GetChannel(new ChannelDbApi(realm), serverRepository,
+            UseCase<Long, List<ChannelRealm>> useCase = new GetChannel(new ChannelDbApi(), serverRepository,
                     Schedulers.io(), Schedulers.from(executor), new DomainMapper(mock(RealmHelper.class)));
 
             realm.executeTransaction(realm1 -> {

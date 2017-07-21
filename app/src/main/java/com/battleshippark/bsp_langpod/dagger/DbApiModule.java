@@ -1,7 +1,6 @@
 package com.battleshippark.bsp_langpod.dagger;
 
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
-import com.battleshippark.bsp_langpod.data.server.rss.RssResponseMapper;
 
 import javax.inject.Singleton;
 
@@ -17,6 +16,6 @@ class DbApiModule {
     @Provides
     @Singleton
     ChannelDbApi channelApi() {
-        return new ChannelDbApi(Realm.getDefaultInstance());
+        return new ChannelDbApi();
     }
 }

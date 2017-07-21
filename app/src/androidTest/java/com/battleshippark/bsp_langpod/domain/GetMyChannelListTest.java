@@ -21,7 +21,7 @@ public class GetMyChannelListTest {
     @Test
     public void execute() throws InterruptedException {
         Realm realm = Realm.getDefaultInstance();
-        ChannelDbRepository dbRepository = new ChannelDbApi(realm);
+        ChannelDbRepository dbRepository = new ChannelDbApi();
         List<ChannelRealm> channelRealmList = Arrays.asList(
                 new ChannelRealm(1, 10, "title1", "desc1", "image1", "url1", false),
                 new ChannelRealm(2, 11, "title2", "desc2", "image2", "url2", true)
