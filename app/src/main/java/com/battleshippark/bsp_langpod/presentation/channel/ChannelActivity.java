@@ -247,10 +247,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
                 episode.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADING);
                 adapter.notifyDataSetChanged();
 
-                episode.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADED);
-                updateEpisode.execute(episode).subscribe(aVoid -> {}, Throwable::printStackTrace);
-
-/*                PublishSubject<DownloadProgressParam> downloadProgress = PublishSubject.create();
+                PublishSubject<DownloadProgressParam> downloadProgress = PublishSubject.create();
                 subscription.add(
                         downloadProgress
                                 .throttleLast(1000, TimeUnit.MILLISECONDS, Schedulers.computation())
@@ -262,7 +259,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
                                 .subscribe(file -> Log.w("", "download"),
                                         Throwable::printStackTrace,
                                         () -> Log.w("", "downloaded"))
-                );*/
+                );
             } else {
                 Toast.makeText(this, "NOT WIFI", Toast.LENGTH_SHORT).show();
                 new AlertDialog.Builder(this).setMessage(R.string.download_in_mobile_network)

@@ -1,5 +1,7 @@
 package com.battleshippark.bsp_langpod.data.db;
 
+import android.support.annotation.VisibleForTesting;
+
 import com.battleshippark.bsp_langpod.R;
 
 import java.util.Date;
@@ -35,6 +37,15 @@ public class EpisodeRealm extends RealmObject {
         this.url = url;
         this.length = length;
         this.date = date;
+    }
+
+    public EpisodeRealm(EpisodeRealm realm) {
+        this(realm.id, realm.title, realm.desc, realm.url, realm.length, realm.date);
+        this.playState = realm.playState;
+        this.downloadState = realm.downloadState;
+        this.downloadedPath = realm.downloadedPath;
+        this.downloadedBytes = realm.downloadedBytes;
+        this.totalBytes = realm.totalBytes;
     }
 
     public long getId() {

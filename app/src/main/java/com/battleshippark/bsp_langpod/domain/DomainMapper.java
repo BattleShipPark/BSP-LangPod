@@ -117,18 +117,26 @@ public class DomainMapper {
     }
 
     ChannelRealm channelJsonAsRealm(ChannelRealm channelRealm, ChannelJson channelJson) {
-        Map<Integer, Long> curEpisodeHashId = Stream.of(channelRealm.getEpisodes())
+        Map<Integer, EpisodeRealm> curEpisodeHashRealmMap = Stream.of(channelRealm.getEpisodes())
                 .collect(
                         Collectors.toMap(
-                                episodeRealm -> (episodeRealm.getTitle() + episodeRealm.getDesc()).hashCode(),
-                                EpisodeRealm::getId
+                                episodeRealm -> (episodeRealm.getTitle() + episodeRealm.getDesc()).hashCode()
                         ));
 
         RealmList<EpisodeRealm> episodeRealmList = Stream.of(channelJson.episodes())
                 .map(episodeJson -> {
                     int hash = (episodeJson.title() + episodeJson.desc()).hashCode();
-                    long id = curEpisodeHashId.get(hash) == null ? realmHelper.getNextEpisodeId() : curEpisodeHashId.get(hash);
-                    return new EpisodeRealm(id, episodeJson.title(), episodeJson.desc(), episodeJson.url(), episodeJson.length(), episodeJson.date());
+                    EpisodeRealm episodeRealm = curEpisodeHashRealmMap.get(hash);
+                    if (episodeRealm == null) {
+                        return new EpisodeRealm(realmHelper.getNextEpisodeId(), episodeJson.title(), episodeJson.desc(), episodeJson.url(), episodeJson.length(), episodeJson.date());
+                    } else {
+                        EpisodeRealm newEpisodeRealm = new EpisodeRealm(episodeRealm);
+                        newEpisodeRealm.setTitle(episodeJson.title());
+                        newEpisodeRealm.setUrl(episodeJson.url());
+                        newEpisodeRealm.setLength(episodeJson.length());
+                        newEpisodeRealm.setDate(episodeJson.date());
+                        return newEpisodeRealm;
+                    }
                 })
                 .collect(RealmList::new, RealmList::add);
         return new ChannelRealm(
