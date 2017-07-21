@@ -3,6 +3,7 @@ package com.battleshippark.bsp_langpod.data.db;
 import com.annimon.stream.Stream;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import javax.inject.Inject;
 
@@ -75,9 +76,17 @@ public class ChannelDbApi implements ChannelDbRepository {
     }
 
     @Override
-    public void putEpisode(EpisodeRealm episodeRealm) throws IllegalArgumentException, RealmMigrationNeededException {
-        realm.executeTransactionAsync(realm1 -> {
-            realm1.insertOrUpdate(episodeRealm);
+    public Observable<Void> putEpisode(EpisodeRealm episodeRealm) {
+        return Observable.create(subscriber -> {
+            realm.beginTransaction();
+            try {
+                realm.insertOrUpdate(episodeRealm);
+                realm.commitTransaction();
+                subscriber.onCompleted();
+            } catch (Throwable e) {
+                realm.cancelTransaction();
+                subscriber.onError(e);
+            }
         });
     }
 

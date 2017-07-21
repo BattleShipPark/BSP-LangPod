@@ -32,6 +32,7 @@ import com.battleshippark.bsp_langpod.domain.DomainMapper;
 import com.battleshippark.bsp_langpod.domain.DownloadMedia;
 import com.battleshippark.bsp_langpod.domain.GetChannel;
 import com.battleshippark.bsp_langpod.domain.SubscribeChannel;
+import com.battleshippark.bsp_langpod.domain.UpdateEpisode;
 import com.bumptech.glide.Glide;
 
 import java.text.SimpleDateFormat;
@@ -69,6 +70,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
 
     private GetChannel getChannel;
     private SubscribeChannel subscribeChannel;
+    private UpdateEpisode updateEpisode;
     private DownloadMedia downloadMedia;
 
     private long channelId;
@@ -94,6 +96,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
 
         getChannel = new GetChannel(channelDbApi, channelServerApi, Schedulers.io(), AndroidSchedulers.mainThread(), domainMapper);
         subscribeChannel = new SubscribeChannel(channelDbApi);
+        updateEpisode = new UpdateEpisode(channelDbApi, Schedulers.io(), AndroidSchedulers.mainThread());
         downloadMedia = new DownloadMedia(this, Schedulers.io(), AndroidSchedulers.mainThread(), new AppPhase(BuildConfig.DEBUG));
 
         adapter = new ChannelAdapter(this);
@@ -302,6 +305,8 @@ public class ChannelActivity extends Activity implements OnItemListener {
             if (episodeRealm.getId() == Long.valueOf(param.identifier)) {
                 if (param.done) {
                     episodeRealm.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADED);
+                    updateEpisode.execute(episodeRealm).subscribe(aVoid -> {
+                    }, Throwable::printStackTrace);
                 } else {
                     episodeRealm.setDownloadedBytes(param.bytesRead);
                     episodeRealm.setTotalBytes(param.contentLength);

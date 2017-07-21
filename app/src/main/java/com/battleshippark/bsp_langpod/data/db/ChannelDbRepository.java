@@ -20,7 +20,7 @@ public interface ChannelDbRepository {
 
     void putChannel(ChannelRealm channelRealm) throws IllegalArgumentException, RealmMigrationNeededException;
 
-    void putEpisode(EpisodeRealm episodeRealm) throws IllegalArgumentException, RealmMigrationNeededException;
+    Observable<Void> putEpisode(EpisodeRealm episodeRealm);
 
     Observable<Void> switchSubscribe(ChannelRealm channelRealm);
 }

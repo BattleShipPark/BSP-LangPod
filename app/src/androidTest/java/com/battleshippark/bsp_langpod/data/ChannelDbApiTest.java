@@ -203,7 +203,7 @@ public class ChannelDbApiTest {
 
         //title이 수정되어 있는걸 확인
         actualEpisodeRealm = realm.copyFromRealm(realm.where(EpisodeRealm.class).findFirst());
-        assertThat(actualEpisodeRealm.getTitle()).isEqualTo("ep.title1");
+        assertThat(actualEpisodeRealm.getTitle()).isEqualTo("ep.title2");
     }
 
     @Test
