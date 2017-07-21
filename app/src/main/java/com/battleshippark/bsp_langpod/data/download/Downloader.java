@@ -22,7 +22,7 @@ public class Downloader {
     private final AppPhase appPhase;
     private final OkHttpClient.Builder clientBuilder;
 
-    public Downloader(AppPhase appPhase, PublishSubject<DownloadProgressParam> downloadProgress) {
+    public Downloader(AppPhase appPhase) {
         this.appPhase = appPhase;
         this.clientBuilder = new OkHttpClient.Builder()
                 .addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC));

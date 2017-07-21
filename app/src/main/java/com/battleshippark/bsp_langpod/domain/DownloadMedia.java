@@ -25,7 +25,7 @@ public class DownloadMedia implements UseCase<DownloadMedia.Param, File> {
         this.context = context;
         this.scheduler = scheduler;
         this.postScheduler = postScheduler;
-        this.downloader = new Downloader(appPhase, reposDownloadProgress);
+        this.downloader = new Downloader(appPhase);
     }
 
     @Override

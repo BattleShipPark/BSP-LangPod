@@ -75,6 +75,13 @@ public class ChannelDbApi implements ChannelDbRepository {
     }
 
     @Override
+    public void putEpisode(EpisodeRealm episodeRealm) throws IllegalArgumentException, RealmMigrationNeededException {
+        realm.executeTransactionAsync(realm1 -> {
+            realm1.insertOrUpdate(episodeRealm);
+        });
+    }
+
+    @Override
     public Observable<Void> switchSubscribe(ChannelRealm channelRealm) {
         PublishSubject<Void> subject = PublishSubject.create();
         long id = channelRealm.getId();

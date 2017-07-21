@@ -182,6 +182,31 @@ public class ChannelDbApiTest {
     }
 
     @Test
+    public void putEpisode() throws InterruptedException {
+        Realm realm = Realm.getDefaultInstance();
+        ChannelDbRepository repository = new ChannelDbApi(realm);
+
+        //ID1으로 저장해 놓고
+        EpisodeRealm episodeRealm = new EpisodeRealm(1, "ep.title1", "ep.desc1", "ep.url1", 11, new Date(111));
+        realm.executeTransaction(realm1 -> {
+            realm1.delete(EpisodeRealm.class);
+            realm1.insert(episodeRealm);
+        });
+
+        EpisodeRealm actualEpisodeRealm = realm.copyFromRealm(realm.where(EpisodeRealm.class).findFirst());
+        assertThat(actualEpisodeRealm).isEqualTo(episodeRealm);
+
+        //객체 갱신
+        episodeRealm.setTitle("ep.title2");
+
+        repository.putEpisode(episodeRealm);
+
+        //title이 수정되어 있는걸 확인
+        actualEpisodeRealm = realm.copyFromRealm(realm.where(EpisodeRealm.class).findFirst());
+        assertThat(actualEpisodeRealm.getTitle()).isEqualTo("ep.title1");
+    }
+
+    @Test
     public void subscribeChannel_구독상태를해지() {
         HandlerThread handlerThread = new HandlerThread("ChannelDbApiTest");
         handlerThread.start();

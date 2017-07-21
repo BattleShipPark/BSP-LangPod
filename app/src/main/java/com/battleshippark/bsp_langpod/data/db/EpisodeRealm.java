@@ -21,6 +21,7 @@ public class EpisodeRealm extends RealmObject {
     private Date date;
     private String playState = PlayState.NOT_PLAYED.name();
     private String downloadState = DownloadState.NOT_DOWNLOADED.name();
+    private String downloadedPath;
     @Ignore
     private long downloadedBytes, totalBytes;
 
@@ -103,7 +104,7 @@ public class EpisodeRealm extends RealmObject {
     @Override
     public String toString() {
         return "EpisodeRealm{" +
-                "id='" + id + '\'' +
+                "id=" + id +
                 ", title='" + title + '\'' +
                 ", desc='" + desc + '\'' +
                 ", url='" + url + '\'' +
@@ -111,6 +112,9 @@ public class EpisodeRealm extends RealmObject {
                 ", date=" + date +
                 ", playState='" + playState + '\'' +
                 ", downloadState='" + downloadState + '\'' +
+                ", downloadedPath='" + downloadedPath + '\'' +
+                ", downloadedBytes=" + downloadedBytes +
+                ", totalBytes=" + totalBytes +
                 '}';
     }
 
@@ -121,14 +125,20 @@ public class EpisodeRealm extends RealmObject {
 
         EpisodeRealm that = (EpisodeRealm) o;
 
+        if (id != that.id) return false;
         if (length != that.length) return false;
+        if (downloadedBytes != that.downloadedBytes) return false;
+        if (totalBytes != that.totalBytes) return false;
         if (title != null ? !title.equals(that.title) : that.title != null) return false;
         if (desc != null ? !desc.equals(that.desc) : that.desc != null) return false;
         if (url != null ? !url.equals(that.url) : that.url != null) return false;
         if (date != null ? !date.equals(that.date) : that.date != null) return false;
         if (playState != null ? !playState.equals(that.playState) : that.playState != null)
             return false;
-        return downloadState != null ? downloadState.equals(that.downloadState) : that.downloadState == null;
+        if (downloadState != null ? !downloadState.equals(that.downloadState) : that.downloadState != null)
+            return false;
+        return downloadedPath != null ? downloadedPath.equals(that.downloadedPath) : that.downloadedPath == null;
+
     }
 
     public long getDownloadedBytes() {
@@ -145,6 +155,14 @@ public class EpisodeRealm extends RealmObject {
 
     public void setTotalBytes(long totalBytes) {
         this.totalBytes = totalBytes;
+    }
+
+    public String getDownloadedPath() {
+        return downloadedPath;
+    }
+
+    public void setDownloadedPath(String downloadedPath) {
+        this.downloadedPath = downloadedPath;
     }
 
     public enum PlayState {
