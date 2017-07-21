@@ -11,6 +11,7 @@ import io.realm.Realm;
 import io.realm.RealmQuery;
 import io.realm.RealmResults;
 import io.realm.exceptions.RealmMigrationNeededException;
+import rx.Completable;
 import rx.Observable;
 import rx.subjects.PublishSubject;
 
@@ -61,29 +62,45 @@ public class ChannelDbApi implements ChannelDbRepository {
     }
 
     @Override
-    public void putEntireChannelList(List<ChannelRealm> realmList) throws IllegalArgumentException, RealmMigrationNeededException {
-        try (Realm realm = Realm.getDefaultInstance()) {
-            realm.executeTransactionAsync(realm1 -> {
-                realm1.delete(ChannelRealm.class);
+    public Completable putEntireChannelList(List<ChannelRealm> realmList) {
+        return Completable.create(subscriber -> {
+            try (Realm realm = Realm.getDefaultInstance()) {
+                realm.beginTransaction();
+                try {
+                    realm.delete(ChannelRealm.class);
+                    Stream.of(realmList).forEach(realm::insertOrUpdate);
 
-                Stream.of(realmList).forEach(realm1::insertOrUpdate);
-            });
-        }
+                    realm.commitTransaction();
+                    subscriber.onCompleted();
+                } catch (Exception e) {
+                    realm.cancelTransaction();
+                    subscriber.onError(e);
+                }
+            }
+        });
     }
 
     @Override
-    public void putChannel(ChannelRealm channelRealm) throws
-            IllegalArgumentException, RealmMigrationNeededException {
-        try (Realm realm = Realm.getDefaultInstance()) {
-            realm.executeTransactionAsync(realm1 -> {
-                realm1.insertOrUpdate(channelRealm);
-            });
-        }
+    public Completable putChannel(ChannelRealm channelRealm) {
+        return Completable.create(subscriber -> {
+            try (Realm realm = Realm.getDefaultInstance()) {
+                realm.beginTransaction();
+                try {
+                    realm.insertOrUpdate(channelRealm);
+
+                    realm.commitTransaction();
+                    subscriber.onCompleted();
+                } catch (Exception e) {
+                    realm.cancelTransaction();
+                    subscriber.onError(e);
+                }
+            }
+        });
     }
 
     @Override
-    public Observable<Void> putEpisode(EpisodeRealm episodeRealm) {
-        return Observable.create(subscriber -> {
+    public Completable putEpisode(EpisodeRealm episodeRealm) {
+        return Completable.create(subscriber -> {
             try (Realm realm = Realm.getDefaultInstance()) {
                 realm.beginTransaction();
                 try {
@@ -99,19 +116,22 @@ public class ChannelDbApi implements ChannelDbRepository {
     }
 
     @Override
-    public Observable<Void> switchSubscribe(ChannelRealm channelRealm) {
-        PublishSubject<Void> subject = PublishSubject.create();
-        long id = channelRealm.getId();
-        boolean value = !channelRealm.isSubscribed();
-        try (Realm realm = Realm.getDefaultInstance()) {
-            realm.executeTransactionAsync(
-                    realm1 -> {
-                        ChannelRealm newChannelRealm = realm1.where(ChannelRealm.class).equalTo(ChannelRealm.FIELD_ID, id).findFirst();
-                        newChannelRealm.setSubscribed(value);
-                    },
-                    () -> subject.onNext(null),
-                    subject::onError);
-            return subject;
-        }
+    public Completable switchSubscribe(ChannelRealm channelRealm) {
+        return Completable.create(subscriber -> {
+            long id = channelRealm.getId();
+            boolean value = !channelRealm.isSubscribed();
+            try (Realm realm = Realm.getDefaultInstance()) {
+                realm.beginTransaction();
+                try {
+                    ChannelRealm newChannelRealm = realm.where(ChannelRealm.class).equalTo(ChannelRealm.FIELD_ID, id).findFirst();
+                    newChannelRealm.setSubscribed(value);
+                    realm.commitTransaction();
+                    subscriber.onCompleted();
+                } catch (Exception e) {
+                    realm.cancelTransaction();
+                    subscriber.onError(e);
+                }
+            }
+        });
     }
 }

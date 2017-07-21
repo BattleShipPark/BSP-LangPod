@@ -25,6 +25,6 @@ public class UpdateEpisode implements UseCase<EpisodeRealm, Void> {
 
     @Override
     public Observable<Void> execute(EpisodeRealm episodeRealm) {
-        return dbRepository.putEpisode(episodeRealm).subscribeOn(scheduler).observeOn(postScheduler);
+        return dbRepository.putEpisode(episodeRealm).subscribeOn(scheduler).observeOn(postScheduler).toObservable();
     }
 }

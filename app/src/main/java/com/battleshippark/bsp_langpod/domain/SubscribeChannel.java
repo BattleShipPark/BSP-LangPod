@@ -20,6 +20,6 @@ public class SubscribeChannel implements UseCase<ChannelRealm, Void> {
 
     @Override
     public Observable<Void> execute(ChannelRealm channelRealm) {
-        return dbRepository.switchSubscribe(channelRealm);
+        return dbRepository.switchSubscribe(channelRealm).toObservable();
     }
 }
