@@ -33,6 +33,7 @@ import com.battleshippark.bsp_langpod.domain.DownloadMedia;
 import com.battleshippark.bsp_langpod.domain.GetChannel;
 import com.battleshippark.bsp_langpod.domain.SubscribeChannel;
 import com.battleshippark.bsp_langpod.domain.UpdateEpisode;
+import com.battleshippark.bsp_langpod.player.PlayerServiceFacade;
 import com.bumptech.glide.Glide;
 
 import java.io.File;
@@ -67,6 +68,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
     private CompositeSubscription subscription = new CompositeSubscription();
     private Unbinder unbinder;
     private ChannelAdapter adapter;
+    private PlayerServiceFacade playerServiceFacade;
 
     private GetChannel getChannel;
     private SubscribeChannel subscribeChannel;
@@ -118,6 +120,8 @@ public class ChannelActivity extends Activity implements OnItemListener {
                 }
             }
         });
+
+        playerServiceFacade = new PlayerServiceFacade(this);
 
         if (savedInstanceState == null) {
             channelId = getIntent().getLongExtra(KEY_ID, 0);
@@ -232,9 +236,25 @@ public class ChannelActivity extends Activity implements OnItemListener {
         } else if (episode.getDownloadState() == EpisodeRealm.DownloadState.DOWNLOADED) {
             if (episode.getPlayState() == EpisodeRealm.PlayState.NOT_PLAYED
                     || episode.getPlayState() == EpisodeRealm.PlayState.PLAYED) {
+                playEpisode(episode);
             } else if (episode.getPlayState() == EpisodeRealm.PlayState.PLAYING) {
+                pauseEpisode(episode);
             }
         }
+    }
+
+    private void pauseEpisode(EpisodeRealm episode) {
+        playerServiceFacade.pause(episode);
+
+        episode.setPlayState(EpisodeRealm.PlayState.PLAYED);
+        updateEpisode.execute(episode);
+    }
+
+    private void playEpisode(EpisodeRealm episode) {
+        playerServiceFacade.play(episode);
+
+        episode.setPlayState(EpisodeRealm.PlayState.PLAYING);
+        updateEpisode.execute(episode);
     }
 
     private void startDownload(EpisodeRealm episode) {
