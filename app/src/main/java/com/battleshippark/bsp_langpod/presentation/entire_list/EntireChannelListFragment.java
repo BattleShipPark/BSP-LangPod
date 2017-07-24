@@ -121,7 +121,6 @@ public class EntireChannelListFragment extends Fragment implements OnItemListene
         holder.subscribeView.setSelected(item.isSubscribed());
         holder.subscribeView.setOnClickListener(
                 v -> subscribeChannel.execute(item)
-//                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 aVoid -> {
                                 },

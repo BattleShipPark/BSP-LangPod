@@ -24,6 +24,7 @@ public class EpisodeRealm extends RealmObject {
     private String playState = PlayState.NOT_PLAYED.name();
     private String downloadState = DownloadState.NOT_DOWNLOADED.name();
     private String downloadedPath;
+
     @Ignore
     private long downloadedBytes, totalBytes;
 

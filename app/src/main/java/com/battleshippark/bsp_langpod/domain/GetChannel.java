@@ -45,11 +45,12 @@ public class GetChannel implements UseCase<Long, List<ChannelRealm>> {
         subscriber.onNext(channelRealmList);
 
         serverRepository.myChannel(channelRealmList.get(0).getUrl()).subscribeOn(scheduler).observeOn(postScheduler)
-                .subscribe(myChannelJson -> onServerLoaded(channelRealmList.get(0), myChannelJson),
+                .subscribe(myChannelJson -> onServerLoaded(subscriber, channelRealmList.get(0), myChannelJson),
                         subscriber::onError, subscriber::onCompleted);
     }
 
-    private void onServerLoaded(ChannelRealm channelRealm, ChannelJson channelJson) {
-        dbRepository.putChannel(domainMapper.channelJsonAsRealm(channelRealm, channelJson));
+    private void onServerLoaded(Subscriber<? super List<ChannelRealm>> subscriber, ChannelRealm channelRealm, ChannelJson channelJson) {
+        dbRepository.putChannel(domainMapper.channelJsonAsRealm(channelRealm, channelJson))
+                .subscribe(subscriber::onCompleted, subscriber::onError);
     }
 }

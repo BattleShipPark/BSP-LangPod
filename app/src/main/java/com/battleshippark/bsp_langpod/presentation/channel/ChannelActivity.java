@@ -35,6 +35,7 @@ import com.battleshippark.bsp_langpod.domain.SubscribeChannel;
 import com.battleshippark.bsp_langpod.domain.UpdateEpisode;
 import com.bumptech.glide.Glide;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
@@ -256,7 +257,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
 
                 subscription.add(
                         downloadMedia.execute(new DownloadMedia.Param(episode.getId(), episode.getUrl(), downloadProgress))
-                                .subscribe(file -> Log.w("", "download"),
+                                .subscribe(file -> onDownloadCompleted(episode, file),
                                         Throwable::printStackTrace,
                                         () -> Log.w("", "downloaded"))
                 );
@@ -299,17 +300,18 @@ public class ChannelActivity extends Activity implements OnItemListener {
         return R.drawable.play;
     }
 
+    private void onDownloadCompleted(EpisodeRealm episodeRealm, File file) {
+        episodeRealm.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADED);
+        episodeRealm.setDownloadedPath(file.getAbsolutePath());
+        updateEpisode.execute(episodeRealm).subscribe(aVoid -> {
+        }, Throwable::printStackTrace);
+    }
+
     private void onDownloadProgress(DownloadProgressParam param) {
         for (EpisodeRealm episodeRealm : channelRealm.getEpisodes()) {
             if (episodeRealm.getId() == Long.valueOf(param.identifier)) {
-                if (param.done) {
-                    episodeRealm.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADED);
-                    updateEpisode.execute(episodeRealm).subscribe(aVoid -> {
-                    }, Throwable::printStackTrace);
-                } else {
-                    episodeRealm.setDownloadedBytes(param.bytesRead);
-                    episodeRealm.setTotalBytes(param.contentLength);
-                }
+                episodeRealm.setDownloadedBytes(param.bytesRead);
+                episodeRealm.setTotalBytes(param.contentLength);
                 adapter.notifyDataSetChanged();
                 return;
             }
