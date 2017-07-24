@@ -158,6 +158,18 @@ public class ChannelActivity extends Activity implements OnItemListener {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        playerServiceFacade.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        playerServiceFacade.onStop();
+        super.onStop();
+    }
+
+    @Override
     public void onDestroy() {
         subscription.unsubscribe();
         unbinder.unbind();
@@ -247,14 +259,14 @@ public class ChannelActivity extends Activity implements OnItemListener {
         playerServiceFacade.pause(episode);
 
         episode.setPlayState(EpisodeRealm.PlayState.PLAYED);
-        updateEpisode.execute(episode);
+        updateEpisode.execute(episode).subscribe();
     }
 
     private void playEpisode(EpisodeRealm episode) {
         playerServiceFacade.play(episode);
 
         episode.setPlayState(EpisodeRealm.PlayState.PLAYING);
-        updateEpisode.execute(episode);
+        updateEpisode.execute(episode).subscribe();
     }
 
     private void startDownload(EpisodeRealm episode) {

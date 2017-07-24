@@ -1,7 +1,9 @@
 package com.battleshippark.bsp_langpod;
 
 import android.app.Application;
+import android.content.Intent;
 
+import com.battleshippark.bsp_langpod.player.PlayerService;
 import com.facebook.stetho.Stetho;
 import com.uphyca.stetho_realm.RealmInspectorModulesProvider;
 
@@ -22,5 +24,7 @@ public class MyApplication extends Application {
                         .enableDumpapp(Stetho.defaultDumperPluginsProvider(this))
                         .enableWebKitInspector(RealmInspectorModulesProvider.builder(this).build())
                         .build());
+
+        startService(new Intent(this, PlayerService.class));
     }
 }

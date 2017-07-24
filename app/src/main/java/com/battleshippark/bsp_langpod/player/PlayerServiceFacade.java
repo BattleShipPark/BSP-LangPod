@@ -39,6 +39,18 @@ public class PlayerServiceFacade {
         }
     }
 
+    public void onStart() {
+        if (!connection.isBound()) {
+            context.bindService(new Intent(context, PlayerService.class), connection, Context.BIND_AUTO_CREATE);
+        }
+    }
+
+    public void onStop() {
+        if (connection.isBound()) {
+            context.unbindService(connection);
+        }
+    }
+
     private class LocalServiceConnection implements ServiceConnection {
         private boolean bound;
         private PlayerService service;
