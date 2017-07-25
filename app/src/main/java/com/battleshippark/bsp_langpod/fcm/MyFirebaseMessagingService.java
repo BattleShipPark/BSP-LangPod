@@ -7,10 +7,8 @@ import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 
 import com.battleshippark.bsp_langpod.presentation.MainActivity;
-import com.battleshippark.bsp_langpod.util.Loggable;
 import com.battleshippark.bsp_langpod.util.Logger;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;

@@ -1,7 +1,5 @@
 package com.battleshippark.bsp_langpod.fcm;
 
-import android.util.Log;
-
 import com.battleshippark.bsp_langpod.util.Logger;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;

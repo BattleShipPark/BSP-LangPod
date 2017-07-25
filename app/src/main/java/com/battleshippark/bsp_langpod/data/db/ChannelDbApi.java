@@ -3,17 +3,14 @@ package com.battleshippark.bsp_langpod.data.db;
 import com.annimon.stream.Stream;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import javax.inject.Inject;
 
 import io.realm.Realm;
 import io.realm.RealmQuery;
 import io.realm.RealmResults;
-import io.realm.exceptions.RealmMigrationNeededException;
 import rx.Completable;
 import rx.Observable;
-import rx.subjects.PublishSubject;
 
 /**
  */

@@ -1,7 +1,5 @@
 package com.battleshippark.bsp_langpod.data.db;
 
-import android.support.annotation.VisibleForTesting;
-
 import com.battleshippark.bsp_langpod.R;
 
 import java.util.Date;

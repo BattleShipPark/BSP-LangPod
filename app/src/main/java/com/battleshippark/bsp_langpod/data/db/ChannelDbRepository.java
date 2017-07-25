@@ -2,7 +2,6 @@ package com.battleshippark.bsp_langpod.data.db;
 
 import java.util.List;
 
-import io.realm.exceptions.RealmMigrationNeededException;
 import rx.Completable;
 import rx.Observable;
 
