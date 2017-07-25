@@ -16,43 +16,48 @@ import rx.functions.Action1;
 public class PlayerServiceFacade {
     private final Context context;
     private final LocalServiceConnection connection = new LocalServiceConnection();
+    private boolean bound;
 
     public PlayerServiceFacade(Context context) {
         this.context = context;
     }
 
     public void play(EpisodeRealm episode) {
-        if (connection.isBound()) {
+        if (isBound()) {
             connection.getService().play(episode);
         } else {
             connection.setOnConnected(service -> service.play(episode));
-            context.bindService(new Intent(context, PlayerService.class), connection, Context.BIND_AUTO_CREATE);
+            context.bindService(new Intent(context, PlayerService.class), connection, 0);
         }
     }
 
     public void pause(EpisodeRealm episode) {
-        if (connection.isBound()) {
+        if (isBound()) {
             connection.getService().pause(episode);
         } else {
             connection.setOnConnected(service -> service.pause(episode));
-            context.bindService(new Intent(context, PlayerService.class), connection, Context.BIND_AUTO_CREATE);
+            context.bindService(new Intent(context, PlayerService.class), connection, 0);
         }
     }
 
     public void onStart() {
-        if (!connection.isBound()) {
-            context.bindService(new Intent(context, PlayerService.class), connection, Context.BIND_AUTO_CREATE);
+        if (!isBound()) {
+            context.bindService(new Intent(context, PlayerService.class), connection, 0);
         }
     }
 
     public void onStop() {
-        if (connection.isBound()) {
+        if (isBound()) {
             context.unbindService(connection);
+            bound = false;
         }
     }
 
+    private boolean isBound() {
+        return bound;
+    }
+
     private class LocalServiceConnection implements ServiceConnection {
-        private boolean bound;
         private PlayerService service;
         private Action1<PlayerService> onConnected;
 
@@ -69,10 +74,6 @@ public class PlayerServiceFacade {
         @Override
         public void onServiceDisconnected(ComponentName name) {
             bound = false;
-        }
-
-        boolean isBound() {
-            return bound;
         }
 
         PlayerService getService() {
