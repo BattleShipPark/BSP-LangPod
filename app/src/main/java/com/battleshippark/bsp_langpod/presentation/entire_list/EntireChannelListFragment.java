@@ -20,6 +20,7 @@ import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.domain.DomainMapper;
 import com.battleshippark.bsp_langpod.domain.GetEntireChannelList;
 import com.battleshippark.bsp_langpod.domain.SubscribeChannel;
+import com.battleshippark.bsp_langpod.util.Logger;
 import com.bumptech.glide.Glide;
 
 import java.util.List;
@@ -32,6 +33,8 @@ import rx.schedulers.Schedulers;
 
 public class EntireChannelListFragment extends Fragment implements OnItemListener {
     private static final String TAG = EntireChannelListFragment.class.getSimpleName();
+    private static final Logger logger = new Logger(TAG);
+
     private RecyclerView rv;
 
     private EntireListFragmentListener mListener;
@@ -108,7 +111,7 @@ public class EntireChannelListFragment extends Fragment implements OnItemListene
     }
 
     void showError(Throwable throwable) {
-        Log.w(TAG, throwable);
+        logger.w(throwable);
     }
 
     @Override
@@ -124,7 +127,7 @@ public class EntireChannelListFragment extends Fragment implements OnItemListene
                         .subscribe(
                                 aVoid -> {
                                 },
-                                Throwable::printStackTrace
+                                logger::w
                         )
         );
     }

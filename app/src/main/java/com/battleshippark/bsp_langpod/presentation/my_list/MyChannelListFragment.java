@@ -18,6 +18,7 @@ import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.domain.GetMyChannelList;
 import com.battleshippark.bsp_langpod.domain.SubscribeChannel;
+import com.battleshippark.bsp_langpod.util.Logger;
 import com.bumptech.glide.Glide;
 
 import java.util.List;
@@ -28,6 +29,8 @@ import rx.Subscription;
 
 public class MyChannelListFragment extends Fragment implements OnItemListener {
     private static final String TAG = MyChannelListFragment.class.getSimpleName();
+    private static final Logger logger = new Logger(TAG);
+
     private RecyclerView rv;
     private TextView msgTextView;
 
@@ -125,7 +128,7 @@ public class MyChannelListFragment extends Fragment implements OnItemListener {
         rv.setVisibility(View.GONE);
         msgTextView.setVisibility(View.VISIBLE);
         msgTextView.setText(R.string.my_list_error_msg);
-        Log.w(TAG, throwable);
+        logger.w(throwable);
     }
 
     @Override
@@ -141,7 +144,7 @@ public class MyChannelListFragment extends Fragment implements OnItemListener {
                         .subscribe(
                                 aVoid -> {
                                 },
-                                throwable -> Log.w(TAG, throwable)
+                                throwable -> logger.w(throwable)
                         )
         );
     }

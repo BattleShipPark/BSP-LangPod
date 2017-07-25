@@ -34,6 +34,7 @@ import com.battleshippark.bsp_langpod.domain.GetChannel;
 import com.battleshippark.bsp_langpod.domain.SubscribeChannel;
 import com.battleshippark.bsp_langpod.domain.UpdateEpisode;
 import com.battleshippark.bsp_langpod.player.PlayerServiceFacade;
+import com.battleshippark.bsp_langpod.util.Logger;
 import com.bumptech.glide.Glide;
 
 import java.io.File;
@@ -55,6 +56,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
     private static final String TAG = ChannelActivity.class.getSimpleName();
     private static final String KEY_ID = "keyId";
     private static final float MEGA_BYTE = 1024 * 1024 * 1.0f;
+    private static final Logger logger = new Logger(TAG);
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -191,7 +193,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
         rv.setVisibility(View.GONE);
         msgTextView.setVisibility(View.VISIBLE);
         msgTextView.setText(R.string.my_list_error_msg);
-        Log.w(TAG, throwable);
+        logger.w(throwable);
     }
 
     void dataCompleted() {
@@ -217,7 +219,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
                         .subscribe(
                                 aVoid -> {
                                 },
-                                throwable -> Log.w(TAG, throwable)
+                                throwable -> logger.w(throwable)
                         )
         );
     }
@@ -285,13 +287,13 @@ public class ChannelActivity extends Activity implements OnItemListener {
                         downloadProgress
                                 .throttleLast(1000, TimeUnit.MILLISECONDS, Schedulers.computation())
                                 .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(this::onDownloadProgress, Throwable::printStackTrace));
+                                .subscribe(this::onDownloadProgress, logger::w));
 
                 subscription.add(
                         downloadMedia.execute(new DownloadMedia.Param(episode.getId(), episode.getUrl(), downloadProgress))
                                 .subscribe(file -> onDownloadCompleted(episode, file),
                                         Throwable::printStackTrace,
-                                        () -> Log.w("", "downloaded"))
+                                        () -> logger.w("downloaded"))
                 );
             } else {
                 Toast.makeText(this, "NOT WIFI", Toast.LENGTH_SHORT).show();

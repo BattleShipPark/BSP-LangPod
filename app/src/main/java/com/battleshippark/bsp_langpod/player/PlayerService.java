@@ -7,10 +7,10 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
-import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
+import com.battleshippark.bsp_langpod.util.Logger;
 
 import java.io.IOException;
 
@@ -18,10 +18,12 @@ import java.io.IOException;
  */
 
 public class PlayerService extends Service {
+    private static final String TAG = PlayerService.class.getSimpleName();
+    private static final Logger logger = new Logger(TAG);
     private final IBinder mBinder = new LocalBinder();
+    private final MediaPlayer mp = new MediaPlayer();
     private HandlerThread thread;
     private Handler handler;
-    private final MediaPlayer mp = new MediaPlayer();
 
     @Override
     public void onCreate() {
@@ -53,7 +55,7 @@ public class PlayerService extends Service {
                 mp.prepare();
                 mp.start();
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.w(e);
             }
         });
     }
