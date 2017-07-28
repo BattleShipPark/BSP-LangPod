@@ -1,6 +1,9 @@
 package com.battleshippark.bsp_langpod.presentation.channel;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -12,6 +15,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
@@ -32,6 +36,7 @@ import com.battleshippark.bsp_langpod.domain.DownloadMedia;
 import com.battleshippark.bsp_langpod.domain.GetChannel;
 import com.battleshippark.bsp_langpod.domain.SubscribeChannel;
 import com.battleshippark.bsp_langpod.domain.UpdateEpisode;
+import com.battleshippark.bsp_langpod.player.PlayerService;
 import com.battleshippark.bsp_langpod.player.PlayerServiceFacade;
 import com.battleshippark.bsp_langpod.util.Logger;
 import com.bumptech.glide.Glide;
@@ -90,6 +95,23 @@ public class ChannelActivity extends Activity implements OnItemListener {
         initUI();
 
         showChannel();
+
+        Intent intent = new Intent(this, PlayerService.class);
+        intent.setAction("action");
+        PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        RemoteViews rv = new RemoteViews(getPackageName(), R.layout.notification);
+        rv.setImageViewResource(R.id.image_iv, R.drawable.download);
+        rv.setTextViewText(R.id.title_tv, "test");
+        rv.setImageViewResource(R.id.play_iv, R.drawable.play);
+        rv.setOnClickPendingIntent(R.id.play_iv, pendingIntent);
+
+        Notification.Builder mBuilder = new Notification.Builder(this)
+                .setSmallIcon(R.drawable.download)
+//                .setContentTitle("My notification")
+//                .setContentText("Hello World!")
+                .setContent(rv);
+        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(0, mBuilder.build());
     }
 
     private void initData(Bundle savedInstanceState) {

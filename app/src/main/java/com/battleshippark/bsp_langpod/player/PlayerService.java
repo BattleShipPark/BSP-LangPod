@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.widget.Toast;
 
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
 import com.battleshippark.bsp_langpod.util.Logger;
@@ -32,6 +33,16 @@ public class PlayerService extends Service {
         thread = new HandlerThread(PlayerService.class.getSimpleName());
         thread.start();
         handler = new Handler(thread.getLooper());
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        int ret = super.onStartCommand(intent, flags, startId);
+        String action = intent.getAction();
+        if (action != null && action.equals("action")) {
+            Toast.makeText(this, "NOTIFICATION", Toast.LENGTH_SHORT).show();
+        }
+        return ret;
     }
 
     @Nullable
