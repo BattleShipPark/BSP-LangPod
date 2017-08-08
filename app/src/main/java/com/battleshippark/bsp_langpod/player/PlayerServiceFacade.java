@@ -1,8 +1,10 @@
 package com.battleshippark.bsp_langpod.player;
 
+import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 
@@ -33,9 +35,9 @@ public class PlayerServiceFacade {
 
     public void pause(EpisodeRealm episode) {
         if (isBound()) {
-            connection.getService().pause(episode);
+            connection.getService().pause();
         } else {
-            connection.setOnConnected(service -> service.pause(episode));
+            connection.setOnConnected(service -> service.pause());
             context.bindService(new Intent(context, PlayerService.class), connection, 0);
         }
     }
@@ -55,6 +57,19 @@ public class PlayerServiceFacade {
 
     private boolean isBound() {
         return bound;
+    }
+
+    public PendingIntent createPendingIntent(boolean isPlaying) {
+        Intent intent = new Intent(context, PlayerService.class);
+        intent.setAction(isPlaying ? PlayerService.ACTION_PAUSE : PlayerService.ACTION_PLAY);
+        return PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    public IntentFilter createIntentFilter() {
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(PlayerService.ACTION_PLAY);
+        intentFilter.addAction(PlayerService.ACTION_PAUSE);
+        return intentFilter;
     }
 
     private class LocalServiceConnection implements ServiceConnection {

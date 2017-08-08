@@ -4,8 +4,10 @@ import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -36,10 +38,10 @@ import com.battleshippark.bsp_langpod.domain.DownloadMedia;
 import com.battleshippark.bsp_langpod.domain.GetChannel;
 import com.battleshippark.bsp_langpod.domain.SubscribeChannel;
 import com.battleshippark.bsp_langpod.domain.UpdateEpisode;
-import com.battleshippark.bsp_langpod.player.PlayerService;
 import com.battleshippark.bsp_langpod.player.PlayerServiceFacade;
 import com.battleshippark.bsp_langpod.util.Logger;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.NotificationTarget;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -74,6 +76,14 @@ public class ChannelActivity extends Activity implements OnItemListener {
     private CompositeSubscription subscription = new CompositeSubscription();
     private Unbinder unbinder;
     private ChannelAdapter adapter;
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Toast.makeText(context, intent.getAction(), Toast.LENGTH_SHORT).show();
+        }
+    };
+    private IntentFilter intentFilter;
+
     private PlayerServiceFacade playerServiceFacade;
 
     private GetChannel getChannel;
@@ -129,6 +139,8 @@ public class ChannelActivity extends Activity implements OnItemListener {
 
         playerServiceFacade = new PlayerServiceFacade(this);
 
+        intentFilter = playerServiceFacade.createIntentFilter();
+
         if (savedInstanceState == null) {
             channelId = getIntent().getLongExtra(KEY_ID, 0);
         } else {
@@ -167,10 +179,12 @@ public class ChannelActivity extends Activity implements OnItemListener {
     protected void onStart() {
         super.onStart();
         playerServiceFacade.onStart();
+        registerReceiver();
     }
 
     @Override
     protected void onStop() {
+        unregisterReceiver();
         playerServiceFacade.onStop();
         super.onStop();
     }
@@ -255,28 +269,37 @@ public class ChannelActivity extends Activity implements OnItemListener {
             if (episode.getPlayState() == EpisodeRealm.PlayState.NOT_PLAYED
                     || episode.getPlayState() == EpisodeRealm.PlayState.PLAYED) {
                 playEpisode(episode);
-                showNotification(episode);
+                showNotification(channelRealm, episode, true);
             } else if (episode.getPlayState() == EpisodeRealm.PlayState.PLAYING) {
                 pauseEpisode(episode);
+                showNotification(channelRealm, episode, false);
             }
         }
     }
 
-    private void showNotification(EpisodeRealm episode) {
-        Intent intent = new Intent(this, PlayerService.class);
-        intent.setAction("action");
-        PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    private void showNotification(ChannelRealm channelRealm, EpisodeRealm episodeRealm, boolean isPlaying) {
+        PendingIntent pendingIntent = playerServiceFacade.createPendingIntent(isPlaying);
 
         RemoteViews rv = new RemoteViews(getPackageName(), R.layout.notification);
-        rv.setImageViewResource(R.id.image_iv, R.drawable.download);
-        rv.setTextViewText(R.id.title_tv, episode.getTitle());
-        rv.setImageViewResource(R.id.play_iv, R.drawable.play);
+        rv.setImageViewResource(R.id.image_iv, R.mipmap.ic_launcher);
+        rv.setTextViewText(R.id.channel_tv, channelRealm.getTitle());
+        rv.setTextViewText(R.id.episode_tv, episodeRealm.getTitle());
+        rv.setImageViewResource(R.id.play_iv, isPlaying ? R.drawable.pause : R.drawable.play);
         rv.setOnClickPendingIntent(R.id.play_iv, pendingIntent);
 
         Notification.Builder mBuilder = new Notification.Builder(this)
                 .setSmallIcon(R.drawable.download)
                 .setContent(rv);
-        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(0, mBuilder.build());
+        final Notification notification = mBuilder.build();
+        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(0, notification);
+
+        NotificationTarget notificationTarget = new NotificationTarget(
+                this,
+                rv,
+                R.id.image_iv,
+                notification,
+                0);
+        Glide.with(getApplicationContext()).load(channelRealm.getImage()).asBitmap().into(notificationTarget);
     }
 
     private void pauseEpisode(EpisodeRealm episode) {
@@ -374,6 +397,14 @@ public class ChannelActivity extends Activity implements OnItemListener {
                 return;
             }
         }
+    }
+
+    private void registerReceiver() {
+        registerReceiver(receiver, intentFilter);
+    }
+
+    private void unregisterReceiver() {
+        unregisterReceiver(receiver);
     }
 
     public static Intent createIntent(Context context, long id) {

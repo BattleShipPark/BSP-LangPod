@@ -8,7 +8,6 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.widget.Toast;
 
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
 import com.battleshippark.bsp_langpod.util.Logger;
@@ -19,10 +18,14 @@ import java.io.IOException;
  */
 
 public class PlayerService extends Service {
+    public static final String ACTION_PLAY = "actionPlay";
+    public static final String ACTION_PAUSE = "actionPause";
     private static final String TAG = PlayerService.class.getSimpleName();
     private static final Logger logger = new Logger(TAG);
+    private static final MediaPlayer mp = new MediaPlayer();
+    private static final Intent playIntent = new Intent(ACTION_PLAY);
+    private static final Intent pauseIntent = new Intent(ACTION_PAUSE);
     private final IBinder mBinder = new LocalBinder();
-    private final MediaPlayer mp = new MediaPlayer();
     private HandlerThread thread;
     private Handler handler;
 
@@ -39,8 +42,12 @@ public class PlayerService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         int ret = super.onStartCommand(intent, flags, startId);
         String action = intent.getAction();
-        if (action != null && action.equals("action")) {
-            Toast.makeText(this, "NOTIFICATION", Toast.LENGTH_SHORT).show();
+        if (action != null) {
+            if (action.equals(ACTION_PLAY)) {
+                play();
+            } else if (action.equals(ACTION_PAUSE)) {
+                pause();
+            }
         }
         return ret;
     }
@@ -57,6 +64,13 @@ public class PlayerService extends Service {
         thread.interrupt();
     }
 
+    public void play() {
+        handler.post(() -> {
+            mp.start();
+            sendBroadcast(playIntent);
+        });
+    }
+
     public void play(EpisodeRealm episode) {
         handler.post(() -> {
             try {
@@ -71,8 +85,11 @@ public class PlayerService extends Service {
         });
     }
 
-    public void pause(EpisodeRealm episode) {
-        handler.post(mp::pause);
+    public void pause() {
+        handler.post(() -> {
+            mp.pause();
+            sendBroadcast(pauseIntent);
+        });
     }
 
     public class LocalBinder extends Binder {
