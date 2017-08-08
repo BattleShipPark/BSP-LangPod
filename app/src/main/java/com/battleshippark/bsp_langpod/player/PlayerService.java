@@ -29,6 +29,7 @@ import java.io.IOException;
 public class PlayerService extends Service {
     public static final String ACTION_PLAY = "actionPlay";
     public static final String ACTION_PAUSE = "actionPause";
+    public static final String KEY_EPISODE_ID = "keyEpisodeId";
     private static final String TAG = PlayerService.class.getSimpleName();
     private static final Logger logger = new Logger(TAG);
     private static final MediaPlayer mp = new MediaPlayer();
@@ -78,7 +79,7 @@ public class PlayerService extends Service {
     private void play() {
         handler.post(() -> {
             mp.start();
-            sendBroadcast(playIntent);
+            sendBroadcast(playIntent, episodeRealm.getId());
         });
     }
 
@@ -102,7 +103,7 @@ public class PlayerService extends Service {
     public void pause() {
         handler.post(() -> {
             mp.pause();
-            sendBroadcast(pauseIntent);
+            sendBroadcast(pauseIntent, episodeRealm.getId());
         });
         showNotification(channelRealm, episodeRealm, false);
     }
@@ -136,6 +137,11 @@ public class PlayerService extends Service {
         Intent intent = new Intent(this, PlayerService.class);
         intent.setAction(isPlaying ? PlayerService.ACTION_PAUSE : PlayerService.ACTION_PLAY);
         return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    private void sendBroadcast(Intent intent, long episodeId) {
+        intent.putExtra(KEY_EPISODE_ID, episodeId);
+        sendBroadcast(intent);
     }
 
     public class LocalBinder extends Binder {

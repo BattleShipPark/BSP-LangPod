@@ -18,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
+import com.annimon.stream.Stream;
 import com.battleshippark.bsp_langpod.AppPhase;
 import com.battleshippark.bsp_langpod.BuildConfig;
 import com.battleshippark.bsp_langpod.R;
@@ -34,6 +35,7 @@ import com.battleshippark.bsp_langpod.domain.DownloadMedia;
 import com.battleshippark.bsp_langpod.domain.GetChannel;
 import com.battleshippark.bsp_langpod.domain.SubscribeChannel;
 import com.battleshippark.bsp_langpod.domain.UpdateEpisode;
+import com.battleshippark.bsp_langpod.player.PlayerService;
 import com.battleshippark.bsp_langpod.player.PlayerServiceFacade;
 import com.battleshippark.bsp_langpod.util.Logger;
 import com.bumptech.glide.Glide;
@@ -74,7 +76,17 @@ public class ChannelActivity extends Activity implements OnItemListener {
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Toast.makeText(context, intent.getAction(), Toast.LENGTH_SHORT).show();
+            long episodeId = intent.getLongExtra(PlayerService.KEY_EPISODE_ID, -1);
+            Stream.of(channelRealm.getEpisodes())
+                    .filter(episodeRealm -> episodeRealm.getId() == episodeId).findFirst()
+                    .ifPresent(episodeRealm -> {
+                        if (intent.getAction().equals(PlayerService.ACTION_PLAY)) {
+                            episodeRealm.setPlayState(EpisodeRealm.PlayState.PLAYING);
+                        } else if (intent.getAction().equals(PlayerService.ACTION_PAUSE)) {
+                            episodeRealm.setPlayState(EpisodeRealm.PlayState.PLAYED);
+                        }
+                        adapter.notifyDataSetChanged();
+                    });
         }
     };
     private IntentFilter intentFilter;
