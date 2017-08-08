@@ -1,6 +1,5 @@
 package com.battleshippark.bsp_langpod.player;
 
-import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -8,6 +7,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 
+import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
 
 import rx.functions.Action1;
@@ -24,11 +24,11 @@ public class PlayerServiceFacade {
         this.context = context;
     }
 
-    public void play(EpisodeRealm episode) {
+    public void play(ChannelRealm channelRealm, EpisodeRealm episodeRealm) {
         if (isBound()) {
-            connection.getService().play(episode);
+            connection.getService().play(channelRealm, episodeRealm);
         } else {
-            connection.setOnConnected(service -> service.play(episode));
+            connection.setOnConnected(service -> service.play(channelRealm, episodeRealm));
             context.bindService(new Intent(context, PlayerService.class), connection, 0);
         }
     }
@@ -57,12 +57,6 @@ public class PlayerServiceFacade {
 
     private boolean isBound() {
         return bound;
-    }
-
-    public PendingIntent createPendingIntent(boolean isPlaying) {
-        Intent intent = new Intent(context, PlayerService.class);
-        intent.setAction(isPlaying ? PlayerService.ACTION_PAUSE : PlayerService.ACTION_PLAY);
-        return PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     public IntentFilter createIntentFilter() {

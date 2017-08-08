@@ -1,9 +1,6 @@
 package com.battleshippark.bsp_langpod.presentation.channel;
 
 import android.app.Activity;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -17,7 +14,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
-import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
@@ -41,7 +37,6 @@ import com.battleshippark.bsp_langpod.domain.UpdateEpisode;
 import com.battleshippark.bsp_langpod.player.PlayerServiceFacade;
 import com.battleshippark.bsp_langpod.util.Logger;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.NotificationTarget;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -269,37 +264,10 @@ public class ChannelActivity extends Activity implements OnItemListener {
             if (episode.getPlayState() == EpisodeRealm.PlayState.NOT_PLAYED
                     || episode.getPlayState() == EpisodeRealm.PlayState.PLAYED) {
                 playEpisode(episode);
-                showNotification(channelRealm, episode, true);
             } else if (episode.getPlayState() == EpisodeRealm.PlayState.PLAYING) {
                 pauseEpisode(episode);
-                showNotification(channelRealm, episode, false);
             }
         }
-    }
-
-    private void showNotification(ChannelRealm channelRealm, EpisodeRealm episodeRealm, boolean isPlaying) {
-        PendingIntent pendingIntent = playerServiceFacade.createPendingIntent(isPlaying);
-
-        RemoteViews rv = new RemoteViews(getPackageName(), R.layout.notification);
-        rv.setImageViewResource(R.id.image_iv, R.mipmap.ic_launcher);
-        rv.setTextViewText(R.id.channel_tv, channelRealm.getTitle());
-        rv.setTextViewText(R.id.episode_tv, episodeRealm.getTitle());
-        rv.setImageViewResource(R.id.play_iv, isPlaying ? R.drawable.pause : R.drawable.play);
-        rv.setOnClickPendingIntent(R.id.play_iv, pendingIntent);
-
-        Notification.Builder mBuilder = new Notification.Builder(this)
-                .setSmallIcon(R.drawable.download)
-                .setContent(rv);
-        final Notification notification = mBuilder.build();
-        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(0, notification);
-
-        NotificationTarget notificationTarget = new NotificationTarget(
-                this,
-                rv,
-                R.id.image_iv,
-                notification,
-                0);
-        Glide.with(getApplicationContext()).load(channelRealm.getImage()).asBitmap().into(notificationTarget);
     }
 
     private void pauseEpisode(EpisodeRealm episode) {
@@ -310,7 +278,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
     }
 
     private void playEpisode(EpisodeRealm episode) {
-        playerServiceFacade.play(episode);
+        playerServiceFacade.play(channelRealm, episode);
 
         episode.setPlayState(EpisodeRealm.PlayState.PLAYING);
         updateEpisode.execute(episode).subscribe();

@@ -1,6 +1,10 @@
 package com.battleshippark.bsp_langpod.player;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Binder;
@@ -8,9 +12,14 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.widget.RemoteViews;
 
+import com.battleshippark.bsp_langpod.R;
+import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
 import com.battleshippark.bsp_langpod.util.Logger;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.NotificationTarget;
 
 import java.io.IOException;
 
@@ -28,6 +37,8 @@ public class PlayerService extends Service {
     private final IBinder mBinder = new LocalBinder();
     private HandlerThread thread;
     private Handler handler;
+    private ChannelRealm channelRealm;
+    private EpisodeRealm episodeRealm;
 
     @Override
     public void onCreate() {
@@ -64,25 +75,28 @@ public class PlayerService extends Service {
         thread.interrupt();
     }
 
-    public void play() {
+    private void play() {
         handler.post(() -> {
             mp.start();
             sendBroadcast(playIntent);
         });
     }
 
-    public void play(EpisodeRealm episode) {
+    public void play(ChannelRealm channelRealm, EpisodeRealm episode) {
+        this.channelRealm = channelRealm;
+        this.episodeRealm = episode;
         handler.post(() -> {
             try {
                 mp.stop();
                 mp.reset();
-                mp.setDataSource("file://" + episode.getDownloadedPath());
+                mp.setDataSource("file://" + episodeRealm.getDownloadedPath());
                 mp.prepare();
                 mp.start();
             } catch (IOException e) {
                 logger.w(e);
             }
         });
+        showNotification(channelRealm, episodeRealm, true);
     }
 
     public void pause() {
@@ -90,6 +104,38 @@ public class PlayerService extends Service {
             mp.pause();
             sendBroadcast(pauseIntent);
         });
+        showNotification(channelRealm, episodeRealm, false);
+    }
+
+    private void showNotification(ChannelRealm channelRealm, EpisodeRealm episodeRealm, boolean isPlaying) {
+        PendingIntent pendingIntent = createPendingIntent(isPlaying);
+
+        RemoteViews rv = new RemoteViews(getPackageName(), R.layout.notification);
+        rv.setImageViewResource(R.id.image_iv, R.mipmap.ic_launcher);
+        rv.setTextViewText(R.id.channel_tv, channelRealm.getTitle());
+        rv.setTextViewText(R.id.episode_tv, episodeRealm.getTitle());
+        rv.setImageViewResource(R.id.play_iv, isPlaying ? R.drawable.pause : R.drawable.play);
+        rv.setOnClickPendingIntent(R.id.play_iv, pendingIntent);
+
+        Notification.Builder mBuilder = new Notification.Builder(this)
+                .setSmallIcon(R.drawable.download)
+                .setContent(rv);
+        final Notification notification = mBuilder.build();
+        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(0, notification);
+
+        NotificationTarget notificationTarget = new NotificationTarget(
+                this,
+                rv,
+                R.id.image_iv,
+                notification,
+                0);
+        Glide.with(getApplicationContext()).load(channelRealm.getImage()).asBitmap().into(notificationTarget);
+    }
+
+    private PendingIntent createPendingIntent(boolean isPlaying) {
+        Intent intent = new Intent(this, PlayerService.class);
+        intent.setAction(isPlaying ? PlayerService.ACTION_PAUSE : PlayerService.ACTION_PLAY);
+        return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     public class LocalBinder extends Binder {
