@@ -18,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
+import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.battleshippark.bsp_langpod.AppPhase;
 import com.battleshippark.bsp_langpod.BuildConfig;
@@ -77,16 +78,33 @@ public class ChannelActivity extends Activity implements OnItemListener {
         @Override
         public void onReceive(Context context, Intent intent) {
             long episodeId = intent.getLongExtra(PlayerService.KEY_EPISODE_ID, -1);
-            Stream.of(channelRealm.getEpisodes())
-                    .filter(episodeRealm -> episodeRealm.getId() == episodeId).findFirst()
-                    .ifPresent(episodeRealm -> {
-                        if (intent.getAction().equals(PlayerService.ACTION_PLAY)) {
-                            episodeRealm.setPlayState(EpisodeRealm.PlayState.PLAYING);
-                        } else if (intent.getAction().equals(PlayerService.ACTION_PAUSE)) {
-                            episodeRealm.setPlayState(EpisodeRealm.PlayState.PLAYED);
-                        }
-                        adapter.notifyDataSetChanged();
-                    });
+            if (intent.getAction().equals(PlayerService.ACTION_PLAY)) {
+                findEpisodeWith(episodeId).ifPresent(episodeRealm -> {
+                    findPlayingEpisodeExcept(episodeRealm.getId())
+                            .ifPresent(episodeRealm1 -> {
+                                episodeRealm1.setPlayState(EpisodeRealm.PlayState.PLAYED);
+                            });
+                    episodeRealm.setPlayState(EpisodeRealm.PlayState.PLAYING);
+                    adapter.notifyDataSetChanged();
+                });
+            } else if (intent.getAction().equals(PlayerService.ACTION_PAUSE)) {
+                findEpisodeWith(episodeId).ifPresent(episodeRealm -> {
+                    episodeRealm.setPlayState(EpisodeRealm.PlayState.PLAYED);
+                    adapter.notifyDataSetChanged();
+                });
+            }
+        }
+
+        private Optional<EpisodeRealm> findPlayingEpisodeExcept(long episodeId) {
+            return Stream.of(channelRealm.getEpisodes())
+                    .filter(episodeRealm -> episodeRealm.getPlayState() == EpisodeRealm.PlayState.PLAYING
+                            && episodeRealm.getId() != episodeId)
+                    .findFirst();
+        }
+
+        private Optional<EpisodeRealm> findEpisodeWith(long episodeId) {
+            return Stream.of(channelRealm.getEpisodes())
+                    .filter(episodeRealm -> episodeRealm.getId() == episodeId).findFirst();
         }
     };
     private IntentFilter intentFilter;

@@ -79,8 +79,8 @@ public class PlayerService extends Service {
     private void play() {
         handler.post(() -> {
             mp.start();
-            sendBroadcast(playIntent, episodeRealm.getId());
         });
+        sendBroadcast(playIntent, episodeRealm.getId());
     }
 
     public void play(ChannelRealm channelRealm, EpisodeRealm episode) {
@@ -98,6 +98,7 @@ public class PlayerService extends Service {
             }
         });
         showNotification(channelRealm, episodeRealm, true);
+        sendBroadcast(playIntent, episodeRealm.getId());
     }
 
     public void pause() {
