@@ -95,23 +95,6 @@ public class ChannelActivity extends Activity implements OnItemListener {
         initUI();
 
         showChannel();
-
-        Intent intent = new Intent(this, PlayerService.class);
-        intent.setAction("action");
-        PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        RemoteViews rv = new RemoteViews(getPackageName(), R.layout.notification);
-        rv.setImageViewResource(R.id.image_iv, R.drawable.download);
-        rv.setTextViewText(R.id.title_tv, "test");
-        rv.setImageViewResource(R.id.play_iv, R.drawable.play);
-        rv.setOnClickPendingIntent(R.id.play_iv, pendingIntent);
-
-        Notification.Builder mBuilder = new Notification.Builder(this)
-                .setSmallIcon(R.drawable.download)
-//                .setContentTitle("My notification")
-//                .setContentText("Hello World!")
-                .setContent(rv);
-        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(0, mBuilder.build());
     }
 
     private void initData(Bundle savedInstanceState) {
@@ -266,16 +249,34 @@ public class ChannelActivity extends Activity implements OnItemListener {
 
     private void onClickEpisode(EpisodeRealm episode) {
         if (episode.getDownloadState() == EpisodeRealm.DownloadState.NOT_DOWNLOADED) {
-            startDownload(episode);
+            tryDownload(episode);
         } else if (episode.getDownloadState() == EpisodeRealm.DownloadState.DOWNLOADING) {
         } else if (episode.getDownloadState() == EpisodeRealm.DownloadState.DOWNLOADED) {
             if (episode.getPlayState() == EpisodeRealm.PlayState.NOT_PLAYED
                     || episode.getPlayState() == EpisodeRealm.PlayState.PLAYED) {
                 playEpisode(episode);
+                showNotification(episode);
             } else if (episode.getPlayState() == EpisodeRealm.PlayState.PLAYING) {
                 pauseEpisode(episode);
             }
         }
+    }
+
+    private void showNotification(EpisodeRealm episode) {
+        Intent intent = new Intent(this, PlayerService.class);
+        intent.setAction("action");
+        PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        RemoteViews rv = new RemoteViews(getPackageName(), R.layout.notification);
+        rv.setImageViewResource(R.id.image_iv, R.drawable.download);
+        rv.setTextViewText(R.id.title_tv, episode.getTitle());
+        rv.setImageViewResource(R.id.play_iv, R.drawable.play);
+        rv.setOnClickPendingIntent(R.id.play_iv, pendingIntent);
+
+        Notification.Builder mBuilder = new Notification.Builder(this)
+                .setSmallIcon(R.drawable.download)
+                .setContent(rv);
+        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(0, mBuilder.build());
     }
 
     private void pauseEpisode(EpisodeRealm episode) {
@@ -292,7 +293,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
         updateEpisode.execute(episode).subscribe();
     }
 
-    private void startDownload(EpisodeRealm episode) {
+    private void tryDownload(EpisodeRealm episode) {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = cm.getActiveNetworkInfo();
         if (networkInfo == null || !networkInfo.isAvailable() || !networkInfo.isConnected()) {
@@ -300,34 +301,36 @@ public class ChannelActivity extends Activity implements OnItemListener {
                     .show();
         } else {
             if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
-                episode.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADING);
-                adapter.notifyDataSetChanged();
-
-                PublishSubject<DownloadProgressParam> downloadProgress = PublishSubject.create();
-                subscription.add(
-                        downloadProgress
-                                .throttleLast(1000, TimeUnit.MILLISECONDS, Schedulers.computation())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(this::onDownloadProgress, logger::w));
-
-                subscription.add(
-                        downloadMedia.execute(new DownloadMedia.Param(episode.getId(), episode.getUrl(), downloadProgress))
-                                .subscribe(file -> onDownloadCompleted(episode, file),
-                                        Throwable::printStackTrace,
-                                        () -> logger.w("downloaded"))
-                );
+                startDownload(episode);
             } else {
-                Toast.makeText(this, "NOT WIFI", Toast.LENGTH_SHORT).show();
                 new AlertDialog.Builder(this).setMessage(R.string.download_in_mobile_network)
                         .setPositiveButton(android.R.string.yes, (dialog, which) -> {
-                            Toast.makeText(this, "YES", Toast.LENGTH_SHORT).show();
+                            startDownload(episode);
                         })
                         .setNegativeButton(android.R.string.no, (dialog, which) -> {
-                            Toast.makeText(this, "NO", Toast.LENGTH_SHORT).show();
                         })
                         .show();
             }
         }
+    }
+
+    private void startDownload(EpisodeRealm episode) {
+        episode.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADING);
+        adapter.notifyDataSetChanged();
+
+        PublishSubject<DownloadProgressParam> downloadProgress = PublishSubject.create();
+        subscription.add(
+                downloadProgress
+                        .throttleLast(1000, TimeUnit.MILLISECONDS, Schedulers.computation())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(this::onDownloadProgress, logger::w));
+
+        subscription.add(
+                downloadMedia.execute(new DownloadMedia.Param(episode.getId(), episode.getUrl(), downloadProgress))
+                        .subscribe(file -> onDownloadCompleted(episode, file),
+                                Throwable::printStackTrace,
+                                () -> logger.w("downloaded"))
+        );
     }
 
     private String getStatusText(EpisodeRealm episode) {
