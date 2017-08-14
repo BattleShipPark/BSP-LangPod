@@ -15,13 +15,23 @@ import android.support.annotation.Nullable;
 import android.widget.RemoteViews;
 
 import com.battleshippark.bsp_langpod.R;
+import com.battleshippark.bsp_langpod.dagger.DaggerDbApiGraph;
+import com.battleshippark.bsp_langpod.dagger.DaggerDomainMapperGraph;
+import com.battleshippark.bsp_langpod.dagger.DaggerServerApiGraph;
+import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
+import com.battleshippark.bsp_langpod.data.server.ChannelServerApi;
+import com.battleshippark.bsp_langpod.domain.DomainMapper;
+import com.battleshippark.bsp_langpod.domain.GetChannel;
 import com.battleshippark.bsp_langpod.util.Logger;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.NotificationTarget;
 
 import java.io.IOException;
+
+import rx.android.schedulers.AndroidSchedulers;
+import rx.android.schedulers.HandlerScheduler;
 
 /**
  */
@@ -29,6 +39,7 @@ import java.io.IOException;
 public class PlayerService extends Service {
     public static final String ACTION_PLAY = "actionPlay";
     public static final String ACTION_PAUSE = "actionPause";
+    public static final String KEY_CHANNEL_ID = "keyChannelId";
     public static final String KEY_EPISODE_ID = "keyEpisodeId";
     private static final String TAG = PlayerService.class.getSimpleName();
     private static final Logger logger = new Logger(TAG);
@@ -38,8 +49,9 @@ public class PlayerService extends Service {
     private final IBinder mBinder = new LocalBinder();
     private HandlerThread thread;
     private Handler handler;
-    private ChannelRealm channelRealm;
-    private EpisodeRealm episodeRealm;
+    private GetChannel getChannel;
+    private long playingEpisodeId = -1;
+
 
     @Override
     public void onCreate() {
@@ -48,17 +60,30 @@ public class PlayerService extends Service {
         thread = new HandlerThread(PlayerService.class.getSimpleName());
         thread.start();
         handler = new Handler(thread.getLooper());
+
+        ChannelDbApi channelDbApi = DaggerDbApiGraph.create().channelApi();
+        ChannelServerApi channelServerApi = DaggerServerApiGraph.create().channelApi();
+        DomainMapper domainMapper = DaggerDomainMapperGraph.create().domainMapper();
+
+        HandlerScheduler handlerScheduler = HandlerScheduler.from(handler);
+        getChannel = new GetChannel(channelDbApi, channelServerApi, handlerScheduler, handlerScheduler, domainMapper);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         int ret = super.onStartCommand(intent, flags, startId);
-        String action = intent.getAction();
-        if (action != null) {
-            if (action.equals(ACTION_PLAY)) {
-                play();
-            } else if (action.equals(ACTION_PAUSE)) {
-                pause();
+        if (intent != null) {
+            String action = intent.getAction();
+            if (action != null) {
+                long channelId = intent.getLongExtra(KEY_CHANNEL_ID, -1);
+                long episodeId = intent.getLongExtra(KEY_EPISODE_ID, -1);
+                if (channelId > 0 && episodeId > 0) {
+                    if (action.equals(ACTION_PLAY)) {
+                        play(channelId, episodeId);
+                    } else if (action.equals(ACTION_PAUSE)) {
+                        pause(channelId, episodeId);
+                    }
+                }
             }
         }
         return ret;
@@ -76,37 +101,57 @@ public class PlayerService extends Service {
         thread.interrupt();
     }
 
-    private void play() {
-        handler.post(() -> {
-            mp.start();
+    private void play(long channelId, long episodeId) {
+        getChannel.execute(channelId).subscribe(channelRealms -> {
+            for (EpisodeRealm episodeRealm : channelRealms.get(0).getEpisodes()) {
+                if (episodeRealm.getId() == episodeId) {
+                    play(channelRealms.get(0), episodeRealm);
+                    break;
+                }
+            }
         });
-        sendBroadcast(playIntent, episodeRealm.getId());
     }
 
-    public void play(ChannelRealm channelRealm, EpisodeRealm episode) {
-        this.channelRealm = channelRealm;
-        this.episodeRealm = episode;
+    public void play(ChannelRealm channelRealm, EpisodeRealm episodeRealm) {
         handler.post(() -> {
             try {
-                mp.stop();
-                mp.reset();
-                mp.setDataSource("file://" + episodeRealm.getDownloadedPath());
-                mp.prepare();
+                if (playingEpisodeId != episodeRealm.getId()) {
+                    mp.stop();
+                    mp.reset();
+                    mp.setDataSource("file://" + episodeRealm.getDownloadedPath());
+                    mp.prepare();
+                }
                 mp.start();
+                playingEpisodeId = episodeRealm.getId();
+                sendBroadcast(playIntent, episodeRealm.getId());
             } catch (IOException e) {
                 logger.w(e);
+                playingEpisodeId = -1;
+                cancelNotification(channelRealm);
             }
         });
         showNotification(channelRealm, episodeRealm, true);
-        sendBroadcast(playIntent, episodeRealm.getId());
     }
 
-    public void pause() {
-        handler.post(() -> {
-            mp.pause();
-            sendBroadcast(pauseIntent, episodeRealm.getId());
+    private void pause(long channelId, long episodeId) {
+        getChannel.execute(channelId).subscribe(channelRealms -> {
+            for (EpisodeRealm episodeRealm : channelRealms.get(0).getEpisodes()) {
+                if (episodeRealm.getId() == episodeId) {
+                    pause(channelRealms.get(0), episodeRealm);
+                    break;
+                }
+            }
         });
-        showNotification(channelRealm, episodeRealm, false);
+    }
+
+    public void pause(ChannelRealm channelRealm, EpisodeRealm episodeRealm) {
+        handler.post(() -> {
+            if (mp.isPlaying()) {
+                mp.pause();
+                AndroidSchedulers.mainThread().createWorker().schedule(() -> showNotification(channelRealm, episodeRealm, false));
+            }
+        });
+        sendBroadcast(pauseIntent, episodeRealm.getId());
     }
 
     private void showNotification(ChannelRealm channelRealm, EpisodeRealm episodeRealm, boolean isPlaying) {
@@ -123,15 +168,19 @@ public class PlayerService extends Service {
                 .setSmallIcon(R.drawable.download)
                 .setContent(rv);
         final Notification notification = mBuilder.build();
-        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(0, notification);
+        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify((int) channelRealm.getId(), notification);
 
         NotificationTarget notificationTarget = new NotificationTarget(
                 this,
                 rv,
                 R.id.image_iv,
                 notification,
-                0);
+                (int) channelRealm.getId());
         Glide.with(getApplicationContext()).load(channelRealm.getImage()).asBitmap().into(notificationTarget);
+    }
+
+    private void cancelNotification(ChannelRealm channelRealm) {
+        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).cancel((int) channelRealm.getId());
     }
 
     private PendingIntent createPendingIntent(boolean isPlaying) {

@@ -33,11 +33,11 @@ public class PlayerServiceFacade {
         }
     }
 
-    public void pause(EpisodeRealm episode) {
+    public void pause(ChannelRealm channelRealm, EpisodeRealm episode) {
         if (isBound()) {
-            connection.getService().pause();
+            connection.getService().pause(channelRealm, episode);
         } else {
-            connection.setOnConnected(service -> service.pause());
+            connection.setOnConnected(service -> service.pause(channelRealm, episode));
             context.bindService(new Intent(context, PlayerService.class), connection, 0);
         }
     }

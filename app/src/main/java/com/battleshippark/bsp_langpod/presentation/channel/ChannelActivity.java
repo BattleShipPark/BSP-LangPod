@@ -15,7 +15,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.Toolbar;
 
 import com.annimon.stream.Optional;
@@ -301,7 +300,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
     }
 
     private void pauseEpisode(EpisodeRealm episode) {
-        playerServiceFacade.pause(episode);
+        playerServiceFacade.pause(channelRealm, episode);
 
         episode.setPlayState(EpisodeRealm.PlayState.PLAYED);
         updateEpisode.execute(episode).subscribe();
