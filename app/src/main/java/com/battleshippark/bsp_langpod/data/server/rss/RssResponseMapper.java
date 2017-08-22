@@ -23,7 +23,7 @@ public class RssResponseMapper {
                                 EpisodeJson.create(
                                         syndEntry.getTitle(),
                                         syndEntry.getDescription().getValue(),
-                                        syndEntry.getUri(),
+                                        syndEntry.getEnclosures().get(0).getUrl(),
                                         syndEntry.getEnclosures().get(0).getLength(),
                                         syndEntry.getPublishedDate()))
                         .collect(Collectors.toList())
