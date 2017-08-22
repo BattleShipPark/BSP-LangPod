@@ -34,6 +34,7 @@
             </intent-filter>
         </service>
         <service android:name=".service.player.PlayerService" android:exported="false" />
+        <service android:name=".service.downloader.DownloaderService" android:exported="false" />
     </application>
 
 </manifest>

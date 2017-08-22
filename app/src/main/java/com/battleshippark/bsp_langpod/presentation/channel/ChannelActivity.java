@@ -29,7 +29,7 @@ import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
 import com.battleshippark.bsp_langpod.data.downloader.DownloadProgressParam;
-import com.battleshippark.bsp_langpod.service.downloader.DownloaderFacade;
+import com.battleshippark.bsp_langpod.service.downloader.DownloaderServiceFacade;
 import com.battleshippark.bsp_langpod.data.server.ChannelServerApi;
 import com.battleshippark.bsp_langpod.domain.DomainMapper;
 import com.battleshippark.bsp_langpod.domain.GetChannel;
@@ -109,7 +109,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
     private IntentFilter intentFilter;
 
     private PlayerServiceFacade playerServiceFacade;
-    private DownloaderFacade downloaderFacade;
+    private DownloaderServiceFacade downloaderServiceFacade;
 
     private GetChannel getChannel;
     private SubscribeChannel subscribeChannel;
@@ -162,7 +162,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
         });
 
         playerServiceFacade = new PlayerServiceFacade(this);
-        downloaderFacade = new DownloaderFacade(this, downloadProgress, new AppPhase(BuildConfig.DEBUG));
+        downloaderServiceFacade = new DownloaderServiceFacade(this, downloadProgress, new AppPhase(BuildConfig.DEBUG));
 
         intentFilter = playerServiceFacade.createIntentFilter();
 
@@ -210,14 +210,14 @@ public class ChannelActivity extends Activity implements OnItemListener {
     protected void onStart() {
         super.onStart();
         playerServiceFacade.onStart();
-        downloaderFacade.onStart();
+        downloaderServiceFacade.onStart();
         registerReceiver();
     }
 
     @Override
     protected void onStop() {
         unregisterReceiver();
-        downloaderFacade.onStop();
+        downloaderServiceFacade.onStop();
         playerServiceFacade.onStop();
         super.onStop();
     }
@@ -348,7 +348,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
         adapter.notifyDataSetChanged();
 
         subscription.add(
-                downloaderFacade.download(channelRealm, episode)
+                downloaderServiceFacade.download(channelRealm, episode)
                         .subscribe(file -> onDownloadCompleted(episode, file),
                                 Throwable::printStackTrace,
                                 () -> logger.w("downloaded"))

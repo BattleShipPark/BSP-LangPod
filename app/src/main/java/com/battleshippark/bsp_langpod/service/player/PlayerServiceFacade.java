@@ -29,7 +29,7 @@ public class PlayerServiceFacade {
             connection.getService().play(channelRealm, episodeRealm);
         } else {
             connection.setOnConnected(service -> service.play(channelRealm, episodeRealm));
-            context.bindService(new Intent(context, PlayerService.class), connection, 0);
+            context.bindService(new Intent(context, PlayerService.class), connection, Context.BIND_AUTO_CREATE);
         }
     }
 
@@ -38,20 +38,19 @@ public class PlayerServiceFacade {
             connection.getService().pause(channelRealm, episode);
         } else {
             connection.setOnConnected(service -> service.pause(channelRealm, episode));
-            context.bindService(new Intent(context, PlayerService.class), connection, 0);
+            context.bindService(new Intent(context, PlayerService.class), connection, Context.BIND_AUTO_CREATE);
         }
     }
 
     public void onStart() {
         if (!isBound()) {
-            context.bindService(new Intent(context, PlayerService.class), connection, 0);
+            context.bindService(new Intent(context, PlayerService.class), connection, Context.BIND_AUTO_CREATE);
         }
     }
 
     public void onStop() {
         if (isBound()) {
             context.unbindService(connection);
-            bound = false;
         }
     }
 

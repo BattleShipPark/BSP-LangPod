@@ -34,7 +34,7 @@ import rx.subjects.PublishSubject;
 /**
  */
 
-class DownloaderService extends Service {
+public class DownloaderService extends Service {
     public static final String ACTION_PLAY = "actionPlay";
     public static final String ACTION_PAUSE = "actionPause";
     public static final String KEY_CHANNEL_ID = "keyChannelId";
@@ -55,7 +55,7 @@ class DownloaderService extends Service {
     public void onCreate() {
         super.onCreate();
 
-        thread = new HandlerThread(DownloaderService.class.getSimpleName());
+        thread = new HandlerThread(TAG);
         thread.start();
         handler = new Handler(thread.getLooper());
 

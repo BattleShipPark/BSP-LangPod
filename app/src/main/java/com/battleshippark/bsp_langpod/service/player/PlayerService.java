@@ -57,7 +57,7 @@ public class PlayerService extends Service {
     public void onCreate() {
         super.onCreate();
 
-        thread = new HandlerThread(PlayerService.class.getSimpleName());
+        thread = new HandlerThread(TAG);
         thread.start();
         handler = new Handler(thread.getLooper());
 

@@ -11,7 +11,6 @@ import com.battleshippark.bsp_langpod.AppPhase;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
 import com.battleshippark.bsp_langpod.data.downloader.DownloadProgressParam;
-import com.battleshippark.bsp_langpod.service.player.PlayerService;
 
 import java.io.File;
 
@@ -22,14 +21,14 @@ import rx.subjects.PublishSubject;
 /**
  */
 
-public class DownloaderFacade {
+public class DownloaderServiceFacade {
     private final Context context;
     private final PublishSubject<DownloadProgressParam> progressSubject;
     private final AppPhase appPhase;
     private final LocalServiceConnection connection = new LocalServiceConnection();
     private boolean bound;
 
-    public DownloaderFacade(Context context, PublishSubject<DownloadProgressParam> progressSubject, AppPhase appPhase) {
+    public DownloaderServiceFacade(Context context, PublishSubject<DownloadProgressParam> progressSubject, AppPhase appPhase) {
         this.context = context;
         this.progressSubject = progressSubject;
         this.appPhase = appPhase;
@@ -51,7 +50,7 @@ public class DownloaderFacade {
             connection.getService().download(channelRealm, episodeRealm, progressSubject, resultSubject);
         } else {
             connection.setOnConnected(service -> service.download(channelRealm, episodeRealm, progressSubject, resultSubject));
-            context.bindService(new Intent(context, PlayerService.class), connection, 0);
+            context.bindService(new Intent(context, DownloaderService.class), connection, Context.BIND_AUTO_CREATE);
         }
         return resultSubject;
     }
@@ -67,14 +66,13 @@ public class DownloaderFacade {
 
     public void onStart() {
         if (!isBound()) {
-            context.bindService(new Intent(context, DownloaderService.class), connection, 0);
+            context.bindService(new Intent(context, DownloaderService.class), connection, Context.BIND_AUTO_CREATE);
         }
     }
 
     public void onStop() {
         if (isBound()) {
             context.unbindService(connection);
-            bound = false;
         }
     }
 
