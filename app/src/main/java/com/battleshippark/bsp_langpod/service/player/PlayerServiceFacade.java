@@ -1,4 +1,4 @@
-package com.battleshippark.bsp_langpod.player;
+package com.battleshippark.bsp_langpod.service.player;
 
 import android.content.ComponentName;
 import android.content.Context;

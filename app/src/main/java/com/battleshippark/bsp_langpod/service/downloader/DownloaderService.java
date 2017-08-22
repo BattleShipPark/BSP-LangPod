@@ -1,4 +1,4 @@
-package com.battleshippark.bsp_langpod.data.download;
+package com.battleshippark.bsp_langpod.service.downloader;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -19,6 +19,7 @@ import com.battleshippark.bsp_langpod.BuildConfig;
 import com.battleshippark.bsp_langpod.R;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
+import com.battleshippark.bsp_langpod.data.downloader.DownloadProgressParam;
 import com.battleshippark.bsp_langpod.domain.DownloadMedia;
 import com.battleshippark.bsp_langpod.util.Logger;
 import com.bumptech.glide.Glide;
@@ -33,7 +34,7 @@ import rx.subjects.PublishSubject;
 /**
  */
 
-public class DownloaderService extends Service {
+class DownloaderService extends Service {
     public static final String ACTION_PLAY = "actionPlay";
     public static final String ACTION_PAUSE = "actionPause";
     public static final String KEY_CHANNEL_ID = "keyChannelId";

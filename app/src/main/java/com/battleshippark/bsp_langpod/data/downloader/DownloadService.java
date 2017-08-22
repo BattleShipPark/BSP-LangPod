@@ -1,4 +1,4 @@
-package com.battleshippark.bsp_langpod.data.download;
+package com.battleshippark.bsp_langpod.data.downloader;
 
 import okhttp3.ResponseBody;
 import retrofit2.Response;

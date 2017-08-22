@@ -1,4 +1,4 @@
-package com.battleshippark.bsp_langpod.player;
+package com.battleshippark.bsp_langpod.service.player;
 
 import android.app.Notification;
 import android.app.NotificationManager;

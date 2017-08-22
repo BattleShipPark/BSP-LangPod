@@ -33,7 +33,7 @@
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
-        <service android:name=".player.PlayerService" android:exported="false" />
+        <service android:name=".service.player.PlayerService" android:exported="false" />
     </application>
 
 </manifest>

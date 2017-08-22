@@ -1,4 +1,4 @@
-package com.battleshippark.bsp_langpod.data.download;
+package com.battleshippark.bsp_langpod.data.downloader;
 
 import android.util.Log;
 
@@ -9,7 +9,6 @@ import org.junit.Test;
 import java.io.File;
 
 import rx.observers.TestSubscriber;
-import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
 
 import static android.support.test.InstrumentationRegistry.getTargetContext;

@@ -1,4 +1,4 @@
-package com.battleshippark.bsp_langpod.data.download;
+package com.battleshippark.bsp_langpod.service.downloader;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -10,7 +10,8 @@ import android.os.IBinder;
 import com.battleshippark.bsp_langpod.AppPhase;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
-import com.battleshippark.bsp_langpod.player.PlayerService;
+import com.battleshippark.bsp_langpod.data.downloader.DownloadProgressParam;
+import com.battleshippark.bsp_langpod.service.player.PlayerService;
 
 import java.io.File;
 
@@ -83,8 +84,8 @@ public class DownloaderFacade {
 
     public IntentFilter createIntentFilter() {
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(PlayerService.ACTION_PLAY);
-        intentFilter.addAction(PlayerService.ACTION_PAUSE);
+//        intentFilter.addAction(PlayerService.ACTION_PLAY);
+//        intentFilter.addAction(PlayerService.ACTION_PAUSE);
         return intentFilter;
     }
 
