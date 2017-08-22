@@ -19,7 +19,6 @@ public class DownloadMedia implements UseCase<DownloadMedia.Param, File> {
     private final Context context;
     private final Scheduler scheduler;
     private final Scheduler postScheduler;
-    private final PublishSubject<DownloadProgressParam> reposDownloadProgress = PublishSubject.create();
 
     public DownloadMedia(Context context, Scheduler scheduler, Scheduler postScheduler, AppPhase appPhase) {
         this.context = context;
@@ -30,23 +29,21 @@ public class DownloadMedia implements UseCase<DownloadMedia.Param, File> {
 
     @Override
     public Observable<File> execute(Param param) {
-        this.reposDownloadProgress.subscribe(param.downloadProgress::onNext);
-
         String filename = param.url.substring(param.url.lastIndexOf('/') + 1);
-        return downloader.download(String.valueOf(param.identifier), param.url, new File(context.getExternalFilesDir(null), filename).getAbsolutePath(), reposDownloadProgress)
+        return downloader.download(param.identifier, param.url, new File(context.getExternalFilesDir(null), filename).getAbsolutePath(), param.progressSubject)
                 .subscribeOn(scheduler)
                 .observeOn(postScheduler);
     }
 
     public static class Param {
-        public final long identifier;
+        public final String identifier;
         public final String url;
-        public final PublishSubject<DownloadProgressParam> downloadProgress;
+        public final PublishSubject<DownloadProgressParam> progressSubject;
 
-        public Param(long identifier, String url, PublishSubject<DownloadProgressParam> downloadProgress) {
+        public Param(String identifier, String url, PublishSubject<DownloadProgressParam> progressSubject) {
             this.identifier = identifier;
             this.url = url;
-            this.downloadProgress = downloadProgress;
+            this.progressSubject = progressSubject;
         }
     }
 }

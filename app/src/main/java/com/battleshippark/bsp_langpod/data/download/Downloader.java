@@ -28,8 +28,8 @@ public class Downloader {
                 .addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC));
     }
 
-    public Observable<File> download(String identifier, String url, String outputPath, PublishSubject<DownloadProgressParam> downloadProgress) {
-        OkHttpClient client = clientBuilder.addInterceptor(new DownloadInterceptor(downloadProgress)).build();
+    public Observable<File> download(String identifier, String url, String outputPath, PublishSubject<DownloadProgressParam> progressSubject) {
+        OkHttpClient client = clientBuilder.addInterceptor(new DownloadInterceptor(progressSubject)).build();
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://" + appPhase.getServerDomain())

@@ -1,4 +1,4 @@
-package com.battleshippark.bsp_langpod.player;
+package com.battleshippark.bsp_langpod.data.download;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -14,34 +14,31 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.widget.RemoteViews;
 
+import com.battleshippark.bsp_langpod.AppPhase;
+import com.battleshippark.bsp_langpod.BuildConfig;
 import com.battleshippark.bsp_langpod.R;
-import com.battleshippark.bsp_langpod.dagger.DaggerDbApiGraph;
-import com.battleshippark.bsp_langpod.dagger.DaggerDomainMapperGraph;
-import com.battleshippark.bsp_langpod.dagger.DaggerServerApiGraph;
-import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
-import com.battleshippark.bsp_langpod.data.server.ChannelServerApi;
-import com.battleshippark.bsp_langpod.domain.DomainMapper;
-import com.battleshippark.bsp_langpod.domain.GetChannel;
+import com.battleshippark.bsp_langpod.domain.DownloadMedia;
 import com.battleshippark.bsp_langpod.util.Logger;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.NotificationTarget;
 
-import java.io.IOException;
+import java.io.File;
 
 import rx.android.schedulers.AndroidSchedulers;
 import rx.android.schedulers.HandlerScheduler;
+import rx.subjects.PublishSubject;
 
 /**
  */
 
-public class PlayerService extends Service {
+public class DownloaderService extends Service {
     public static final String ACTION_PLAY = "actionPlay";
     public static final String ACTION_PAUSE = "actionPause";
     public static final String KEY_CHANNEL_ID = "keyChannelId";
     public static final String KEY_EPISODE_ID = "keyEpisodeId";
-    private static final String TAG = PlayerService.class.getSimpleName();
+    private static final String TAG = DownloaderService.class.getSimpleName();
     private static final Logger logger = new Logger(TAG);
     private static final MediaPlayer mp = new MediaPlayer();
     private static final Intent playIntent = new Intent(ACTION_PLAY);
@@ -49,7 +46,7 @@ public class PlayerService extends Service {
     private final IBinder mBinder = new LocalBinder();
     private HandlerThread thread;
     private Handler handler;
-    private GetChannel getChannel;
+    private DownloadMedia downloadMedia;
     private long playingEpisodeId = -1;
 
 
@@ -57,22 +54,17 @@ public class PlayerService extends Service {
     public void onCreate() {
         super.onCreate();
 
-        thread = new HandlerThread(PlayerService.class.getSimpleName());
+        thread = new HandlerThread(DownloaderService.class.getSimpleName());
         thread.start();
         handler = new Handler(thread.getLooper());
 
-        ChannelDbApi channelDbApi = DaggerDbApiGraph.create().channelApi();
-        ChannelServerApi channelServerApi = DaggerServerApiGraph.create().channelApi();
-        DomainMapper domainMapper = DaggerDomainMapperGraph.create().domainMapper();
-
-        HandlerScheduler handlerScheduler = HandlerScheduler.from(handler);
-        getChannel = new GetChannel(channelDbApi, channelServerApi, handlerScheduler, handlerScheduler, domainMapper);
+        downloadMedia = new DownloadMedia(this, HandlerScheduler.from(handler), AndroidSchedulers.mainThread(), new AppPhase(BuildConfig.DEBUG));
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         int ret = super.onStartCommand(intent, flags, startId);
-        if (intent != null) {
+/*        if (intent != null) {
             String action = intent.getAction();
             if (action != null) {
                 long channelId = intent.getLongExtra(KEY_CHANNEL_ID, -1);
@@ -85,7 +77,7 @@ public class PlayerService extends Service {
                     }
                 }
             }
-        }
+        }*/
         return ret;
     }
 
@@ -101,7 +93,7 @@ public class PlayerService extends Service {
         thread.interrupt();
     }
 
-    private void play(long channelId, long episodeId) {
+/*    private void play(long channelId, long episodeId) {
         getChannel.execute(channelId).subscribe(channelRealms -> {
             for (EpisodeRealm episodeRealm : channelRealms.get(0).getEpisodes()) {
                 if (episodeRealm.getId() == episodeId) {
@@ -110,30 +102,16 @@ public class PlayerService extends Service {
                 }
             }
         });
+    }*/
+
+    public void download(ChannelRealm channelRealm, EpisodeRealm episodeRealm, PublishSubject<DownloadProgressParam> progressSubject,
+                         PublishSubject<File> resultSubject) {
+        downloadMedia.execute(new DownloadMedia.Param(String.valueOf(episodeRealm.getId()), episodeRealm.getUrl(), progressSubject))
+                .subscribe(resultSubject);
+        showNotification(channelRealm, episodeRealm);
     }
 
-    public void play(ChannelRealm channelRealm, EpisodeRealm episodeRealm) {
-        handler.post(() -> {
-            try {
-                if (playingEpisodeId != episodeRealm.getId()) {
-                    mp.stop();
-                    mp.reset();
-                    mp.setDataSource("file://" + episodeRealm.getDownloadedPath());
-                    mp.prepare();
-                }
-                mp.start();
-                playingEpisodeId = episodeRealm.getId();
-                sendBroadcast(playIntent, episodeRealm.getId());
-            } catch (IOException e) {
-                logger.w(e);
-                playingEpisodeId = -1;
-                cancelNotification(channelRealm);
-            }
-        });
-        showNotification(channelRealm, episodeRealm, true);
-    }
-
-    private void pause(long channelId, long episodeId) {
+/*    private void pause(long channelId, long episodeId) {
         getChannel.execute(channelId).subscribe(channelRealms -> {
             for (EpisodeRealm episodeRealm : channelRealms.get(0).getEpisodes()) {
                 if (episodeRealm.getId() == episodeId) {
@@ -142,9 +120,9 @@ public class PlayerService extends Service {
                 }
             }
         });
-    }
+    }*/
 
-    public void pause(ChannelRealm channelRealm, EpisodeRealm episodeRealm) {
+/*    public void pause(ChannelRealm channelRealm, EpisodeRealm episodeRealm) {
         handler.post(() -> {
             if (mp.isPlaying()) {
                 mp.pause();
@@ -152,17 +130,15 @@ public class PlayerService extends Service {
             }
         });
         sendBroadcast(pauseIntent, episodeRealm.getId());
-    }
+    }*/
 
-    private void showNotification(ChannelRealm channelRealm, EpisodeRealm episodeRealm, boolean isPlaying) {
-        PendingIntent pendingIntent = createPendingIntent(isPlaying);
+    private void showNotification(ChannelRealm channelRealm, EpisodeRealm episodeRealm) {
+//        PendingIntent pendingIntent = createPendingIntent();
 
-        RemoteViews rv = new RemoteViews(getPackageName(), R.layout.notification_play);
+        RemoteViews rv = new RemoteViews(getPackageName(), R.layout.notification_download);
         rv.setImageViewResource(R.id.image_iv, R.mipmap.ic_launcher);
         rv.setTextViewText(R.id.channel_tv, channelRealm.getTitle());
         rv.setTextViewText(R.id.episode_tv, episodeRealm.getTitle());
-        rv.setImageViewResource(R.id.play_iv, isPlaying ? R.drawable.pause : R.drawable.play);
-        rv.setOnClickPendingIntent(R.id.play_iv, pendingIntent);
 
         Notification.Builder mBuilder = new Notification.Builder(this)
                 .setSmallIcon(R.drawable.download)
@@ -184,8 +160,8 @@ public class PlayerService extends Service {
     }
 
     private PendingIntent createPendingIntent(boolean isPlaying) {
-        Intent intent = new Intent(this, PlayerService.class);
-        intent.setAction(isPlaying ? PlayerService.ACTION_PAUSE : PlayerService.ACTION_PLAY);
+        Intent intent = new Intent(this, DownloaderService.class);
+        intent.setAction(isPlaying ? DownloaderService.ACTION_PAUSE : DownloaderService.ACTION_PLAY);
         return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
@@ -195,8 +171,8 @@ public class PlayerService extends Service {
     }
 
     public class LocalBinder extends Binder {
-        PlayerService getService() {
-            return PlayerService.this;
+        DownloaderService getService() {
+            return DownloaderService.this;
         }
     }
 }

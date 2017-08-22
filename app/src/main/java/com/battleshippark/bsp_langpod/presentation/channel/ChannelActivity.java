@@ -29,9 +29,9 @@ import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
 import com.battleshippark.bsp_langpod.data.download.DownloadProgressParam;
+import com.battleshippark.bsp_langpod.data.download.DownloaderFacade;
 import com.battleshippark.bsp_langpod.data.server.ChannelServerApi;
 import com.battleshippark.bsp_langpod.domain.DomainMapper;
-import com.battleshippark.bsp_langpod.domain.DownloadMedia;
 import com.battleshippark.bsp_langpod.domain.GetChannel;
 import com.battleshippark.bsp_langpod.domain.SubscribeChannel;
 import com.battleshippark.bsp_langpod.domain.UpdateEpisode;
@@ -109,12 +109,13 @@ public class ChannelActivity extends Activity implements OnItemListener {
     private IntentFilter intentFilter;
 
     private PlayerServiceFacade playerServiceFacade;
+    private DownloaderFacade downloaderFacade;
 
     private GetChannel getChannel;
     private SubscribeChannel subscribeChannel;
     private UpdateEpisode updateEpisode;
-    private DownloadMedia downloadMedia;
 
+    private final PublishSubject<DownloadProgressParam> downloadProgress = PublishSubject.create();
     private long channelId;
     private ChannelRealm channelRealm;
 
@@ -139,7 +140,6 @@ public class ChannelActivity extends Activity implements OnItemListener {
         getChannel = new GetChannel(channelDbApi, channelServerApi, Schedulers.io(), AndroidSchedulers.mainThread(), domainMapper);
         subscribeChannel = new SubscribeChannel(channelDbApi);
         updateEpisode = new UpdateEpisode(channelDbApi, Schedulers.io(), AndroidSchedulers.mainThread());
-        downloadMedia = new DownloadMedia(this, Schedulers.io(), AndroidSchedulers.mainThread(), new AppPhase(BuildConfig.DEBUG));
 
         adapter = new ChannelAdapter(this);
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
@@ -162,6 +162,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
         });
 
         playerServiceFacade = new PlayerServiceFacade(this);
+        downloaderFacade = new DownloaderFacade(this, downloadProgress, new AppPhase(BuildConfig.DEBUG));
 
         intentFilter = playerServiceFacade.createIntentFilter();
 
@@ -170,6 +171,12 @@ public class ChannelActivity extends Activity implements OnItemListener {
         } else {
             channelId = savedInstanceState.getLong(KEY_ID);
         }
+
+        subscription.add(
+                downloadProgress
+                        .throttleLast(1000, TimeUnit.MILLISECONDS, Schedulers.computation())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(this::onDownloadProgress, logger::w));
     }
 
     private void initUI() {
@@ -203,12 +210,14 @@ public class ChannelActivity extends Activity implements OnItemListener {
     protected void onStart() {
         super.onStart();
         playerServiceFacade.onStart();
+        downloaderFacade.onStart();
         registerReceiver();
     }
 
     @Override
     protected void onStop() {
         unregisterReceiver();
+        downloaderFacade.onStop();
         playerServiceFacade.onStop();
         super.onStop();
     }
@@ -338,15 +347,8 @@ public class ChannelActivity extends Activity implements OnItemListener {
         episode.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADING);
         adapter.notifyDataSetChanged();
 
-        PublishSubject<DownloadProgressParam> downloadProgress = PublishSubject.create();
         subscription.add(
-                downloadProgress
-                        .throttleLast(1000, TimeUnit.MILLISECONDS, Schedulers.computation())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(this::onDownloadProgress, logger::w));
-
-        subscription.add(
-                downloadMedia.execute(new DownloadMedia.Param(episode.getId(), episode.getUrl(), downloadProgress))
+                downloaderFacade.download(channelRealm, episode)
                         .subscribe(file -> onDownloadCompleted(episode, file),
                                 Throwable::printStackTrace,
                                 () -> logger.w("downloaded"))
