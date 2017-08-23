@@ -44,6 +44,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
@@ -118,6 +119,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
     private final PublishSubject<DownloadProgressParam> downloadProgress = PublishSubject.create();
     private long channelId;
     private ChannelRealm channelRealm;
+    private SimpleDateFormat dateFormat;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -171,6 +173,9 @@ public class ChannelActivity extends Activity implements OnItemListener {
         } else {
             channelId = savedInstanceState.getLong(KEY_ID);
         }
+
+        dateFormat = new SimpleDateFormat("MM/dd", Locale.US);
+        dateFormat.setTimeZone(TimeZone.getDefault());
 
         subscription.add(
                 downloadProgress
@@ -280,7 +285,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
         holder.itemView.setOnClickListener(v -> onClickEpisode(episode));
 
         holder.descView.setText(episode.getDesc());
-        holder.dateView.setText(new SimpleDateFormat("MM/dd", Locale.US).format(episode.getDate()));
+        holder.dateView.setText(dateFormat.format(episode.getDate()));
         holder.statusTv.setText(getStatusText(episode));
 
         Glide.with(this).load(getStatusImage(episode)).into(holder.statusIv);
