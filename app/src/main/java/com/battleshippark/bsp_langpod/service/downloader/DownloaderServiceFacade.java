@@ -34,22 +34,25 @@ public class DownloaderServiceFacade {
         this.appPhase = appPhase;
     }
 
-/*    public Observable<File> download(String identifier, String url) {
-        PublishSubject<File> resultSubject = PublishSubject.create();
-        if (isBound()) {
-            connection.getService().download(identifier, url, progressSubject, resultSubject);
-        } else {
-            connection.setOnConnected(service -> service.download(identifier, url, progressSubject, resultSubject));
-            context.bindService(new Intent(context, PlayerService.class), connection, 0);
-        }
-        return resultSubject;
-    }*/
+    /*    public Observable<File> download(String identifier, String url) {
+            PublishSubject<File> resultSubject = PublishSubject.create();
+            if (isBound()) {
+                connection.getService().download(identifier, url, progressSubject, resultSubject);
+            } else {
+                connection.setOnConnected(service -> service.download(identifier, url, progressSubject, resultSubject));
+                context.bindService(new Intent(context, PlayerService.class), connection, 0);
+            }
+            return resultSubject;
+        }*/
     public Observable<File> download(ChannelRealm channelRealm, EpisodeRealm episodeRealm) {
         PublishSubject<File> resultSubject = PublishSubject.create();
         if (isBound()) {
-            connection.getService().download(channelRealm, episodeRealm, progressSubject, resultSubject);
+            connection.getService().download(channelRealm, episodeRealm, resultSubject);
         } else {
-            connection.setOnConnected(service -> service.download(channelRealm, episodeRealm, progressSubject, resultSubject));
+            connection.setOnConnected(service -> {
+                service.setProgressSubject(progressSubject);
+                service.download(channelRealm, episodeRealm, resultSubject);
+            });
             context.bindService(new Intent(context, DownloaderService.class), connection, Context.BIND_AUTO_CREATE);
         }
         return resultSubject;
@@ -66,6 +69,7 @@ public class DownloaderServiceFacade {
 
     public void onStart() {
         if (!isBound()) {
+            connection.setOnConnected(service -> service.setProgressSubject(progressSubject));
             context.bindService(new Intent(context, DownloaderService.class), connection, Context.BIND_AUTO_CREATE);
         }
     }

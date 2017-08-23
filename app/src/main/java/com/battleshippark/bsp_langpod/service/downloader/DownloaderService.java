@@ -49,6 +49,8 @@ public class DownloaderService extends Service {
     private Handler handler;
     private DownloadMedia downloadMedia;
     private long playingEpisodeId = -1;
+    private final PublishSubject<DownloadProgressParam> internalProgressSubject = PublishSubject.create();
+    private PublishSubject<DownloadProgressParam> progressSubject;
 
 
     @Override
@@ -60,6 +62,12 @@ public class DownloaderService extends Service {
         handler = new Handler(thread.getLooper());
 
         downloadMedia = new DownloadMedia(this, HandlerScheduler.from(handler), AndroidSchedulers.mainThread(), new AppPhase(BuildConfig.DEBUG));
+
+        internalProgressSubject.subscribe(downloadProgressParam -> {
+            if (progressSubject != null && !progressSubject.hasCompleted()) {
+                progressSubject.onNext(downloadProgressParam);
+            }
+        });
     }
 
     @Override
@@ -105,9 +113,8 @@ public class DownloaderService extends Service {
         });
     }*/
 
-    public void download(ChannelRealm channelRealm, EpisodeRealm episodeRealm, PublishSubject<DownloadProgressParam> progressSubject,
-                         PublishSubject<File> resultSubject) {
-        downloadMedia.execute(new DownloadMedia.Param(String.valueOf(episodeRealm.getId()), episodeRealm.getUrl(), progressSubject))
+    public void download(ChannelRealm channelRealm, EpisodeRealm episodeRealm, PublishSubject<File> resultSubject) {
+        downloadMedia.execute(new DownloadMedia.Param(String.valueOf(episodeRealm.getId()), episodeRealm.getUrl(), internalProgressSubject))
                 .subscribe(resultSubject);
         showNotification(channelRealm, episodeRealm);
     }
@@ -169,6 +176,10 @@ public class DownloaderService extends Service {
     private void sendBroadcast(Intent intent, long episodeId) {
         intent.putExtra(KEY_EPISODE_ID, episodeId);
         sendBroadcast(intent);
+    }
+
+    public void setProgressSubject(PublishSubject<DownloadProgressParam> progressSubject) {
+        this.progressSubject = progressSubject;
     }
 
     public class LocalBinder extends Binder {

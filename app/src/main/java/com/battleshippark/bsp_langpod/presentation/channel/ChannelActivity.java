@@ -395,6 +395,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
     private void onDownloadProgress(DownloadProgressParam param) {
         for (EpisodeRealm episodeRealm : channelRealm.getEpisodes()) {
             if (episodeRealm.getId() == Long.valueOf(param.identifier)) {
+                episodeRealm.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADING);
                 episodeRealm.setDownloadedBytes(param.bytesRead);
                 episodeRealm.setTotalBytes(param.contentLength);
                 adapter.notifyDataSetChanged();
