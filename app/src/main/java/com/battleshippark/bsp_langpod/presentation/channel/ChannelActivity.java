@@ -32,19 +32,18 @@ import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
 import com.battleshippark.bsp_langpod.data.downloader.DownloadCompleteParam;
 import com.battleshippark.bsp_langpod.data.downloader.DownloadErrorParam;
 import com.battleshippark.bsp_langpod.data.downloader.DownloadProgressParam;
-import com.battleshippark.bsp_langpod.service.downloader.DownloaderService;
-import com.battleshippark.bsp_langpod.service.downloader.DownloaderServiceFacade;
 import com.battleshippark.bsp_langpod.data.server.ChannelServerApi;
 import com.battleshippark.bsp_langpod.domain.DomainMapper;
 import com.battleshippark.bsp_langpod.domain.GetChannel;
 import com.battleshippark.bsp_langpod.domain.SubscribeChannel;
 import com.battleshippark.bsp_langpod.domain.UpdateEpisode;
+import com.battleshippark.bsp_langpod.service.downloader.DownloaderService;
+import com.battleshippark.bsp_langpod.service.downloader.DownloaderServiceFacade;
 import com.battleshippark.bsp_langpod.service.player.PlayerService;
 import com.battleshippark.bsp_langpod.service.player.PlayerServiceFacade;
 import com.battleshippark.bsp_langpod.util.Logger;
 import com.bumptech.glide.Glide;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
@@ -75,7 +74,6 @@ public class ChannelActivity extends Activity implements OnItemListener {
     @BindView(R.id.msg_tv)
     TextView msgTextView;
 
-    private final PublishSubject<DownloadProgressParam> downloadProgress = PublishSubject.create();
     private CompositeSubscription subscription = new CompositeSubscription();
     private Unbinder unbinder;
     private ChannelAdapter adapter;
@@ -116,7 +114,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(DownloaderService.ACTION_PROGRESS)) {
-                downloadProgress.onNext(downloaderServiceFacade.getProgressParam(intent));
+                onDownloadProgress(downloaderServiceFacade.getProgressParam(intent));
             } else if (intent.getAction().equals(DownloaderService.ACTION_COMPLETED)) {
                 onDownloadCompleted(downloaderServiceFacade.getCompleteParam(intent));
             } else if (intent.getAction().equals(DownloaderService.ACTION_ERROR)) {
@@ -194,12 +192,6 @@ public class ChannelActivity extends Activity implements OnItemListener {
 
         dateFormat = new SimpleDateFormat("MM/dd", Locale.US);
         dateFormat.setTimeZone(TimeZone.getDefault());
-
-        subscription.add(
-                downloadProgress
-                        .throttleLast(1000, TimeUnit.MILLISECONDS, Schedulers.computation())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(this::onDownloadProgress, logger::w));
     }
 
     private void initUI() {

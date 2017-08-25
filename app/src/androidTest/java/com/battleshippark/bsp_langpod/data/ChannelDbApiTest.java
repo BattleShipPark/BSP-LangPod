@@ -8,6 +8,8 @@ import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
 
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -15,6 +17,7 @@ import java.util.Date;
 import java.util.List;
 
 import io.realm.Realm;
+import io.realm.RealmConfiguration;
 import io.realm.RealmList;
 import rx.observers.TestSubscriber;
 
@@ -23,12 +26,22 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 /**
  */
 public class ChannelDbApiTest {
-    private ChannelRealm channelRealm1 = new ChannelRealm(1, 10, "title1", "desc1", "image1", "url1", false);
-    private ChannelRealm channelRealm2 = new ChannelRealm(2, 11, "title2", "desc2", "image2", "url2", true);
+    private ChannelRealm channelRealm1 = new ChannelRealm(1, 10, "title1", "desc1", "image1", "url1", "cr1",
+            new RealmList<>(new EpisodeRealm(2, "ep.title1", "ep.desc1", "ep.url1", 11, new Date(111))), false);
+    private ChannelRealm channelRealm2 = new ChannelRealm(2, 11, "title2", "desc2", "image2", "url2", "cr2",
+            new RealmList<>(new EpisodeRealm(1, "ep.title2", "ep.desc2", "ep.url2", 22, new Date(222))), true);
 
-    private Realm realm = Realm.getDefaultInstance();
+    private Realm realm;
     private ChannelDbRepository repository = new ChannelDbApi();
     private TestSubscriber<List<ChannelRealm>> testSubscriber = new TestSubscriber<>();
+
+    @Before
+    public void before() {
+        RealmConfiguration configuration = new RealmConfiguration.Builder()
+                .name("test.realm").build();
+        Realm.deleteRealm(configuration);
+        realm = Realm.getInstance(configuration);
+    }
 
     @Test
     public void entireChannelList_저장한것을읽어본다() {
@@ -90,7 +103,6 @@ public class ChannelDbApiTest {
     public void myChannelList() {
         //subscribed=true인 title2만 조회해야 한다
         realm.executeTransaction(realm1 -> {
-            realm1.delete(ChannelRealm.class);
             realm1.copyToRealm(channelRealm1);
             realm1.copyToRealm(channelRealm2);
         });
@@ -107,9 +119,32 @@ public class ChannelDbApiTest {
 
         assertThat(subscriber.getOnNextEvents()).hasSize(1);
         List<ChannelRealm> actualMyChannelRealmList = subscriber.getOnNextEvents().get(0);
-        actualMyChannelRealmList = realm.copyFromRealm(actualMyChannelRealmList);
         assertThat(actualMyChannelRealmList).hasSize(1);
         assertThat(actualMyChannelRealmList.get(0)).isEqualTo(channelRealm2);
+    }
+
+    @Test
+    public void channelWithEpisodeId() {
+        //subscribed=true인 title2만 조회해야 한다
+        realm.executeTransaction(realm1 -> {
+            realm1.copyToRealm(channelRealm1);
+            realm1.copyToRealm(channelRealm2);
+        });
+
+        TestSubscriber<ChannelRealm> subscriber = new TestSubscriber<>();
+
+
+        repository.channelWithEpisodeId(2).subscribe(subscriber);
+
+
+        subscriber.awaitTerminalEvent();
+        subscriber.assertNoErrors();
+        subscriber.assertCompleted();
+
+        assertThat(subscriber.getOnNextEvents()).hasSize(1);
+        ChannelRealm actualMyChannelRealm = subscriber.getOnNextEvents().get(0);
+        actualMyChannelRealm = realm.copyFromRealm(actualMyChannelRealm);
+        assertThat(actualMyChannelRealm).isEqualTo(channelRealm1);
     }
 
     @Test

@@ -27,10 +27,15 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.NotificationTarget;
 
 import java.io.File;
+import java.util.Queue;
+import java.util.concurrent.TimeUnit;
 
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.android.schedulers.HandlerScheduler;
+import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
+import rx.subscriptions.CompositeSubscription;
 
 /**
  */
@@ -50,6 +55,7 @@ public class DownloaderService extends Service {
     private HandlerThread thread;
     private Handler handler;
     private DownloadMedia downloadMedia;
+    private CompositeSubscription subscription = new CompositeSubscription();
     private final PublishSubject<DownloadProgressParam> progressSubject = PublishSubject.create();
 
     @Override
@@ -62,7 +68,11 @@ public class DownloaderService extends Service {
 
         downloadMedia = new DownloadMedia(this, HandlerScheduler.from(handler), AndroidSchedulers.mainThread(), new AppPhase(BuildConfig.DEBUG));
 
-        progressSubject.subscribe(this::sendProgressBroadcast);
+        subscription.add(
+                progressSubject
+                        .throttleLast(1000, TimeUnit.MILLISECONDS, Schedulers.computation())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(this::onProgress, logger::w));
     }
 
     @Override
@@ -95,6 +105,7 @@ public class DownloaderService extends Service {
     public void onDestroy() {
         super.onDestroy();
         thread.interrupt();
+        subscription.unsubscribe();
     }
 
 /*    private void play(long channelId, long episodeId) {
@@ -168,6 +179,14 @@ public class DownloaderService extends Service {
         Intent intent = new Intent(this, DownloaderService.class);
 //        intent.setAction(isPlaying ? DownloaderService.ACTION_PAUSE : DownloaderService.ACTION_PLAY);
         return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    private void onProgress(DownloadProgressParam param) {
+        long episodeId = Long.parseLong(param.identifier);
+
+
+//        showNotification(channelRealm, episodeRealm);
+        sendProgressBroadcast(param);
     }
 
     private void sendProgressBroadcast(DownloadProgressParam param) {
