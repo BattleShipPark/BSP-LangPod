@@ -8,8 +8,8 @@ import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
 
+import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -19,6 +19,7 @@ import java.util.List;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmList;
+import rx.functions.Actions;
 import rx.observers.TestSubscriber;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -32,7 +33,7 @@ public class ChannelDbApiTest {
             new RealmList<>(new EpisodeRealm(1, "ep.title2", "ep.desc2", "ep.url2", 22, new Date(222))), true);
 
     private Realm realm;
-    private ChannelDbRepository repository = new ChannelDbApi();
+    private ChannelDbRepository repository;
     private TestSubscriber<List<ChannelRealm>> testSubscriber = new TestSubscriber<>();
 
     @Before
@@ -41,12 +42,17 @@ public class ChannelDbApiTest {
                 .name("test.realm").build();
         Realm.deleteRealm(configuration);
         realm = Realm.getInstance(configuration);
+        repository = new ChannelDbApi(realm);
+    }
+
+    @After
+    public void after() {
+        realm.close();
     }
 
     @Test
     public void entireChannelList_저장한것을읽어본다() {
         realm.executeTransaction(realm1 -> {
-            realm1.delete(ChannelRealm.class);
             realm1.copyToRealm(channelRealm1);
             realm1.copyToRealm(channelRealm2);
         });
@@ -68,7 +74,6 @@ public class ChannelDbApiTest {
     @Test
     public void entireChannelList_읽은후에저장하면자동반영된다() {
         realm.executeTransaction(realm1 -> {
-            realm1.delete(ChannelRealm.class);
             realm1.copyToRealm(channelRealm1);
         });
 
@@ -125,7 +130,6 @@ public class ChannelDbApiTest {
 
     @Test
     public void channelWithEpisodeId() {
-        //subscribed=true인 title2만 조회해야 한다
         realm.executeTransaction(realm1 -> {
             realm1.copyToRealm(channelRealm1);
             realm1.copyToRealm(channelRealm2);
@@ -143,7 +147,6 @@ public class ChannelDbApiTest {
 
         assertThat(subscriber.getOnNextEvents()).hasSize(1);
         ChannelRealm actualMyChannelRealm = subscriber.getOnNextEvents().get(0);
-        actualMyChannelRealm = realm.copyFromRealm(actualMyChannelRealm);
         assertThat(actualMyChannelRealm).isEqualTo(channelRealm1);
     }
 
@@ -152,7 +155,11 @@ public class ChannelDbApiTest {
         List<ChannelRealm> channelRealmList = Arrays.asList(
                 channelRealm1, channelRealm2
         );
-        repository.putEntireChannelList(channelRealmList);
+        repository.putEntireChannelList(channelRealmList)
+                .subscribe(Actions.empty(),
+                        throwable -> {
+                            throw new RuntimeException(throwable);
+                        });
 
         List<ChannelRealm> actualChannelRealmList = repository.entireChannelList().toBlocking().single();
         actualChannelRealmList = realm.copyFromRealm(actualChannelRealmList);
@@ -167,15 +174,12 @@ public class ChannelDbApiTest {
         handlerThread.start();
         Handler handler = new Handler(handlerThread.getLooper());
         handler.post(() -> {
-            Realm realm = Realm.getDefaultInstance();
-            ChannelDbRepository repository = new ChannelDbApi();
+            ChannelDbRepository repository = new ChannelDbApi(realm);
 
             //ID1으로 저장해 놓고
             ChannelRealm channelRealm = new ChannelRealm(1, 10, "title1", "desc1", "image1", "url1", "cr1",
                     new RealmList<>(new EpisodeRealm(1, "ep.title1", "ep.desc1", "ep.url1", 11, new Date(111))), false);
             realm.executeTransaction(realm1 -> {
-                realm1.delete(ChannelRealm.class);
-                realm1.delete(EpisodeRealm.class);
                 realm1.copyToRealm(channelRealm);
             });
 
@@ -218,13 +222,9 @@ public class ChannelDbApiTest {
 
     @Test
     public void putEpisode() throws InterruptedException {
-        Realm realm = Realm.getDefaultInstance();
-        ChannelDbRepository repository = new ChannelDbApi();
-
         //ID1으로 저장해 놓고
         EpisodeRealm episodeRealm = new EpisodeRealm(1, "ep.title1", "ep.desc1", "ep.url1", 11, new Date(111));
         realm.executeTransaction(realm1 -> {
-            realm1.delete(EpisodeRealm.class);
             realm1.insert(episodeRealm);
         });
 
@@ -247,12 +247,10 @@ public class ChannelDbApiTest {
         handlerThread.start();
         Handler handler = new Handler(handlerThread.getLooper());
         handler.post(() -> {
-            Realm realm = Realm.getDefaultInstance();
-            ChannelDbRepository repository = new ChannelDbApi();
+            ChannelDbRepository repository = new ChannelDbApi(realm);
 
             //구독상태의 채널 저장
             realm.executeTransaction(realm1 -> {
-                realm1.delete(ChannelRealm.class);
                 realm1.copyToRealm(channelRealm2);
             });
 
