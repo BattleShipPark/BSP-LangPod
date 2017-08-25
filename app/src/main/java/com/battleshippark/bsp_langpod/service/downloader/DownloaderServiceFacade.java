@@ -10,27 +10,23 @@ import android.os.IBinder;
 import com.battleshippark.bsp_langpod.AppPhase;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
+import com.battleshippark.bsp_langpod.data.downloader.DownloadCompleteParam;
+import com.battleshippark.bsp_langpod.data.downloader.DownloadErrorParam;
 import com.battleshippark.bsp_langpod.data.downloader.DownloadProgressParam;
 
-import java.io.File;
-
-import rx.Observable;
 import rx.functions.Action1;
-import rx.subjects.PublishSubject;
 
 /**
  */
 
 public class DownloaderServiceFacade {
     private final Context context;
-    private final PublishSubject<DownloadProgressParam> progressSubject;
     private final AppPhase appPhase;
     private final LocalServiceConnection connection = new LocalServiceConnection();
     private boolean bound;
 
-    public DownloaderServiceFacade(Context context, PublishSubject<DownloadProgressParam> progressSubject, AppPhase appPhase) {
+    public DownloaderServiceFacade(Context context, AppPhase appPhase) {
         this.context = context;
-        this.progressSubject = progressSubject;
         this.appPhase = appPhase;
     }
 
@@ -44,18 +40,13 @@ public class DownloaderServiceFacade {
             }
             return resultSubject;
         }*/
-    public Observable<File> download(ChannelRealm channelRealm, EpisodeRealm episodeRealm) {
-        PublishSubject<File> resultSubject = PublishSubject.create();
+    public void download(ChannelRealm channelRealm, EpisodeRealm episodeRealm) {
         if (isBound()) {
-            connection.getService().download(channelRealm, episodeRealm, resultSubject);
+            connection.getService().download(channelRealm, episodeRealm);
         } else {
-            connection.setOnConnected(service -> {
-                service.setProgressSubject(progressSubject);
-                service.download(channelRealm, episodeRealm, resultSubject);
-            });
+            connection.setOnConnected(service -> service.download(channelRealm, episodeRealm));
             context.bindService(new Intent(context, DownloaderService.class), connection, Context.BIND_AUTO_CREATE);
         }
-        return resultSubject;
     }
 
     public void pause(ChannelRealm channelRealm, EpisodeRealm episode) {
@@ -69,7 +60,6 @@ public class DownloaderServiceFacade {
 
     public void onStart() {
         if (!isBound()) {
-            connection.setOnConnected(service -> service.setProgressSubject(progressSubject));
             context.bindService(new Intent(context, DownloaderService.class), connection, Context.BIND_AUTO_CREATE);
         }
     }
@@ -86,9 +76,22 @@ public class DownloaderServiceFacade {
 
     public IntentFilter createIntentFilter() {
         IntentFilter intentFilter = new IntentFilter();
-//        intentFilter.addAction(PlayerService.ACTION_PLAY);
-//        intentFilter.addAction(PlayerService.ACTION_PAUSE);
+        intentFilter.addAction(DownloaderService.ACTION_PROGRESS);
+        intentFilter.addAction(DownloaderService.ACTION_COMPLETED);
+        intentFilter.addAction(DownloaderService.ACTION_ERROR);
         return intentFilter;
+    }
+
+    public DownloadProgressParam getProgressParam(Intent intent) {
+        return connection.getService().getProgressParam(intent);
+    }
+
+    public DownloadCompleteParam getCompleteParam(Intent intent) {
+        return connection.getService().getCompleteParam(intent);
+    }
+
+    public DownloadErrorParam getErrorParam(Intent intent) {
+        return connection.getService().getErrorParam(intent);
     }
 
     class LocalServiceConnection implements ServiceConnection {

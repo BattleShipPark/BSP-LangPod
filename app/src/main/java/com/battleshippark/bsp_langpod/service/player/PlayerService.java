@@ -37,11 +37,11 @@ import rx.android.schedulers.HandlerScheduler;
  */
 
 public class PlayerService extends Service {
-    public static final String ACTION_PLAY = "actionPlay";
-    public static final String ACTION_PAUSE = "actionPause";
+    private static final String TAG = PlayerService.class.getSimpleName();
+    public static final String ACTION_PLAY = TAG + ".actionPlay";
+    public static final String ACTION_PAUSE = TAG + ".actionPause";
     public static final String KEY_CHANNEL_ID = "keyChannelId";
     public static final String KEY_EPISODE_ID = "keyEpisodeId";
-    private static final String TAG = PlayerService.class.getSimpleName();
     private static final Logger logger = new Logger(TAG);
     private static final MediaPlayer mp = new MediaPlayer();
     private static final Intent playIntent = new Intent(ACTION_PLAY);

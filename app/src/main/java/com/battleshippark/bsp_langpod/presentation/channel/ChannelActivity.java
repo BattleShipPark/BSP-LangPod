@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.Toolbar;
 
 import com.annimon.stream.Optional;
@@ -28,7 +29,10 @@ import com.battleshippark.bsp_langpod.dagger.DaggerServerApiGraph;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
+import com.battleshippark.bsp_langpod.data.downloader.DownloadCompleteParam;
+import com.battleshippark.bsp_langpod.data.downloader.DownloadErrorParam;
 import com.battleshippark.bsp_langpod.data.downloader.DownloadProgressParam;
+import com.battleshippark.bsp_langpod.service.downloader.DownloaderService;
 import com.battleshippark.bsp_langpod.service.downloader.DownloaderServiceFacade;
 import com.battleshippark.bsp_langpod.data.server.ChannelServerApi;
 import com.battleshippark.bsp_langpod.domain.DomainMapper;
@@ -71,10 +75,11 @@ public class ChannelActivity extends Activity implements OnItemListener {
     @BindView(R.id.msg_tv)
     TextView msgTextView;
 
+    private final PublishSubject<DownloadProgressParam> downloadProgress = PublishSubject.create();
     private CompositeSubscription subscription = new CompositeSubscription();
     private Unbinder unbinder;
     private ChannelAdapter adapter;
-    private BroadcastReceiver receiver = new BroadcastReceiver() {
+    private BroadcastReceiver playerBcReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             long episodeId = intent.getLongExtra(PlayerService.KEY_EPISODE_ID, -1);
@@ -107,7 +112,20 @@ public class ChannelActivity extends Activity implements OnItemListener {
                     .filter(episodeRealm -> episodeRealm.getId() == episodeId).findFirst();
         }
     };
-    private IntentFilter intentFilter;
+    private BroadcastReceiver downloaderBcReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(DownloaderService.ACTION_PROGRESS)) {
+                downloadProgress.onNext(downloaderServiceFacade.getProgressParam(intent));
+            } else if (intent.getAction().equals(DownloaderService.ACTION_COMPLETED)) {
+                onDownloadCompleted(downloaderServiceFacade.getCompleteParam(intent));
+            } else if (intent.getAction().equals(DownloaderService.ACTION_ERROR)) {
+                onDownloadError(downloaderServiceFacade.getErrorParam(intent));
+            }
+        }
+    };
+
+    private IntentFilter playerIntentFilter, downloaderIntentFilter;
 
     private PlayerServiceFacade playerServiceFacade;
     private DownloaderServiceFacade downloaderServiceFacade;
@@ -116,7 +134,6 @@ public class ChannelActivity extends Activity implements OnItemListener {
     private SubscribeChannel subscribeChannel;
     private UpdateEpisode updateEpisode;
 
-    private final PublishSubject<DownloadProgressParam> downloadProgress = PublishSubject.create();
     private long channelId;
     private ChannelRealm channelRealm;
     private SimpleDateFormat dateFormat;
@@ -164,9 +181,10 @@ public class ChannelActivity extends Activity implements OnItemListener {
         });
 
         playerServiceFacade = new PlayerServiceFacade(this);
-        downloaderServiceFacade = new DownloaderServiceFacade(this, downloadProgress, new AppPhase(BuildConfig.DEBUG));
+        downloaderServiceFacade = new DownloaderServiceFacade(this, new AppPhase(BuildConfig.DEBUG));
 
-        intentFilter = playerServiceFacade.createIntentFilter();
+        playerIntentFilter = playerServiceFacade.createIntentFilter();
+        downloaderIntentFilter = downloaderServiceFacade.createIntentFilter();
 
         if (savedInstanceState == null) {
             channelId = getIntent().getLongExtra(KEY_ID, 0);
@@ -352,12 +370,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
         episode.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADING);
         adapter.notifyDataSetChanged();
 
-        subscription.add(
-                downloaderServiceFacade.download(channelRealm, episode)
-                        .subscribe(file -> onDownloadCompleted(episode, file),
-                                Throwable::printStackTrace,
-                                () -> logger.w("downloaded"))
-        );
+        downloaderServiceFacade.download(channelRealm, episode);
     }
 
     private String getStatusText(EpisodeRealm episode) {
@@ -385,13 +398,6 @@ public class ChannelActivity extends Activity implements OnItemListener {
         return R.drawable.play;
     }
 
-    private void onDownloadCompleted(EpisodeRealm episodeRealm, File file) {
-        episodeRealm.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADED);
-        episodeRealm.setDownloadedPath(file.getAbsolutePath());
-        updateEpisode.execute(episodeRealm).subscribe(aVoid -> {
-        }, Throwable::printStackTrace);
-    }
-
     private void onDownloadProgress(DownloadProgressParam param) {
         for (EpisodeRealm episodeRealm : channelRealm.getEpisodes()) {
             if (episodeRealm.getId() == Long.valueOf(param.identifier)) {
@@ -399,17 +405,37 @@ public class ChannelActivity extends Activity implements OnItemListener {
                 episodeRealm.setDownloadedBytes(param.bytesRead);
                 episodeRealm.setTotalBytes(param.contentLength);
                 adapter.notifyDataSetChanged();
+//                updateEpisode.execute(episodeRealm).subscribe();
                 return;
             }
         }
     }
 
+    private void onDownloadCompleted(DownloadCompleteParam param) {
+        Stream.of(channelRealm.getEpisodes())
+                .filter(episodeRealm -> episodeRealm.getId() == param.getEpisodeId())
+                .findFirst()
+                .ifPresent(episodeRealm -> {
+                    episodeRealm.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADED);
+                    episodeRealm.setDownloadedPath(param.getFile().getAbsolutePath());
+                    updateEpisode.execute(episodeRealm).subscribe(aVoid -> {
+                    }, Throwable::printStackTrace);
+                });
+    }
+
+    private void onDownloadError(DownloadErrorParam param) {
+        Toast.makeText(this, "Error: " + param.getEpisodeId(), Toast.LENGTH_SHORT).show();
+        param.getThrowable().printStackTrace();
+    }
+
     private void registerReceiver() {
-        registerReceiver(receiver, intentFilter);
+        registerReceiver(playerBcReceiver, playerIntentFilter);
+        registerReceiver(downloaderBcReceiver, downloaderIntentFilter);
     }
 
     private void unregisterReceiver() {
-        unregisterReceiver(receiver);
+        unregisterReceiver(downloaderBcReceiver);
+        unregisterReceiver(playerBcReceiver);
     }
 
     public static Intent createIntent(Context context, long id) {
