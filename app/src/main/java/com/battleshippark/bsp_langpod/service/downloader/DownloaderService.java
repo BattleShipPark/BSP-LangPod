@@ -131,12 +131,16 @@ public class DownloaderService extends Service {
 
     public void download(ChannelRealm channelRealm, EpisodeRealm episodeRealm) {
         downloadMedia.execute(new DownloadMedia.Param(String.valueOf(episodeRealm.getId()), episodeRealm.getUrl(), progressSubject))
-                .subscribe(file -> sendCompleteBroadcast(episodeRealm, file),
+                .subscribe(file -> onCompleted(episodeRealm, file),
                         throwable -> sendErrorBroadcast(episodeRealm, throwable));
 
         showNotification(channelRealm, episodeRealm);
     }
 
+    private void onCompleted(EpisodeRealm episodeRealm, File file) {
+        cancelNotification(episodeRealm);
+        sendCompleteBroadcast(episodeRealm, file);
+    }
 /*    private void pause(long channelId, long episodeId) {
         getChannel.execute(channelId).subscribe(channelRealms -> {
             for (EpisodeRealm episodeRealm : channelRealms.get(0).getEpisodes()) {
@@ -182,7 +186,7 @@ public class DownloaderService extends Service {
                 .setContent(notificationRemoteViews);
 
         final Notification notification = notificationBuilder.build();
-        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify((int) channelRealm.getId(), notification);
+        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify((int) episodeRealm.getId(), notification);
 
         if (param == null) {
             NotificationTarget notificationTarget = new NotificationTarget(
@@ -190,13 +194,13 @@ public class DownloaderService extends Service {
                     notificationRemoteViews,
                     R.id.image_iv,
                     notification,
-                    (int) channelRealm.getId());
+                    (int) episodeRealm.getId());
             Glide.with(getApplicationContext()).load(channelRealm.getImage()).asBitmap().into(notificationTarget);
         }
     }
 
-    private void cancelNotification(ChannelRealm channelRealm) {
-        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).cancel((int) channelRealm.getId());
+    private void cancelNotification(EpisodeRealm episodeRealm) {
+        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).cancel((int) episodeRealm.getId());
     }
 
     private PendingIntent createPendingIntent(boolean isPlaying) {
