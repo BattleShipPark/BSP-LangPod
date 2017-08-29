@@ -13,24 +13,25 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.widget.RemoteViews;
 
+import com.annimon.stream.Stream;
 import com.battleshippark.bsp_langpod.AppPhase;
 import com.battleshippark.bsp_langpod.BuildConfig;
 import com.battleshippark.bsp_langpod.R;
+import com.battleshippark.bsp_langpod.dagger.DaggerDbApiGraph;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
 import com.battleshippark.bsp_langpod.data.downloader.DownloadCompleteParam;
 import com.battleshippark.bsp_langpod.data.downloader.DownloadErrorParam;
 import com.battleshippark.bsp_langpod.data.downloader.DownloadProgressParam;
 import com.battleshippark.bsp_langpod.domain.DownloadMedia;
+import com.battleshippark.bsp_langpod.domain.GetChannelWithEpisodeId;
 import com.battleshippark.bsp_langpod.util.Logger;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.NotificationTarget;
 
 import java.io.File;
-import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
-import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.android.schedulers.HandlerScheduler;
 import rx.schedulers.Schedulers;
@@ -51,10 +52,11 @@ public class DownloaderService extends Service {
     public static final String KEY_COMPLETE = "keyComplete";
     private static final String KEY_ERROR = "keyError";
     private static final Logger logger = new Logger(TAG);
+    private static final float MEGA_BYTE = 1024 * 1024 * 1.0f;
     private final IBinder mBinder = new LocalBinder();
     private HandlerThread thread;
-    private Handler handler;
     private DownloadMedia downloadMedia;
+    private GetChannelWithEpisodeId getChannelWithEpisodeId;
     private CompositeSubscription subscription = new CompositeSubscription();
     private final PublishSubject<DownloadProgressParam> progressSubject = PublishSubject.create();
 
@@ -64,14 +66,14 @@ public class DownloaderService extends Service {
 
         thread = new HandlerThread(TAG);
         thread.start();
-        handler = new Handler(thread.getLooper());
+        Handler handler = new Handler(thread.getLooper());
 
         downloadMedia = new DownloadMedia(this, HandlerScheduler.from(handler), AndroidSchedulers.mainThread(), new AppPhase(BuildConfig.DEBUG));
+        getChannelWithEpisodeId = new GetChannelWithEpisodeId(DaggerDbApiGraph.create().channelApi(), HandlerScheduler.from(handler), HandlerScheduler.from(handler));
 
         subscription.add(
                 progressSubject
                         .throttleLast(1000, TimeUnit.MILLISECONDS, Schedulers.computation())
-                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(this::onProgress, logger::w));
     }
 
@@ -149,10 +151,18 @@ public class DownloaderService extends Service {
     }*/
 
     private void showNotification(ChannelRealm channelRealm, EpisodeRealm episodeRealm) {
+        showNotification(channelRealm, episodeRealm, null);
+    }
+
+    private void showNotification(ChannelRealm channelRealm, EpisodeRealm episodeRealm, DownloadProgressParam param) {
 //        PendingIntent pendingIntent = createPendingIntent();
 
         RemoteViews rv = new RemoteViews(getPackageName(), R.layout.notification_download);
         rv.setImageViewResource(R.id.image_iv, R.mipmap.ic_launcher);
+        if (param != null) {
+            rv.setTextViewText(R.id.progress_tv,
+                    getString(R.string.episode_downloading, episodeRealm.getDownloadedBytes() / MEGA_BYTE, episodeRealm.getTotalBytes() / MEGA_BYTE));
+        }
         rv.setTextViewText(R.id.channel_tv, channelRealm.getTitle());
         rv.setTextViewText(R.id.episode_tv, episodeRealm.getTitle());
 
@@ -184,8 +194,15 @@ public class DownloaderService extends Service {
     private void onProgress(DownloadProgressParam param) {
         long episodeId = Long.parseLong(param.identifier);
 
-
-//        showNotification(channelRealm, episodeRealm);
+        getChannelWithEpisodeId.execute(episodeId).subscribe(channelRealm -> {
+                    Stream.of(channelRealm.getEpisodes())
+                            .filter(episodeRealm -> episodeRealm.getId() == episodeId)
+                            .findFirst()
+                            .ifPresent(episodeRealm -> {
+                                AndroidSchedulers.mainThread().createWorker().schedule(() -> showNotification(channelRealm, episodeRealm, param));
+                            });
+                },
+                logger::w);
         sendProgressBroadcast(param);
     }
 

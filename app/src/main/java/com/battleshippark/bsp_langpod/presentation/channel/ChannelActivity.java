@@ -48,7 +48,6 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -56,7 +55,6 @@ import butterknife.Unbinder;
 import io.realm.OrderedRealmCollection;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
-import rx.subjects.PublishSubject;
 import rx.subscriptions.CompositeSubscription;
 
 public class ChannelActivity extends Activity implements OnItemListener {
@@ -410,8 +408,8 @@ public class ChannelActivity extends Activity implements OnItemListener {
                 .ifPresent(episodeRealm -> {
                     episodeRealm.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADED);
                     episodeRealm.setDownloadedPath(param.getFile().getAbsolutePath());
-                    updateEpisode.execute(episodeRealm).subscribe(aVoid -> {
-                    }, Throwable::printStackTrace);
+//                    updateEpisode.execute(episodeRealm).subscribe(aVoid -> {
+//                    }, Throwable::printStackTrace);
                 });
     }
 
