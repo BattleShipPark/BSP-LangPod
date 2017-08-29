@@ -34,7 +34,6 @@ import java.util.concurrent.TimeUnit;
 
 import rx.android.schedulers.AndroidSchedulers;
 import rx.android.schedulers.HandlerScheduler;
-import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
 import rx.subscriptions.CompositeSubscription;
 
@@ -54,26 +53,34 @@ public class DownloaderService extends Service {
     private static final Logger logger = new Logger(TAG);
     private static final float MEGA_BYTE = 1024 * 1024 * 1.0f;
     private final IBinder mBinder = new LocalBinder();
-    private HandlerThread thread;
+    private final PublishSubject<DownloadProgressParam> progressSubject = PublishSubject.create();
+    private Notification.Builder notificationBuilder;
+    private HandlerThread downloadThread, operationThread;
     private DownloadMedia downloadMedia;
     private GetChannelWithEpisodeId getChannelWithEpisodeId;
     private CompositeSubscription subscription = new CompositeSubscription();
-    private final PublishSubject<DownloadProgressParam> progressSubject = PublishSubject.create();
+    private RemoteViews notificationRemoteViews;
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        thread = new HandlerThread(TAG);
-        thread.start();
-        Handler handler = new Handler(thread.getLooper());
+        downloadThread = new HandlerThread(TAG + ".download");
+        downloadThread.start();
+        Handler downloadHandler = new Handler(downloadThread.getLooper());
 
-        downloadMedia = new DownloadMedia(this, HandlerScheduler.from(handler), AndroidSchedulers.mainThread(), new AppPhase(BuildConfig.DEBUG));
-        getChannelWithEpisodeId = new GetChannelWithEpisodeId(DaggerDbApiGraph.create().channelApi(), HandlerScheduler.from(handler), HandlerScheduler.from(handler));
+        operationThread = new HandlerThread(TAG + ".operation");
+        operationThread.start();
+        Handler operationHandler = new Handler(operationThread.getLooper());
+
+        HandlerScheduler downloadScheduler = HandlerScheduler.from(downloadHandler);
+        HandlerScheduler operationScheduler = HandlerScheduler.from(operationHandler);
+        downloadMedia = new DownloadMedia(this, downloadScheduler, operationScheduler, new AppPhase(BuildConfig.DEBUG));
+        getChannelWithEpisodeId = new GetChannelWithEpisodeId(DaggerDbApiGraph.create().channelApi(), operationScheduler, operationScheduler);
 
         subscription.add(
                 progressSubject
-                        .throttleLast(1000, TimeUnit.MILLISECONDS, Schedulers.computation())
+                        .throttleLast(1000, TimeUnit.MILLISECONDS, operationScheduler)
                         .subscribe(this::onProgress, logger::w));
     }
 
@@ -106,7 +113,8 @@ public class DownloaderService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        thread.interrupt();
+        downloadThread.interrupt();
+        operationThread.interrupt();
         subscription.unsubscribe();
     }
 
@@ -157,28 +165,34 @@ public class DownloaderService extends Service {
     private void showNotification(ChannelRealm channelRealm, EpisodeRealm episodeRealm, DownloadProgressParam param) {
 //        PendingIntent pendingIntent = createPendingIntent();
 
-        RemoteViews rv = new RemoteViews(getPackageName(), R.layout.notification_download);
-        rv.setImageViewResource(R.id.image_iv, R.mipmap.ic_launcher);
-        if (param != null) {
-            rv.setTextViewText(R.id.progress_tv,
-                    getString(R.string.episode_downloading, episodeRealm.getDownloadedBytes() / MEGA_BYTE, episodeRealm.getTotalBytes() / MEGA_BYTE));
+        if (notificationRemoteViews == null || notificationBuilder == null) {
+            notificationRemoteViews = new RemoteViews(getPackageName(), R.layout.notification_download);
+            notificationRemoteViews.setImageViewResource(R.id.image_iv, R.mipmap.ic_launcher);
+            notificationRemoteViews.setTextViewText(R.id.channel_tv, channelRealm.getTitle());
+            notificationRemoteViews.setTextViewText(R.id.episode_tv, episodeRealm.getTitle());
         }
-        rv.setTextViewText(R.id.channel_tv, channelRealm.getTitle());
-        rv.setTextViewText(R.id.episode_tv, episodeRealm.getTitle());
 
-        Notification.Builder mBuilder = new Notification.Builder(this)
+        if (param != null) {
+            notificationRemoteViews.setTextViewText(R.id.progress_tv,
+                    getString(R.string.episode_downloading, param.bytesRead / MEGA_BYTE, param.contentLength / MEGA_BYTE));
+        }
+
+        notificationBuilder = new Notification.Builder(this)
                 .setSmallIcon(R.drawable.download)
-                .setContent(rv);
-        final Notification notification = mBuilder.build();
+                .setContent(notificationRemoteViews);
+
+        final Notification notification = notificationBuilder.build();
         ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify((int) channelRealm.getId(), notification);
 
-        NotificationTarget notificationTarget = new NotificationTarget(
-                this,
-                rv,
-                R.id.image_iv,
-                notification,
-                (int) channelRealm.getId());
-        Glide.with(getApplicationContext()).load(channelRealm.getImage()).asBitmap().into(notificationTarget);
+        if (param == null) {
+            NotificationTarget notificationTarget = new NotificationTarget(
+                    this,
+                    notificationRemoteViews,
+                    R.id.image_iv,
+                    notification,
+                    (int) channelRealm.getId());
+            Glide.with(getApplicationContext()).load(channelRealm.getImage()).asBitmap().into(notificationTarget);
+        }
     }
 
     private void cancelNotification(ChannelRealm channelRealm) {
