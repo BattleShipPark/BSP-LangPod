@@ -394,8 +394,9 @@ public class ChannelActivity extends Activity implements OnItemListener {
                 episodeRealm.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADING);
                 episodeRealm.setDownloadedBytes(param.bytesRead);
                 episodeRealm.setTotalBytes(param.contentLength);
-                adapter.notifyDataSetChanged();
-//                updateEpisode.execute(episodeRealm).subscribe();
+//                adapter.notifyDataSetChanged();
+                updateEpisode.execute(episodeRealm).subscribe(aVoid -> {
+                }, logger::w);
                 return;
             }
         }
@@ -408,14 +409,14 @@ public class ChannelActivity extends Activity implements OnItemListener {
                 .ifPresent(episodeRealm -> {
                     episodeRealm.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADED);
                     episodeRealm.setDownloadedPath(param.getFile().getAbsolutePath());
-//                    updateEpisode.execute(episodeRealm).subscribe(aVoid -> {
-//                    }, Throwable::printStackTrace);
+                    updateEpisode.execute(episodeRealm).subscribe(aVoid -> {
+                    }, logger::w);
                 });
     }
 
     private void onDownloadError(DownloadErrorParam param) {
         Toast.makeText(this, "Error: " + param.getEpisodeId(), Toast.LENGTH_SHORT).show();
-        param.getThrowable().printStackTrace();
+        logger.w(param.getThrowable());
     }
 
     private void registerReceiver() {

@@ -33,9 +33,9 @@ public class GetChannel implements UseCase<Long, List<ChannelRealm>> {
     @Override
     public Observable<List<ChannelRealm>> execute(Long id) {
         return Observable.create(subscriber ->
-                dbRepository.channel(id).subscribe(
-                        channelRealmList -> onDbLoaded(subscriber, channelRealmList),
-                        subscriber::onError));
+                dbRepository.channel(id).subscribeOn(scheduler)
+                        .subscribe(channelRealmList -> onDbLoaded(subscriber, channelRealmList),
+                                subscriber::onError));
     }
 
     private void onDbLoaded(Subscriber<? super List<ChannelRealm>> subscriber, List<ChannelRealm> channelRealmList) {
@@ -44,7 +44,7 @@ public class GetChannel implements UseCase<Long, List<ChannelRealm>> {
         if (serverRepository == null) {
             subscriber.onCompleted();
         } else {
-            serverRepository.myChannel(channelRealmList.get(0).getUrl()).subscribeOn(scheduler).observeOn(postScheduler)
+            serverRepository.myChannel(channelRealmList.get(0).getUrl()).subscribeOn(scheduler)
                     .subscribe(myChannelJson -> onServerLoaded(subscriber, channelRealmList.get(0), myChannelJson),
                             subscriber::onError, subscriber::onCompleted);
         }
