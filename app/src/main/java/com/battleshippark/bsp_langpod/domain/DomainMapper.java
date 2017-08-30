@@ -104,7 +104,7 @@ public class DomainMapper {
                     for (ChannelRealm localRealm : channelRealmList) {
                         if (localRealm.getId() == json.id()) {
                             RealmList<EpisodeRealm> episodeRealmList = new RealmList<>();
-                            episodeRealmList.addAll(realmHelper.fromRealm(localRealm.getEpisodes()));
+                            episodeRealmList.addAll(localRealm.getEpisodes());
 
                             return new ChannelRealm(json.id(), json.order(), json.title(), json.desc(),
                                     json.image(), json.url(), localRealm.getCopyright(),

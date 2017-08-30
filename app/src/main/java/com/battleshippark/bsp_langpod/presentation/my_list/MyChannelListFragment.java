@@ -25,6 +25,7 @@ import java.util.List;
 import butterknife.ButterKnife;
 import io.realm.OrderedRealmCollection;
 import rx.Subscription;
+import rx.schedulers.Schedulers;
 
 public class MyChannelListFragment extends Fragment implements OnItemListener {
     private static final String TAG = MyChannelListFragment.class.getSimpleName();
@@ -65,7 +66,7 @@ public class MyChannelListFragment extends Fragment implements OnItemListener {
         ChannelDbApi channelDbApi = DaggerDbApiGraph.create().channelApi();
 
         getMyChannelList = new GetMyChannelList(channelDbApi);
-        subscribeChannel = new SubscribeChannel(channelDbApi);
+        subscribeChannel = new SubscribeChannel(channelDbApi, Schedulers.io());
     }
 
     @Override

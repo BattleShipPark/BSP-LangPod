@@ -25,10 +25,10 @@ import com.bumptech.glide.Glide;
 import java.util.List;
 
 import butterknife.ButterKnife;
-import io.realm.OrderedRealmCollection;
-import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Actions;
 import rx.schedulers.Schedulers;
+import rx.subscriptions.CompositeSubscription;
 
 public class EntireChannelListFragment extends Fragment implements OnItemListener {
     private static final String TAG = EntireChannelListFragment.class.getSimpleName();
@@ -37,7 +37,7 @@ public class EntireChannelListFragment extends Fragment implements OnItemListene
     private RecyclerView rv;
 
     private EntireListFragmentListener mListener;
-    private Subscription subscription;
+    private CompositeSubscription subscription = new CompositeSubscription();
     private EntireChannelListAdapter adapter;
 
     private GetEntireChannelList getEntireChannelList;
@@ -71,7 +71,7 @@ public class EntireChannelListFragment extends Fragment implements OnItemListene
         getEntireChannelList = new GetEntireChannelList(channelDbApi, DaggerServerApiGraph.create().channelApi(),
                 Schedulers.io(), AndroidSchedulers.mainThread(), domainMapper);
 
-        subscribeChannel = new SubscribeChannel(channelDbApi);
+        subscribeChannel = new SubscribeChannel(channelDbApi, Schedulers.io());
     }
 
     @Override
@@ -88,8 +88,10 @@ public class EntireChannelListFragment extends Fragment implements OnItemListene
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        subscription = getEntireChannelList.execute(null)
-                .subscribe(this::showData, this::showError);
+        adapter = new EntireChannelListAdapter(this);
+        rv.setAdapter(adapter);
+
+        getList();
     }
 
     @Override
@@ -105,8 +107,8 @@ public class EntireChannelListFragment extends Fragment implements OnItemListene
     }
 
     void showData(List<ChannelRealm> channelRealmList) {
-        adapter = new EntireChannelListAdapter((OrderedRealmCollection<ChannelRealm>) channelRealmList, this);
-        rv.setAdapter(adapter);
+        adapter.setItems(channelRealmList);
+        adapter.notifyDataSetChanged();
     }
 
     void showError(Throwable throwable) {
@@ -121,14 +123,19 @@ public class EntireChannelListFragment extends Fragment implements OnItemListene
         Glide.with(holder.imageView.getContext()).load(item.getImage()).into(holder.imageView);
 
         holder.subscribeView.setSelected(item.isSubscribed());
-        holder.subscribeView.setOnClickListener(
-                v -> subscribeChannel.execute(item)
-                        .subscribe(
-                                aVoid -> {
-                                },
-                                logger::w
-                        )
+        holder.subscribeView.setOnClickListener(v ->
+                subscription.add(
+                        subscribeChannel.execute(item)
+                                .subscribe(Actions.empty(),
+                                        logger::w,
+                                        this::getList)
+                )
         );
+    }
+
+    private void getList() {
+        subscription.add(
+                getEntireChannelList.execute(null).subscribe(this::showData, this::showError));
     }
 
     public interface EntireListFragmentListener {

@@ -152,7 +152,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
         DomainMapper domainMapper = DaggerDomainMapperGraph.create().domainMapper();
 
         getChannel = new GetChannel(channelDbApi, channelServerApi, Schedulers.io(), AndroidSchedulers.mainThread(), domainMapper);
-        subscribeChannel = new SubscribeChannel(channelDbApi);
+        subscribeChannel = new SubscribeChannel(channelDbApi, Schedulers.io());
         updateEpisode = new UpdateEpisode(channelDbApi, Schedulers.io(), AndroidSchedulers.mainThread());
 
         adapter = new ChannelAdapter(this);

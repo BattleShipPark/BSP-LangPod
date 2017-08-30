@@ -36,18 +36,20 @@ public class GetEntireChannelList implements UseCase<Void, List<ChannelRealm>> {
     @Override
     public Observable<List<ChannelRealm>> execute(Void param) {
         return Observable.create(subscriber ->
-                dbRepository.entireChannelList().subscribe(
-                        entireChannelRealmList -> onDbLoaded(subscriber, entireChannelRealmList),
-                        subscriber::onError));
+                dbRepository.entireChannelList().subscribeOn(scheduler).observeOn(postScheduler)
+                        .subscribe(
+                                entireChannelRealmList -> onDbLoaded(subscriber, entireChannelRealmList),
+                                subscriber::onError));
     }
 
     private void onDbLoaded(Subscriber<? super List<ChannelRealm>> subscriber, List<ChannelRealm> channelRealmList) {
         try {
             subscriber.onNext(channelRealmList);
 
-            serverRepository.entireChannelList().subscribeOn(scheduler).observeOn(postScheduler).subscribe(
-                    channelListJson -> onServerLoaded(subscriber, channelRealmList, channelListJson),
-                    subscriber::onError, subscriber::onCompleted);
+            serverRepository.entireChannelList().subscribeOn(scheduler).observeOn(postScheduler)
+                    .subscribe(
+                            channelListJson -> onServerLoaded(subscriber, channelRealmList, channelListJson),
+                            subscriber::onError, subscriber::onCompleted);
         } catch (Exception e) {
             subscriber.onError(e);
         }
@@ -55,6 +57,7 @@ public class GetEntireChannelList implements UseCase<Void, List<ChannelRealm>> {
 
     private void onServerLoaded(Subscriber<? super List<ChannelRealm>> subscriber, List<ChannelRealm> channelRealmList, EntireChannelListJson entireChannelListJson) {
         dbRepository.putEntireChannelList(domainMapper.entireChannelListJsonAsRealm(channelRealmList, entireChannelListJson))
+                .subscribeOn(scheduler).observeOn(postScheduler)
                 .subscribe(subscriber::onCompleted, subscriber::onError);
     }
 }

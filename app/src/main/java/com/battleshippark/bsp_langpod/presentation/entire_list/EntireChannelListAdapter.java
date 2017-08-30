@@ -9,18 +9,18 @@ import android.widget.TextView;
 
 import com.battleshippark.bsp_langpod.R;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
-import com.battleshippark.bsp_langpod.presentation.RealmRecyclerViewAdapter;
+
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.realm.OrderedRealmCollection;
 
-class EntireChannelListAdapter extends RealmRecyclerViewAdapter<ChannelRealm, EntireChannelListAdapter.ViewHolder> {
-
+class EntireChannelListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final OnItemListener mListener;
+    private List<ChannelRealm> channelRealmList;
 
-    EntireChannelListAdapter(OrderedRealmCollection<ChannelRealm> items, OnItemListener listener) {
-        super(items, true);
+    EntireChannelListAdapter(OnItemListener listener) {
+        super();
         mListener = listener;
     }
 
@@ -32,10 +32,19 @@ class EntireChannelListAdapter extends RealmRecyclerViewAdapter<ChannelRealm, En
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder holder, int position) {
-        ChannelRealm channelRealm = getData().get(position);
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        ChannelRealm channelRealm = channelRealmList.get(position);
 
-        mListener.onBindViewHolder(holder, channelRealm);
+        mListener.onBindViewHolder((ViewHolder) holder, channelRealm);
+    }
+
+    @Override
+    public int getItemCount() {
+        return channelRealmList.isEmpty() ? 0 : channelRealmList.size();
+    }
+
+    public void setItems(List<ChannelRealm> channelRealmList) {
+        this.channelRealmList = channelRealmList;
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {

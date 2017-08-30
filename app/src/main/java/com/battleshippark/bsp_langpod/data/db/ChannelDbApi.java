@@ -1,7 +1,6 @@
 package com.battleshippark.bsp_langpod.data.db;
 
 import android.support.annotation.VisibleForTesting;
-import android.util.Log;
 
 import com.annimon.stream.Stream;
 
@@ -35,7 +34,6 @@ public class ChannelDbApi implements ChannelDbRepository {
     @Inject
     public ChannelDbApi(Lazy<Realm> realm) {
         this.realm = realm;
-        Log.w("TEST", toString() + "," + Thread.currentThread().getName());
     }
 
     @Override
@@ -44,7 +42,7 @@ public class ChannelDbApi implements ChannelDbRepository {
             try {
                 RealmQuery<ChannelRealm> query = realm.get().where(ChannelRealm.class);
                 RealmResults<ChannelRealm> results = query.findAllSorted("order");
-                subscriber.onNext(results);
+                subscriber.onNext(realm.get().copyFromRealm(results));
                 subscriber.onCompleted();
             } catch (Exception e) {
                 subscriber.onError(e);
@@ -71,7 +69,6 @@ public class ChannelDbApi implements ChannelDbRepository {
     public Observable<ChannelRealm> channel(long id) {
         return Observable.create(subscriber -> {
             try {
-                Log.w("TEST", "channel:" + toString() + "," + realm.get().toString() + "," + Thread.currentThread().getName());
                 ChannelRealm result = realm.get().where(ChannelRealm.class).equalTo("id", id).findFirst();
                 subscriber.onNext(realm.get().copyFromRealm(result));
                 subscriber.onCompleted();
@@ -85,7 +82,6 @@ public class ChannelDbApi implements ChannelDbRepository {
     public Observable<ChannelRealm> channelWithEpisodeId(long episodeId) {
         return Observable.create(subscriber -> {
             try {
-                Log.w("TEST", "channelWith:" + toString() + "," + realm.get().toString());
                 RealmResults<ChannelRealm> results = realm.get().where(ChannelRealm.class).equalTo("episodes.id", episodeId).findAll();
                 subscriber.onNext(realm.get().copyFromRealm(results.get(0)));
                 subscriber.onCompleted();
@@ -140,7 +136,6 @@ public class ChannelDbApi implements ChannelDbRepository {
     public Completable putEpisode(EpisodeRealm episodeRealm) {
         return Completable.create(subscriber -> {
             try {
-                Log.w("TEST", "putEpisode:" + toString() + "," + realm.get().toString() + "," + Thread.currentThread().getName());
                 realm.get().beginTransaction();
                 try {
                     realm.get().insertOrUpdate(episodeRealm);
