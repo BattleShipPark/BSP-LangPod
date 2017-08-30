@@ -52,7 +52,6 @@ import java.util.TimeZone;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import io.realm.OrderedRealmCollection;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
@@ -157,24 +156,6 @@ public class ChannelActivity extends Activity implements OnItemListener {
         updateEpisode = new UpdateEpisode(channelDbApi, Schedulers.io(), AndroidSchedulers.mainThread());
 
         adapter = new ChannelAdapter(this);
-        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
-            @Override
-            public void onChanged() {
-                if (isFinishing() || isDestroyed()) {
-                    return;
-                }
-                if (adapter.getItemCount() == 0) {
-                    rv.setVisibility(View.GONE);
-                    msgTextView.setVisibility(View.VISIBLE);
-                    msgTextView.setText(R.string.my_list_empty_msg);
-                } else {
-                    channelRealm = adapter.getItem(0);
-
-                    rv.setVisibility(View.VISIBLE);
-                    msgTextView.setVisibility(View.GONE);
-                }
-            }
-        });
 
         playerServiceFacade = new PlayerServiceFacade(this);
         downloaderServiceFacade = new DownloaderServiceFacade(this, new AppPhase(BuildConfig.DEBUG));
@@ -242,11 +223,17 @@ public class ChannelActivity extends Activity implements OnItemListener {
         super.onDestroy();
     }
 
-    void showData(List<ChannelRealm> channelRealmList) {
+    void showData(ChannelRealm channelRealm) {
         if (isFinishing() || isDestroyed()) {
             return;
         }
-        adapter.updateData((OrderedRealmCollection<ChannelRealm>) channelRealmList);
+
+        this.channelRealm = channelRealm;
+        adapter.setItems(this.channelRealm);
+        adapter.notifyDataSetChanged();
+
+        rv.setVisibility(View.VISIBLE);
+        msgTextView.setVisibility(View.GONE);
     }
 
     void showError(Throwable throwable) {

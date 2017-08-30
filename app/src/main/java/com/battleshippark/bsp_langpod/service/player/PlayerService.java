@@ -102,10 +102,10 @@ public class PlayerService extends Service {
     }
 
     private void play(long channelId, long episodeId) {
-        getChannel.execute(channelId).subscribe(channelRealms -> {
-            for (EpisodeRealm episodeRealm : channelRealms.get(0).getEpisodes()) {
+        getChannel.execute(channelId).subscribe(channelRealm -> {
+            for (EpisodeRealm episodeRealm : channelRealm.getEpisodes()) {
                 if (episodeRealm.getId() == episodeId) {
-                    play(channelRealms.get(0), episodeRealm);
+                    play(channelRealm, episodeRealm);
                     break;
                 }
             }
@@ -134,10 +134,10 @@ public class PlayerService extends Service {
     }
 
     private void pause(long channelId, long episodeId) {
-        getChannel.execute(channelId).subscribe(channelRealms -> {
-            for (EpisodeRealm episodeRealm : channelRealms.get(0).getEpisodes()) {
+        getChannel.execute(channelId).subscribe(channelRealm -> {
+            for (EpisodeRealm episodeRealm : channelRealm.getEpisodes()) {
                 if (episodeRealm.getId() == episodeId) {
-                    pause(channelRealms.get(0), episodeRealm);
+                    pause(channelRealm, episodeRealm);
                     break;
                 }
             }

@@ -183,7 +183,7 @@ public class ChannelDbApiTest {
                 realm1.copyToRealm(channelRealm);
             });
 
-            TestSubscriber<List<ChannelRealm>> testSubscriber = new TestSubscriber<>();
+            TestSubscriber<ChannelRealm> testSubscriber = new TestSubscriber<>();
             //ID1을 읽어 보면
             repository.channel(1).subscribe(testSubscriber);
 
@@ -192,7 +192,7 @@ public class ChannelDbApiTest {
             testSubscriber.assertNoErrors();
             testSubscriber.assertCompleted();
 
-            ChannelRealm actualChannelRealm1 = testSubscriber.getOnNextEvents().get(0).get(0);
+            ChannelRealm actualChannelRealm1 = testSubscriber.getOnNextEvents().get(0);
             assertThat(actualChannelRealm1.getTitle()).isEqualTo("title1");
             assertThat(actualChannelRealm1.getEpisodes()).hasSize(1);
             assertThat(actualChannelRealm1.getEpisodes().get(0).getTitle()).isEqualTo("ep.title1");
@@ -216,7 +216,7 @@ public class ChannelDbApiTest {
 
             //에피소드가 2개인 것을 확인
             repository.channel(1).subscribe(testSubscriber);
-            assertThat(testSubscriber.getOnNextEvents().get(0).get(0).getEpisodes()).hasSize(2);
+            assertThat(testSubscriber.getOnNextEvents().get(0).getEpisodes()).hasSize(2);
         });
     }
 
@@ -254,7 +254,7 @@ public class ChannelDbApiTest {
                 realm1.copyToRealm(channelRealm2);
             });
 
-            TestSubscriber<List<ChannelRealm>> testSubscriber = new TestSubscriber<>();
+            TestSubscriber<ChannelRealm> testSubscriber = new TestSubscriber<>();
             repository.channel(2).subscribe(testSubscriber);
 
 
@@ -262,7 +262,7 @@ public class ChannelDbApiTest {
             testSubscriber.assertNoErrors();
             testSubscriber.assertCompleted();
 
-            ChannelRealm actualChannelRealm1 = testSubscriber.getOnNextEvents().get(0).get(0);
+            ChannelRealm actualChannelRealm1 = testSubscriber.getOnNextEvents().get(0);
             assertThat(actualChannelRealm1.getId()).isEqualTo(2);
 
 

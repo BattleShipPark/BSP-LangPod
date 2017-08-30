@@ -56,12 +56,12 @@ public class GetChannelTest {
         );
         LooperThread thread = new LooperThread("GetChannelTest");
         Executor executor = thread.getExecutor();
-        TestSubscriber<List<ChannelRealm>> testSubscriber = new TestSubscriber<>();
+        TestSubscriber<ChannelRealm> testSubscriber = new TestSubscriber<>();
         thread.run(() -> {
             Realm realm = Realm.getDefaultInstance();
             ChannelServerRepository serverRepository = mock(ChannelServerRepository.class);
             when(serverRepository.myChannel("url1")).thenReturn(Observable.just(channelJson));
-            UseCase<Long, List<ChannelRealm>> useCase = new GetChannel(new ChannelDbApi(), serverRepository,
+            UseCase<Long, ChannelRealm> useCase = new GetChannel(new ChannelDbApi(), serverRepository,
                     Schedulers.io(), Schedulers.from(executor), new DomainMapper(mock(RealmHelper.class)));
 
             realm.executeTransaction(realm1 -> {
@@ -85,7 +85,7 @@ public class GetChannelTest {
             assertThat(testSubscriber.getOnNextEvents()).hasSize(1);
 
             Realm realm = Realm.getDefaultInstance();
-            actualChannelRealmList.add(realm.copyFromRealm(testSubscriber.getOnNextEvents().get(0).get(0)));
+            actualChannelRealmList.add(realm.copyFromRealm(testSubscriber.getOnNextEvents().get(0)));
         });
         thread.await();
 
