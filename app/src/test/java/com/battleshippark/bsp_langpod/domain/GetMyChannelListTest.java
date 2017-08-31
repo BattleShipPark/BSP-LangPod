@@ -12,7 +12,9 @@ import java.util.Collections;
 import java.util.List;
 
 import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
 import rx.observers.TestSubscriber;
+import rx.schedulers.Schedulers;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -30,7 +32,7 @@ public class GetMyChannelListTest {
                 new ChannelRealm(1, 10, "title1", "desc1", "image1", "url1", true)
         );
         when(dbRepository.myChannelList()).thenReturn(Observable.just(myChannelRealmList));
-        UseCase<Void, List<ChannelRealm>> useCase = new GetMyChannelList(dbRepository);
+        UseCase<Void, List<ChannelRealm>> useCase = new GetMyChannelList(dbRepository, Schedulers.immediate(), Schedulers.immediate());
         TestSubscriber<List<ChannelRealm>> testSubscriber = new TestSubscriber<>();
 
 

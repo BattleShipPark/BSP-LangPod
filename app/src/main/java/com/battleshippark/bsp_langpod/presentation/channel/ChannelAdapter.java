@@ -9,11 +9,9 @@ import android.widget.TextView;
 
 import com.battleshippark.bsp_langpod.R;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
-import com.battleshippark.bsp_langpod.presentation.RealmRecyclerViewAdapter;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.realm.Realm;
 
 class ChannelAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final OnItemListener mListener;

@@ -10,6 +10,7 @@ import android.widget.TextView;
 import com.battleshippark.bsp_langpod.R;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 
+import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
@@ -17,7 +18,7 @@ import butterknife.ButterKnife;
 
 class EntireChannelListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final OnItemListener mListener;
-    private List<ChannelRealm> channelRealmList;
+    private List<ChannelRealm> channelRealmList = Collections.EMPTY_LIST;
 
     EntireChannelListAdapter(OnItemListener listener) {
         super();
@@ -45,6 +46,7 @@ class EntireChannelListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
     public void setItems(List<ChannelRealm> channelRealmList) {
         this.channelRealmList = channelRealmList;
+        notifyDataSetChanged();
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {

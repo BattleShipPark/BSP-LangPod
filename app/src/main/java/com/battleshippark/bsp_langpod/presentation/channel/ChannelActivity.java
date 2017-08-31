@@ -45,7 +45,6 @@ import com.battleshippark.bsp_langpod.util.Logger;
 import com.bumptech.glide.Glide;
 
 import java.text.SimpleDateFormat;
-import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -152,7 +151,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
         DomainMapper domainMapper = DaggerDomainMapperGraph.create().domainMapper();
 
         getChannel = new GetChannel(channelDbApi, channelServerApi, Schedulers.io(), AndroidSchedulers.mainThread(), domainMapper);
-        subscribeChannel = new SubscribeChannel(channelDbApi, Schedulers.io());
+        subscribeChannel = new SubscribeChannel(channelDbApi, Schedulers.io(), AndroidSchedulers.mainThread());
         updateEpisode = new UpdateEpisode(channelDbApi, Schedulers.io(), AndroidSchedulers.mainThread());
 
         adapter = new ChannelAdapter(this);

@@ -23,8 +23,9 @@ import com.bumptech.glide.Glide;
 import java.util.List;
 
 import butterknife.ButterKnife;
-import io.realm.OrderedRealmCollection;
 import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Actions;
 import rx.schedulers.Schedulers;
 
 public class MyChannelListFragment extends Fragment implements OnItemListener {
@@ -65,8 +66,8 @@ public class MyChannelListFragment extends Fragment implements OnItemListener {
 
         ChannelDbApi channelDbApi = DaggerDbApiGraph.create().channelApi();
 
-        getMyChannelList = new GetMyChannelList(channelDbApi);
-        subscribeChannel = new SubscribeChannel(channelDbApi, Schedulers.io());
+        getMyChannelList = new GetMyChannelList(channelDbApi, Schedulers.io(), AndroidSchedulers.mainThread());
+        subscribeChannel = new SubscribeChannel(channelDbApi, Schedulers.io(), AndroidSchedulers.mainThread());
     }
 
     @Override
@@ -76,22 +77,7 @@ public class MyChannelListFragment extends Fragment implements OnItemListener {
         rv = ButterKnife.findById(view, R.id.my_list_rv);
         rv.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        adapter = new MyChannelListAdapter(null, this);
-        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
-            @Override
-            public void onChanged() {
-                super.onChanged();
-                if (adapter.getItemCount() == 0) {
-                    rv.setVisibility(View.GONE);
-                    msgTextView.setVisibility(View.VISIBLE);
-                    msgTextView.setText(R.string.my_list_empty_msg);
-                } else {
-                    rv.setVisibility(View.VISIBLE);
-                    msgTextView.setVisibility(View.GONE);
-                }
-            }
-        });
-
+        adapter = new MyChannelListAdapter(this);
         rv.setAdapter(adapter);
 
         msgTextView = ButterKnife.findById(view, R.id.msg_tv);
@@ -104,8 +90,7 @@ public class MyChannelListFragment extends Fragment implements OnItemListener {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        subscription = getMyChannelList.execute(null)
-                .subscribe(this::showData, this::showError);
+        requestList();
     }
 
     @Override
@@ -121,7 +106,16 @@ public class MyChannelListFragment extends Fragment implements OnItemListener {
     }
 
     void showData(List<ChannelRealm> channelRealmList) {
-        adapter.updateData((OrderedRealmCollection<ChannelRealm>) channelRealmList);
+        adapter.setItems(channelRealmList);
+
+        if (adapter.getItemCount() == 0) {
+            rv.setVisibility(View.GONE);
+            msgTextView.setVisibility(View.VISIBLE);
+            msgTextView.setText(R.string.my_list_empty_msg);
+        } else {
+            rv.setVisibility(View.VISIBLE);
+            msgTextView.setVisibility(View.GONE);
+        }
     }
 
     void showError(Throwable throwable) {
@@ -142,11 +136,16 @@ public class MyChannelListFragment extends Fragment implements OnItemListener {
         holder.subscribeView.setOnClickListener(
                 v -> subscribeChannel.execute(item)
                         .subscribe(
-                                aVoid -> {
-                                },
-                                throwable -> logger.w(throwable)
+                                Actions.empty(),
+                                logger::w,
+                                this::requestList
                         )
         );
+    }
+
+    private void requestList() {
+        subscription = getMyChannelList.execute(null)
+                .subscribe(this::showData, this::showError);
     }
 
     public interface MyListFragmentListener {

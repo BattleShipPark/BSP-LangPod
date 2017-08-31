@@ -11,7 +11,9 @@ import java.util.Collections;
 import java.util.List;
 
 import io.realm.Realm;
+import rx.android.schedulers.AndroidSchedulers;
 import rx.observers.TestSubscriber;
+import rx.schedulers.Schedulers;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
@@ -27,7 +29,7 @@ public class GetMyChannelListTest {
                 new ChannelRealm(2, 11, "title2", "desc2", "image2", "url2", true)
         );
         dbRepository.putEntireChannelList(channelRealmList);
-        UseCase<Void, List<ChannelRealm>> useCase = new GetMyChannelList(dbRepository);
+        UseCase<Void, List<ChannelRealm>> useCase = new GetMyChannelList(dbRepository, Schedulers.io(), AndroidSchedulers.mainThread());
         TestSubscriber<List<ChannelRealm>> testSubscriber = new TestSubscriber<>();
 
 

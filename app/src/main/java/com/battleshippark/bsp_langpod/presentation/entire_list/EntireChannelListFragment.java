@@ -71,7 +71,7 @@ public class EntireChannelListFragment extends Fragment implements OnItemListene
         getEntireChannelList = new GetEntireChannelList(channelDbApi, DaggerServerApiGraph.create().channelApi(),
                 Schedulers.io(), AndroidSchedulers.mainThread(), domainMapper);
 
-        subscribeChannel = new SubscribeChannel(channelDbApi, Schedulers.io());
+        subscribeChannel = new SubscribeChannel(channelDbApi, Schedulers.io(), AndroidSchedulers.mainThread());
     }
 
     @Override
@@ -91,7 +91,7 @@ public class EntireChannelListFragment extends Fragment implements OnItemListene
         adapter = new EntireChannelListAdapter(this);
         rv.setAdapter(adapter);
 
-        getList();
+        requestList();
     }
 
     @Override
@@ -108,7 +108,6 @@ public class EntireChannelListFragment extends Fragment implements OnItemListene
 
     void showData(List<ChannelRealm> channelRealmList) {
         adapter.setItems(channelRealmList);
-        adapter.notifyDataSetChanged();
     }
 
     void showError(Throwable throwable) {
@@ -128,12 +127,12 @@ public class EntireChannelListFragment extends Fragment implements OnItemListene
                         subscribeChannel.execute(item)
                                 .subscribe(Actions.empty(),
                                         logger::w,
-                                        this::getList)
+                                        this::requestList)
                 )
         );
     }
 
-    private void getList() {
+    private void requestList() {
         subscription.add(
                 getEntireChannelList.execute(null).subscribe(this::showData, this::showError));
     }
