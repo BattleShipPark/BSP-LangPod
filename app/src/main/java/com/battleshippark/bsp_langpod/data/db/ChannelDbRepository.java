@@ -23,5 +23,5 @@ public interface ChannelDbRepository {
 
     Completable putEpisode(EpisodeRealm episodeRealm);
 
-    Completable switchSubscribe(ChannelRealm channelRealm);
+    Observable<Boolean> switchSubscribe(ChannelRealm channelRealm);
 }

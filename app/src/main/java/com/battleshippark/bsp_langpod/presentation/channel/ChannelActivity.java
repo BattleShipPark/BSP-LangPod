@@ -52,6 +52,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Actions;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 
@@ -142,7 +143,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
         initData(savedInstanceState);
         initUI();
 
-        showChannel();
+        requestChannel();
     }
 
     private void initData(Bundle savedInstanceState) {
@@ -181,7 +182,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
         rv.setAdapter(adapter);
     }
 
-    private void showChannel() {
+    private void requestChannel() {
         progressBar.setVisibility(View.VISIBLE);
         subscription.add(
                 getChannel.execute(channelId)
@@ -267,9 +268,11 @@ public class ChannelActivity extends Activity implements OnItemListener {
         holder.subscribeView.setOnClickListener(
                 v -> subscribeChannel.execute(channel)
                         .subscribe(
-                                aVoid -> {
+                                subscribed -> {
+                                    channelRealm.setSubscribed(subscribed);
+                                    adapter.notifyDataSetChanged();
                                 },
-                                throwable -> logger.w(throwable)
+                                logger::w
                         )
         );
     }

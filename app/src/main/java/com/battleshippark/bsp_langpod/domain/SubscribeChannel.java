@@ -7,12 +7,11 @@ import javax.inject.Inject;
 
 import rx.Observable;
 import rx.Scheduler;
-import rx.android.schedulers.AndroidSchedulers;
 
 /**
  */
 
-public class SubscribeChannel implements UseCase<ChannelRealm, Void> {
+public class SubscribeChannel implements UseCase<ChannelRealm, Boolean> {
     private final ChannelDbRepository dbRepository;
     private final Scheduler scheduler;
     private final Scheduler postScheduler;
@@ -25,9 +24,8 @@ public class SubscribeChannel implements UseCase<ChannelRealm, Void> {
     }
 
     @Override
-    public Observable<Void> execute(ChannelRealm channelRealm) {
+    public Observable<Boolean> execute(ChannelRealm channelRealm) {
         return dbRepository.switchSubscribe(channelRealm)
-                .subscribeOn(scheduler).observeOn(postScheduler)
-                .toObservable();
+                .subscribeOn(scheduler).observeOn(postScheduler);
     }
 }

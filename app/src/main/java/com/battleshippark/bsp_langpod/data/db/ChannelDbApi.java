@@ -152,8 +152,8 @@ public class ChannelDbApi implements ChannelDbRepository {
     }
 
     @Override
-    public Completable switchSubscribe(ChannelRealm channelRealm) {
-        return Completable.create(subscriber -> {
+    public Observable<Boolean> switchSubscribe(ChannelRealm channelRealm) {
+        return Observable.create(subscriber -> {
             try {
                 long id = channelRealm.getId();
                 boolean value = !channelRealm.isSubscribed();
@@ -162,6 +162,7 @@ public class ChannelDbApi implements ChannelDbRepository {
                     ChannelRealm newChannelRealm = realm.get().where(ChannelRealm.class).equalTo(ChannelRealm.FIELD_ID, id).findFirst();
                     newChannelRealm.setSubscribed(value);
                     realm.get().commitTransaction();
+                    subscriber.onNext(value);
                     subscriber.onCompleted();
                 } catch (Exception e) {
                     realm.get().cancelTransaction();
