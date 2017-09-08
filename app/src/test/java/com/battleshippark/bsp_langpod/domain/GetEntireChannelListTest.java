@@ -1,8 +1,8 @@
 package com.battleshippark.bsp_langpod.domain;
 
-import com.battleshippark.bsp_langpod.dagger.DaggerDomainMapperGraph;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
+import com.battleshippark.bsp_langpod.data.db.RealmHelper;
 import com.battleshippark.bsp_langpod.data.server.ChannelServerRepository;
 import com.battleshippark.bsp_langpod.data.server.EntireChannelJson;
 import com.battleshippark.bsp_langpod.data.server.EntireChannelListJson;
@@ -17,11 +17,13 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.Arrays;
 import java.util.List;
 
+import rx.Completable;
 import rx.Observable;
 import rx.observers.TestSubscriber;
 import rx.schedulers.Schedulers;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -33,6 +35,8 @@ public class GetEntireChannelListTest {
     ChannelDbRepository dbRepository;
     @Mock
     ChannelServerRepository serverRepository;
+    @Mock
+    RealmHelper realmHelper;
     @Captor
     ArgumentCaptor<List<ChannelRealm>> captor;
 
@@ -50,10 +54,10 @@ public class GetEntireChannelListTest {
                 )
         );
         when(dbRepository.entireChannelList()).thenReturn(Observable.just(channelRealmList));
+        when(dbRepository.putEntireChannelList(anyList())).thenReturn(Completable.complete());
         when(serverRepository.entireChannelList()).thenReturn(Observable.just(entireChannelListJson));
 
-        DomainMapper domainMapper = DaggerDomainMapperGraph.create().domainMapper();
-
+        DomainMapper domainMapper = new DomainMapper(realmHelper);
         UseCase<Void, List<ChannelRealm>> useCase = new GetEntireChannelList(dbRepository, serverRepository,
                 Schedulers.immediate(), Schedulers.immediate(), domainMapper);
         TestSubscriber<List<ChannelRealm>> testSubscriber = new TestSubscriber<>();
@@ -66,7 +70,7 @@ public class GetEntireChannelListTest {
         testSubscriber.assertNoErrors();
         testSubscriber.assertCompleted();
 
-        assertThat(testSubscriber.getOnNextEvents()).hasSize(1);
+        assertThat(testSubscriber.getOnNextEvents()).hasSize(2);
 
         //db에서 제대로 읽었는지
         List<ChannelRealm> dbChannelRealmList = testSubscriber.getOnNextEvents().get(0);
@@ -74,6 +78,15 @@ public class GetEntireChannelListTest {
         assertThat(dbChannelRealmList).containsExactlyElementsOf(channelRealmList);
 
         //서버에서 내려온 값을 제대로 병합했는지
+        dbChannelRealmList = testSubscriber.getOnNextEvents().get(1);
+        assertThat(dbChannelRealmList).hasSize(2);
+        assertThat(dbChannelRealmList.get(0).getId()).isEqualTo(2);
+        assertThat(dbChannelRealmList.get(0).getTitle()).isEqualTo("title2");
+        assertThat(dbChannelRealmList.get(0).isSubscribed()).isEqualTo(true);
+        assertThat(dbChannelRealmList.get(1).getId()).isEqualTo(3);
+        assertThat(dbChannelRealmList.get(1).getDesc()).isEqualTo("desc3");
+        assertThat(dbChannelRealmList.get(1).isSubscribed()).isEqualTo(false);
+
         verify(dbRepository).putEntireChannelList(captor.capture());
         assertThat(captor.getValue()).hasSize(2);
         assertThat(captor.getValue().get(0).getId()).isEqualTo(2);
