@@ -177,6 +177,9 @@ public class DownloaderService extends Service {
         }
 
         if (param != null) {
+            if (param.done) {
+                return;
+            }
             notificationRemoteViews.setTextViewText(R.id.progress_tv,
                     getString(R.string.episode_downloading, param.bytesRead / MEGA_BYTE, param.contentLength / MEGA_BYTE));
         }
