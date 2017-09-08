@@ -1,23 +1,26 @@
 package com.battleshippark.bsp_langpod.domain;
 
-import com.battleshippark.bsp_langpod.LooperThread;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
+import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
+import com.battleshippark.bsp_langpod.data.db.RealmConfigurationFactory;
 import com.battleshippark.bsp_langpod.data.db.RealmHelper;
 import com.battleshippark.bsp_langpod.data.server.ChannelJson;
 import com.battleshippark.bsp_langpod.data.server.ChannelServerRepository;
 import com.battleshippark.bsp_langpod.data.server.EpisodeJson;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Executor;
 
 import io.realm.Realm;
+import io.realm.RealmConfiguration;
 import io.realm.RealmList;
 import rx.Observable;
 import rx.observers.TestSubscriber;
@@ -30,6 +33,23 @@ import static org.mockito.Mockito.when;
 /**
  */
 public class GetChannelTest {
+    private Realm realm;
+    private RealmConfiguration configuration;
+    private ChannelDbRepository repository;
+
+    @Before
+    public void before() {
+        configuration = RealmConfigurationFactory.createTest();
+        Realm.deleteRealm(configuration);
+        realm = Realm.getInstance(configuration);
+        repository = new ChannelDbApi(configuration);
+    }
+
+    @After
+    public void after() {
+        realm.close();
+    }
+
     @Test
     public void execute_전체리스트에서_조회() throws InterruptedException {
         List<ChannelRealm> channelRealmList = Arrays.asList( //DB에 있는 url1을 대상으로,
@@ -54,43 +74,29 @@ public class GetChannelTest {
                         EpisodeJson.create("ep.title3", "ep.desc3", "ep.url3", 3, new Date())
                 )
         );
-        LooperThread thread = new LooperThread("GetChannelTest");
-        Executor executor = thread.getExecutor();
         TestSubscriber<ChannelRealm> testSubscriber = new TestSubscriber<>();
-        thread.run(() -> {
-            Realm realm = Realm.getDefaultInstance();
-            ChannelServerRepository serverRepository = mock(ChannelServerRepository.class);
-            when(serverRepository.myChannel("url1")).thenReturn(Observable.just(channelJson));
-            UseCase<Long, ChannelRealm> useCase = new GetChannel(new ChannelDbApi(), serverRepository,
-                    Schedulers.io(), Schedulers.from(executor), new DomainMapper(mock(RealmHelper.class)));
+        ChannelServerRepository serverRepository = mock(ChannelServerRepository.class);
+        when(serverRepository.myChannel("url1")).thenReturn(Observable.just(channelJson));
+        GetChannel getChannel = new GetChannel(new ChannelDbApi(), serverRepository,
+                Schedulers.immediate(), Schedulers.immediate(), new DomainMapper(mock(RealmHelper.class)));
 
-            realm.executeTransaction(realm1 -> {
-                realm1.delete(ChannelRealm.class);
-                realm1.copyToRealm(channelRealmList);
-            });
-
-
-
-            useCase.execute(1L).subscribe(testSubscriber);
+        realm.executeTransaction(realm1 -> {
+            realm1.copyToRealm(channelRealmList);
         });
 
-        Thread.sleep(1000); //DB에 쓰는 비동기 작업이 끝날 시간을 준다
+
+        getChannel.execute(1L).subscribe(testSubscriber);
+
 
         testSubscriber.awaitTerminalEvent();
         testSubscriber.assertNoErrors();
         testSubscriber.assertCompleted();
 
-        List<ChannelRealm> actualChannelRealmList = new ArrayList<>();
-        thread.run(() -> {
-            assertThat(testSubscriber.getOnNextEvents()).hasSize(1);
+        assertThat(testSubscriber.getOnNextEvents()).hasSize(2);
+        assertThat(testSubscriber.getOnNextEvents().get(0)).isEqualTo(channelRealmList.get(0));
 
-            Realm realm = Realm.getDefaultInstance();
-            actualChannelRealmList.add(realm.copyFromRealm(testSubscriber.getOnNextEvents().get(0)));
-        });
-        thread.await();
-
-        assertThat(actualChannelRealmList.get(0).getTitle()).isEqualTo("title1");
-        assertThat(actualChannelRealmList.get(0).getEpisodes()).hasSize(3);
-        assertThat(actualChannelRealmList.get(0).getEpisodes().get(2).getTitle()).isEqualTo("ep.title3");
+        assertThat(testSubscriber.getOnNextEvents().get(1).getTitle()).isEqualTo("title1");
+        assertThat(testSubscriber.getOnNextEvents().get(1).getEpisodes()).hasSize(3);
+        assertThat(testSubscriber.getOnNextEvents().get(1).getEpisodes().get(2).getTitle()).isEqualTo("ep.title3");
     }
 }

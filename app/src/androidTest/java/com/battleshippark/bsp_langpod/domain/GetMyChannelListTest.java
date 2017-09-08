@@ -3,14 +3,17 @@ package com.battleshippark.bsp_langpod.domain;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
+import com.battleshippark.bsp_langpod.data.db.RealmConfigurationFactory;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import io.realm.Realm;
+import io.realm.RealmConfiguration;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.observers.TestSubscriber;
 import rx.schedulers.Schedulers;
@@ -20,21 +23,37 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 /**
  */
 public class GetMyChannelListTest {
+    private Realm realm;
+    private RealmConfiguration configuration;
+    private ChannelDbRepository repository;
+
+    @Before
+    public void before() {
+        configuration = RealmConfigurationFactory.createTest();
+        Realm.deleteRealm(configuration);
+        realm = Realm.getInstance(configuration);
+        repository = new ChannelDbApi(configuration);
+    }
+
+    @After
+    public void after() {
+        realm.close();
+    }
+
     @Test
     public void execute() throws InterruptedException {
-        Realm realm = Realm.getDefaultInstance();
-        ChannelDbRepository dbRepository = new ChannelDbApi();
         List<ChannelRealm> channelRealmList = Arrays.asList(
                 new ChannelRealm(1, 10, "title1", "desc1", "image1", "url1", false),
                 new ChannelRealm(2, 11, "title2", "desc2", "image2", "url2", true)
         );
-        dbRepository.putEntireChannelList(channelRealmList);
-        UseCase<Void, List<ChannelRealm>> useCase = new GetMyChannelList(dbRepository, Schedulers.io(), AndroidSchedulers.mainThread());
+        repository.putEntireChannelList(channelRealmList).subscribe();
+
+
+        GetMyChannelList getMyChannelList = new GetMyChannelList(repository, Schedulers.immediate(), Schedulers.immediate());
         TestSubscriber<List<ChannelRealm>> testSubscriber = new TestSubscriber<>();
 
 
-
-        useCase.execute(null).subscribe(testSubscriber);
+        getMyChannelList.execute(null).subscribe(testSubscriber);
 
 
         testSubscriber.awaitTerminalEvent();
@@ -42,14 +61,9 @@ public class GetMyChannelListTest {
         testSubscriber.assertCompleted();
 
         assertThat(testSubscriber.getOnNextEvents()).hasSize(1);
-        List<ChannelRealm> actualChannelRealmList = realm.copyFromRealm(testSubscriber.getOnNextEvents().get(0));
+        assertThat(testSubscriber.getOnNextEvents().get(0)).hasSize(1);
 
         //isSubscribed=true인 title2만 나와야 한다
-        assertThat(actualChannelRealmList).hasSize(1);
-        assertThat(actualChannelRealmList).containsExactlyElementsOf(
-                Collections.singletonList(
-                        new ChannelRealm(2, 11, "title2", "desc2", "image2", "url2", true)
-                )
-        );
+        assertThat(testSubscriber.getOnNextEvents().get(0).get(0)).isEqualTo(channelRealmList.get(1));
     }
 }

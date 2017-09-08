@@ -1,28 +1,24 @@
 package com.battleshippark.bsp_langpod.domain;
 
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.support.annotation.NonNull;
-
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
+import com.battleshippark.bsp_langpod.data.db.RealmConfigurationFactory;
 import com.battleshippark.bsp_langpod.data.db.RealmHelper;
-import com.battleshippark.bsp_langpod.data.server.EntireChannelJson;
 import com.battleshippark.bsp_langpod.data.server.ChannelServerRepository;
+import com.battleshippark.bsp_langpod.data.server.EntireChannelJson;
 import com.battleshippark.bsp_langpod.data.server.EntireChannelListJson;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
 
 import io.realm.Realm;
+import io.realm.RealmConfiguration;
 import rx.Observable;
-import rx.Scheduler;
 import rx.observers.TestSubscriber;
 import rx.schedulers.Schedulers;
 
@@ -33,79 +29,66 @@ import static org.mockito.Mockito.when;
 /**
  */
 public class GetEntireChannelListTest {
+    private Realm realm;
+    private RealmConfiguration configuration;
+    private ChannelDbRepository repository;
+
+    @Before
+    public void before() {
+        configuration = RealmConfigurationFactory.createTest();
+        Realm.deleteRealm(configuration);
+        realm = Realm.getInstance(configuration);
+        repository = new ChannelDbApi(configuration);
+    }
+
+    @After
+    public void after() {
+        realm.close();
+    }
+
     @Test
     public void execute() throws InterruptedException {
-        HandlerThread handlerThread = new HandlerThread("GetEntireChannelListTest");
-        handlerThread.start();
-        //Realm의 live update를 사용하려면 같은 쓰레드에서 만든 Realm 인스턴스를 사용해야 한다.
-        //거기다 그 쓰레드가 루퍼를 가지고 있어야 하는데, 테스트를 돌리는 쓰레드는 루퍼를 가지고 있지 않다
-        //모양은 예쁘지 않지만, 이렇게 직접 쓰레드와 루퍼를 만들어서 해결한다
-        Handler handler = new Handler(handlerThread.getLooper());
-        TestExecutor executor = new TestExecutor(handler);
         TestSubscriber<List<ChannelRealm>> testSubscriber = new TestSubscriber<>();
-        handler.post(() -> {
-            Realm realm = Realm.getDefaultInstance();
-            ChannelDbRepository dbRepository = new ChannelDbApi();
 
-            List<ChannelRealm> channelRealmList = Arrays.asList(
-                    new ChannelRealm(1, 10, "title1", "desc1", "image1", "url1", false),
-                    new ChannelRealm(2, 11, "title2", "desc2", "image2", "url2", true)
-            );
-            dbRepository.putEntireChannelList(channelRealmList); //DB에 넣어 놓고
+        List<ChannelRealm> channelRealmList = Arrays.asList(
+                new ChannelRealm(1, 10, "title1", "desc1", "image1", "url1", false),
+                new ChannelRealm(2, 11, "title2", "desc2", "image2", "url2", true)
+        );
+        repository.putEntireChannelList(channelRealmList).subscribe(); //DB에 넣어 놓고
 
-            ChannelServerRepository serverRepository = mock(ChannelServerRepository.class);
-            when(serverRepository.entireChannelList()).thenReturn(
-                    Observable.just(
-                            EntireChannelListJson.create(
-                                    Arrays.asList(
-                                            EntireChannelJson.create(2, 10, "title2", "desc2", "image2", "url2"),
-                                            EntireChannelJson.create(3, 11, "title3", "desc3", "image3", "url3")
-                                    )
-                                    //DB와 다른 값이 서버에서 내려오면
-                            )
-                    )
-            );
-            Scheduler scheduler = Schedulers.io();
-            DomainMapper domainMapper = new DomainMapper(mock(RealmHelper.class));
-            UseCase<Void, List<ChannelRealm>> useCase = new GetEntireChannelList(dbRepository, serverRepository,
-                    scheduler, Schedulers.from(executor), domainMapper);
+        ChannelServerRepository serverRepository = mock(ChannelServerRepository.class);
+        when(serverRepository.entireChannelList()).thenReturn(
+                Observable.just(
+                        EntireChannelListJson.create(
+                                Arrays.asList(
+                                        EntireChannelJson.create(2, 10, "title2", "desc2", "image2", "url2"),
+                                        EntireChannelJson.create(3, 11, "title3", "desc3", "image3", "url3")
+                                )
+                                //DB와 다른 값이 서버에서 내려오면
+                        )
+                )
+        );
+        DomainMapper domainMapper = new DomainMapper(mock(RealmHelper.class));
+        GetEntireChannelList getEntireChannelList = new GetEntireChannelList(repository, serverRepository,
+                Schedulers.immediate(), Schedulers.immediate(), domainMapper);
 
-            useCase.execute(null).subscribe(testSubscriber);
-        });
+
+        getEntireChannelList.execute(null).subscribe(testSubscriber);
 
         testSubscriber.awaitTerminalEvent();
         testSubscriber.assertNoErrors();
         testSubscriber.assertCompleted();
 
-        assertThat(testSubscriber.getOnNextEvents()).hasSize(1);
-        CountDownLatch latch = new CountDownLatch(1);
-        List<ChannelRealm> actualChannelRealmList = new ArrayList<>();
-        handler.post(() -> {
-            Realm realm = Realm.getDefaultInstance();
-            actualChannelRealmList.addAll(realm.copyFromRealm(testSubscriber.getOnNextEvents().get(0)));
-            latch.countDown();
-        });
-        latch.await();
 
-        assertThat(actualChannelRealmList).hasSize(2);
-        assertThat(actualChannelRealmList).containsExactlyElementsOf(
+        assertThat(testSubscriber.getOnNextEvents()).hasSize(2);
+        assertThat(testSubscriber.getOnNextEvents().get(0)).containsExactlyElementsOf(channelRealmList);
+
+        assertThat(testSubscriber.getOnNextEvents().get(1)).hasSize(2);
+        assertThat(testSubscriber.getOnNextEvents().get(1)).containsExactlyElementsOf(
                 Arrays.asList(
                         new ChannelRealm(2, 10, "title2", "desc2", "image2", "url2", true),
                         new ChannelRealm(3, 11, "title3", "desc3", "image3", "url3", false)
                 )
         );
-    }
-
-    private class TestExecutor implements Executor {
-        private final Handler handler;
-
-        TestExecutor(Handler handler) {
-            this.handler = handler;
-        }
-
-        @Override
-        public void execute(@NonNull Runnable command) {
-            handler.post(command);
-        }
     }
 }
