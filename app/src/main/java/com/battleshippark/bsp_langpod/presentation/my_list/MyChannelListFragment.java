@@ -2,6 +2,7 @@ package com.battleshippark.bsp_langpod.presentation.my_list;
 
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -56,8 +57,8 @@ public class MyChannelListFragment extends Fragment implements OnItemListener {
         if (context instanceof MyListFragmentListener) {
             mListener = (MyListFragmentListener) context;
         } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnListFragmentInteractionListener");
+//            throw new RuntimeException(context.toString()
+//                    + " must implement OnListFragmentInteractionListener");
         }
     }
 
@@ -92,6 +93,13 @@ public class MyChannelListFragment extends Fragment implements OnItemListener {
         super.onActivityCreated(savedInstanceState);
 
         loadList();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == Const.REQUEST_CODE_LAUNCH_CHANNEL_FROM_MY) {
+            loadList();
+        }
     }
 
     @Override

@@ -59,8 +59,8 @@ public class EntireChannelListFragment extends Fragment implements OnItemListene
         if (context instanceof EntireListFragmentListener) {
             mListener = (EntireListFragmentListener) context;
         } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnListFragmentInteractionListener");
+//            throw new RuntimeException(context.toString()
+//                    + " must implement OnListFragmentInteractionListener");
         }
     }
 
