@@ -11,12 +11,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.battleshippark.bsp_langpod.Const;
 import com.battleshippark.bsp_langpod.R;
 import com.battleshippark.bsp_langpod.dagger.DaggerDbApiGraph;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.domain.GetMyChannelList;
 import com.battleshippark.bsp_langpod.domain.SubscribeChannel;
+import com.battleshippark.bsp_langpod.presentation.channel.ChannelActivity;
 import com.battleshippark.bsp_langpod.util.Logger;
 import com.bumptech.glide.Glide;
 
@@ -25,7 +27,6 @@ import java.util.List;
 import butterknife.ButterKnife;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Actions;
 import rx.schedulers.Schedulers;
 
 public class MyChannelListFragment extends Fragment implements OnItemListener {
@@ -90,7 +91,7 @@ public class MyChannelListFragment extends Fragment implements OnItemListener {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        requestList();
+        loadList();
     }
 
     @Override
@@ -127,7 +128,10 @@ public class MyChannelListFragment extends Fragment implements OnItemListener {
 
     @Override
     public void onBindViewHolder(MyChannelListAdapter.ViewHolder holder, ChannelRealm item) {
-        holder.itemView.setOnClickListener(v -> mListener.onClickMyChannelItem(item));
+        holder.itemView.setOnClickListener(v ->
+                startActivityForResult(
+                        ChannelActivity.createIntent(MyChannelListFragment.this.getActivity(), item.getId()),
+                        Const.REQUEST_CODE_LAUNCH_CHANNEL_FROM_MY));
         holder.titleView.setText(item.getTitle());
 
         Glide.with(holder.imageView.getContext()).load(item.getImage()).into(holder.imageView);
@@ -135,20 +139,17 @@ public class MyChannelListFragment extends Fragment implements OnItemListener {
         holder.subscribeView.setSelected(item.isSubscribed());
         holder.subscribeView.setOnClickListener(
                 v -> subscribeChannel.execute(item)
-                        .subscribe(
-                                Actions.empty(),
-                                logger::w,
-                                this::requestList
-                        )
+                        .subscribe(subscribed -> loadList(),
+                                logger::w)
         );
     }
 
-    private void requestList() {
+    private void loadList() {
         subscription = getMyChannelList.execute(null)
                 .subscribe(this::showData, this::showError);
     }
 
     public interface MyListFragmentListener {
-        void onClickMyChannelItem(ChannelRealm item);
+        void onClickMyChannelItem(ChannelRealm item, int requestCode);
     }
 }

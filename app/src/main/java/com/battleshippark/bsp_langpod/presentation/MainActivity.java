@@ -5,8 +5,6 @@ import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 
 import com.battleshippark.bsp_langpod.R;
-import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
-import com.battleshippark.bsp_langpod.presentation.channel.ChannelActivity;
 import com.battleshippark.bsp_langpod.presentation.entire_list.EntireChannelListFragment;
 import com.battleshippark.bsp_langpod.presentation.my_list.MyChannelListFragment;
 
@@ -14,7 +12,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
-public class MainActivity extends Activity implements EntireChannelListFragment.EntireListFragmentListener, MyChannelListFragment.MyListFragmentListener {
+public class MainActivity extends Activity {
     private Unbinder unbinder;
 
     @BindView(R.id.tab_layout)
@@ -75,15 +73,5 @@ public class MainActivity extends Activity implements EntireChannelListFragment.
     protected void onDestroy() {
         unbinder.unbind();
         super.onDestroy();
-    }
-
-    @Override
-    public void onClickEntireListItem(ChannelRealm item) {
-        startActivity(ChannelActivity.createIntent(this, item.getId()));
-    }
-
-    @Override
-    public void onClickMyChannelItem(ChannelRealm item) {
-
     }
 }

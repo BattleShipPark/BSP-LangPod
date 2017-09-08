@@ -16,7 +16,7 @@ import rx.Subscriber;
 /**
  */
 
-public class GetEntireChannelList implements UseCase<Void, List<ChannelRealm>> {
+public class GetEntireChannelList implements UseCase<GetEntireChannelList.Type, List<ChannelRealm>> {
     private final ChannelDbRepository dbRepository;
     private final ChannelServerRepository serverRepository;
     private final Scheduler scheduler;
@@ -34,22 +34,26 @@ public class GetEntireChannelList implements UseCase<Void, List<ChannelRealm>> {
     }
 
     @Override
-    public Observable<List<ChannelRealm>> execute(Void param) {
+    public Observable<List<ChannelRealm>> execute(GetEntireChannelList.Type param) {
         return Observable.create(subscriber ->
                 dbRepository.entireChannelList().subscribeOn(scheduler).observeOn(postScheduler)
                         .subscribe(
-                                entireChannelRealmList -> onDbLoaded(subscriber, entireChannelRealmList),
+                                entireChannelRealmList -> onDbLoaded(subscriber, param, entireChannelRealmList),
                                 subscriber::onError));
     }
 
-    private void onDbLoaded(Subscriber<? super List<ChannelRealm>> subscriber, List<ChannelRealm> channelRealmList) {
+    private void onDbLoaded(Subscriber<? super List<ChannelRealm>> subscriber, Type param, List<ChannelRealm> channelRealmList) {
         try {
             subscriber.onNext(channelRealmList);
 
-            serverRepository.entireChannelList().subscribeOn(scheduler).observeOn(postScheduler)
-                    .subscribe(
-                            channelListJson -> onServerLoaded(subscriber, channelRealmList, channelListJson),
-                            subscriber::onError, subscriber::onCompleted);
+            if (param == Type.DB_AND_SERVER) {
+                serverRepository.entireChannelList().subscribeOn(scheduler).observeOn(postScheduler)
+                        .subscribe(
+                                channelListJson -> onServerLoaded(subscriber, channelRealmList, channelListJson),
+                                subscriber::onError, subscriber::onCompleted);
+            } else {
+                subscriber.onCompleted();
+            }
         } catch (Exception e) {
             subscriber.onError(e);
         }
@@ -61,5 +65,10 @@ public class GetEntireChannelList implements UseCase<Void, List<ChannelRealm>> {
         dbRepository.putEntireChannelList(channelRealmList)
                 .subscribeOn(scheduler).observeOn(postScheduler)
                 .subscribe(subscriber::onCompleted, subscriber::onError);
+    }
+
+    public enum Type {
+        ONLY_DB,
+        DB_AND_SERVER
     }
 }

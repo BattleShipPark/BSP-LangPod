@@ -2,6 +2,7 @@ package com.battleshippark.bsp_langpod.presentation.entire_list;
 
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -10,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.battleshippark.bsp_langpod.Const;
 import com.battleshippark.bsp_langpod.R;
 import com.battleshippark.bsp_langpod.dagger.DaggerDbApiGraph;
 import com.battleshippark.bsp_langpod.dagger.DaggerDomainMapperGraph;
@@ -19,6 +21,7 @@ import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.domain.DomainMapper;
 import com.battleshippark.bsp_langpod.domain.GetEntireChannelList;
 import com.battleshippark.bsp_langpod.domain.SubscribeChannel;
+import com.battleshippark.bsp_langpod.presentation.channel.ChannelActivity;
 import com.battleshippark.bsp_langpod.util.Logger;
 import com.bumptech.glide.Glide;
 
@@ -95,6 +98,13 @@ public class EntireChannelListFragment extends Fragment implements OnItemListene
     }
 
     @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == Const.REQUEST_CODE_LAUNCH_CHANNEL_FROM_ENTIRE) {
+            loadList();
+        }
+    }
+
+    @Override
     public void onDestroy() {
         subscription.unsubscribe();
         super.onDestroy();
@@ -116,7 +126,10 @@ public class EntireChannelListFragment extends Fragment implements OnItemListene
 
     @Override
     public void onBindViewHolder(EntireChannelListAdapter.ViewHolder holder, ChannelRealm item) {
-        holder.itemView.setOnClickListener(v -> mListener.onClickEntireListItem(item));
+        holder.itemView.setOnClickListener(v -> //mListener.onClickEntireListItem(item, Const.REQUEST_CODE_LAUNCH_CHANNEL_FROM_ENTIRE));
+                startActivityForResult(
+                        ChannelActivity.createIntent(EntireChannelListFragment.this.getActivity(), item.getId()),
+                        Const.REQUEST_CODE_LAUNCH_CHANNEL_FROM_ENTIRE));
         holder.titleView.setText(item.getTitle());
 
         Glide.with(holder.imageView.getContext()).load(item.getImage()).into(holder.imageView);
@@ -125,19 +138,23 @@ public class EntireChannelListFragment extends Fragment implements OnItemListene
         holder.subscribeView.setOnClickListener(v ->
                 subscription.add(
                         subscribeChannel.execute(item)
-                                .subscribe(Actions.empty(),
-                                        logger::w,
-                                        this::requestList)
+                                .subscribe(subscribed -> loadList(),
+                                        logger::w)
                 )
         );
     }
 
     private void requestList() {
         subscription.add(
-                getEntireChannelList.execute(null).subscribe(this::showData, this::showError));
+                getEntireChannelList.execute(GetEntireChannelList.Type.DB_AND_SERVER).subscribe(this::showData, this::showError));
+    }
+
+    private void loadList() {
+        subscription.add(
+                getEntireChannelList.execute(GetEntireChannelList.Type.ONLY_DB).subscribe(this::showData, this::showError));
     }
 
     public interface EntireListFragmentListener {
-        void onClickEntireListItem(ChannelRealm item);
+        void onClickEntireListItem(ChannelRealm item, int requestCode);
     }
 }
