@@ -1,5 +1,6 @@
 package com.battleshippark.bsp_langpod.dagger;
 
+import com.battleshippark.bsp_langpod.data.db.RealmConfigurationFactory;
 import com.battleshippark.bsp_langpod.data.db.RealmHelperImpl;
 import com.battleshippark.bsp_langpod.domain.DomainMapper;
 
@@ -17,6 +18,6 @@ class DomainMapperModule {
     @Provides
     @Singleton
     DomainMapper domainMapper() {
-        return new DomainMapper(new RealmHelperImpl(Realm.getDefaultInstance()));
+        return new DomainMapper(new RealmHelperImpl(Realm.getInstance(RealmConfigurationFactory.create())));
     }
 }
