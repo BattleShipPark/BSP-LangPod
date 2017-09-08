@@ -7,6 +7,7 @@ import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
+import com.battleshippark.bsp_langpod.data.db.RealmConfigurationFactory;
 
 import org.junit.After;
 import org.junit.Before;
@@ -33,16 +34,16 @@ public class ChannelDbApiTest {
             new RealmList<>(new EpisodeRealm(1, "ep.title2", "ep.desc2", "ep.url2", 22, new Date(222))), true);
 
     private Realm realm;
+    private RealmConfiguration configuration;
     private ChannelDbRepository repository;
     private TestSubscriber<List<ChannelRealm>> testSubscriber = new TestSubscriber<>();
 
     @Before
     public void before() {
-        RealmConfiguration configuration = new RealmConfiguration.Builder()
-                .name("test.realm").build();
+        configuration = RealmConfigurationFactory.createTest();
         Realm.deleteRealm(configuration);
         realm = Realm.getInstance(configuration);
-        repository = new ChannelDbApi(realm);
+        repository = new ChannelDbApi(configuration);
     }
 
     @After
@@ -66,40 +67,7 @@ public class ChannelDbApiTest {
         testSubscriber.assertCompleted();
 
         assertThat(testSubscriber.getOnNextEvents()).hasSize(1);
-        List<ChannelRealm> actualChannelRealmList = realm.copyFromRealm(testSubscriber.getOnNextEvents().get(0));
-        assertThat(actualChannelRealmList.get(0)).isEqualTo(channelRealm1);
-        assertThat(actualChannelRealmList.get(1)).isEqualTo(channelRealm2);
-    }
-
-    @Test
-    public void entireChannelList_읽은후에저장하면자동반영된다() {
-        realm.executeTransaction(realm1 -> {
-            realm1.copyToRealm(channelRealm1);
-        });
-
-
-        repository.entireChannelList().subscribe(testSubscriber);
-
-
-        testSubscriber.awaitTerminalEvent();
-        testSubscriber.assertNoErrors();
-        testSubscriber.assertCompleted();
-
-
-        assertThat(testSubscriber.getOnNextEvents()).hasSize(1);
-
-        //지금은 한 건만 존재한다
-        List<ChannelRealm> actualChannelRealmList = realm.copyFromRealm(testSubscriber.getOnNextEvents().get(0));
-        assertThat(actualChannelRealmList).hasSize(1);
-        assertThat(actualChannelRealmList.get(0)).isEqualTo(channelRealm1);
-
-
-        realm.executeTransaction(realm1 -> {
-            realm1.copyToRealm(channelRealm2);//한 건 추가하면
-        });
-        //지금은 두 건 존재한다
-        actualChannelRealmList = realm.copyFromRealm(testSubscriber.getOnNextEvents().get(0));
-        assertThat(actualChannelRealmList).hasSize(2);
+        List<ChannelRealm> actualChannelRealmList = testSubscriber.getOnNextEvents().get(0);
         assertThat(actualChannelRealmList.get(0)).isEqualTo(channelRealm1);
         assertThat(actualChannelRealmList.get(1)).isEqualTo(channelRealm2);
     }
@@ -161,8 +129,16 @@ public class ChannelDbApiTest {
                             throw new RuntimeException(throwable);
                         });
 
-        List<ChannelRealm> actualChannelRealmList = repository.entireChannelList().toBlocking().single();
-        actualChannelRealmList = realm.copyFromRealm(actualChannelRealmList);
+        TestSubscriber<List<ChannelRealm>> subscriber = new TestSubscriber<>();
+
+        repository.entireChannelList().subscribe(subscriber);
+
+        subscriber.awaitTerminalEvent();
+        subscriber.assertNoErrors();
+        subscriber.assertCompleted();
+
+
+        List<ChannelRealm> actualChannelRealmList = subscriber.getOnNextEvents().get(0);
 
 
         assertThat(actualChannelRealmList).containsExactlyElementsOf(channelRealmList);
@@ -170,54 +146,18 @@ public class ChannelDbApiTest {
 
     @Test
     public void putChannel() throws InterruptedException {
-        HandlerThread handlerThread = new HandlerThread("ChannelDbApiTest");
-        handlerThread.start();
-        Handler handler = new Handler(handlerThread.getLooper());
-        handler.post(() -> {
-            ChannelDbRepository repository = new ChannelDbApi(realm);
+        ChannelDbRepository repository = new ChannelDbApi(configuration);
 
-            //ID1으로 저장해 놓고
-            ChannelRealm channelRealm = new ChannelRealm(1, 10, "title1", "desc1", "image1", "url1", "cr1",
-                    new RealmList<>(new EpisodeRealm(1, "ep.title1", "ep.desc1", "ep.url1", 11, new Date(111))), false);
-            realm.executeTransaction(realm1 -> {
-                realm1.copyToRealm(channelRealm);
-            });
+        repository.putChannel(channelRealm1).subscribe();
 
-            TestSubscriber<ChannelRealm> testSubscriber = new TestSubscriber<>();
-            //ID1을 읽어 보면
-            repository.channel(1).subscribe(testSubscriber);
+        TestSubscriber<ChannelRealm> testSubscriber = new TestSubscriber<>();
+        repository.channel(1).subscribe(testSubscriber);
 
+        testSubscriber.awaitTerminalEvent();
+        testSubscriber.assertNoErrors();
+        testSubscriber.assertCompleted();
 
-            testSubscriber.awaitTerminalEvent();
-            testSubscriber.assertNoErrors();
-            testSubscriber.assertCompleted();
-
-            ChannelRealm actualChannelRealm1 = testSubscriber.getOnNextEvents().get(0);
-            assertThat(actualChannelRealm1.getTitle()).isEqualTo("title1");
-            assertThat(actualChannelRealm1.getEpisodes()).hasSize(1);
-            assertThat(actualChannelRealm1.getEpisodes().get(0).getTitle()).isEqualTo("ep.title1");
-
-            //객체 갱신
-            channelRealm.setTitle("title2");
-            channelRealm.getEpisodes().add(new EpisodeRealm(2, "ep.title2", "ep.desc2", "ep,url2", 22, new Date(222)));
-
-            repository.putChannel(channelRealm);
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            //title과 items가 수정되어 있는걸 확인
-            assertThat(actualChannelRealm1.getTitle()).isEqualTo("title2");
-            assertThat(actualChannelRealm1.getEpisodes()).hasSize(2);
-            assertThat(actualChannelRealm1.getEpisodes().get(0).getTitle()).isEqualTo("ep.title1");
-            assertThat(actualChannelRealm1.getEpisodes().get(1).getTitle()).isEqualTo("ep.title2");
-
-            //에피소드가 2개인 것을 확인
-            repository.channel(1).subscribe(testSubscriber);
-            assertThat(testSubscriber.getOnNextEvents().get(0).getEpisodes()).hasSize(2);
-        });
+        assertThat(testSubscriber.getOnNextEvents().get(0)).isEqualTo(channelRealm1);
     }
 
     @Test
@@ -243,39 +183,33 @@ public class ChannelDbApiTest {
 
     @Test
     public void subscribeChannel_구독상태를해지() {
-        HandlerThread handlerThread = new HandlerThread("ChannelDbApiTest");
-        handlerThread.start();
-        Handler handler = new Handler(handlerThread.getLooper());
-        handler.post(() -> {
-            ChannelDbRepository repository = new ChannelDbApi(realm);
-
-            //구독상태의 채널 저장
-            realm.executeTransaction(realm1 -> {
-                realm1.copyToRealm(channelRealm2);
-            });
-
-            TestSubscriber<ChannelRealm> testSubscriber = new TestSubscriber<>();
-            repository.channel(2).subscribe(testSubscriber);
-
-
-            testSubscriber.awaitTerminalEvent();
-            testSubscriber.assertNoErrors();
-            testSubscriber.assertCompleted();
-
-            ChannelRealm actualChannelRealm1 = testSubscriber.getOnNextEvents().get(0);
-            assertThat(actualChannelRealm1.getId()).isEqualTo(2);
-
-
-            //구독 해지
-            TestSubscriber<Void> testSubscriber2 = new TestSubscriber<>();
-            repository.switchSubscribe(channelRealm1).subscribe(testSubscriber2);
-
-            testSubscriber2.awaitTerminalEvent();
-            testSubscriber2.assertNoErrors();
-            testSubscriber2.assertCompleted();
-
-            //해지 되어 있는걸 확인
-            assertThat(actualChannelRealm1.isSubscribed()).isEqualTo(false);
+        //구독상태의 채널 저장
+        realm.executeTransaction(realm1 -> {
+            realm1.copyToRealm(channelRealm2);
         });
+
+        //구독 해지
+        TestSubscriber<Boolean> testSubscriber1 = new TestSubscriber<>();
+        repository.switchSubscribe(channelRealm2).subscribe(testSubscriber1);
+
+        testSubscriber1.awaitTerminalEvent();
+        testSubscriber1.assertNoErrors();
+        testSubscriber1.assertCompleted();
+
+
+        // 읽어 본다
+        TestSubscriber<ChannelRealm> testSubscriber2 = new TestSubscriber<>();
+        repository.channel(2).subscribe(testSubscriber2);
+
+        testSubscriber2.awaitTerminalEvent();
+        testSubscriber2.assertNoErrors();
+        testSubscriber2.assertCompleted();
+
+
+        ChannelRealm actualChannelRealm = testSubscriber2.getOnNextEvents().get(0);
+        assertThat(actualChannelRealm.getId()).isEqualTo(2);
+
+        //해지 되어 있는걸 확인
+        assertThat(actualChannelRealm.isSubscribed()).isEqualTo(false);
     }
 }

@@ -52,7 +52,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Actions;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 
