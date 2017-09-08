@@ -18,7 +18,6 @@ import java.util.Date;
 import io.realm.RealmList;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 /**

@@ -16,21 +16,13 @@ public class ChannelRealm extends RealmObject {
 
     @PrimaryKey
     private long id;
-
     private int order;
-
     private String title;
-
     private String desc;
-
     private String image;
-
     private String url;
-
     private String copyright;
-
     private RealmList<EpisodeRealm> episodes = new RealmList<>();
-
     private boolean subscribed;
 
     public ChannelRealm() {
@@ -163,7 +155,6 @@ public class ChannelRealm extends RealmObject {
         if (copyright != null ? !copyright.equals(that.copyright) : that.copyright != null)
             return false;
         return episodes != null ? episodes.equals(that.episodes) : that.episodes == null;
-
     }
 
     @Override

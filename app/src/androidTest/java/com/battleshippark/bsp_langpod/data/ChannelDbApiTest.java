@@ -1,8 +1,5 @@
 package com.battleshippark.bsp_langpod.data;
 
-import android.os.Handler;
-import android.os.HandlerThread;
-
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbRepository;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
