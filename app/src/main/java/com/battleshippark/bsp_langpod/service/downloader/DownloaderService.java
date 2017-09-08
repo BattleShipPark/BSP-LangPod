@@ -177,11 +177,11 @@ public class DownloaderService extends Service {
         }
 
         if (param != null) {
-            if (param.done) {
+            if (param.done()) {
                 return;
             }
             notificationRemoteViews.setTextViewText(R.id.progress_tv,
-                    getString(R.string.episode_downloading, param.bytesRead / MEGA_BYTE, param.contentLength / MEGA_BYTE));
+                    getString(R.string.episode_downloading, param.bytesRead() / MEGA_BYTE, param.contentLength() / MEGA_BYTE));
         }
 
         notificationBuilder = new Notification.Builder(this)
@@ -213,7 +213,7 @@ public class DownloaderService extends Service {
     }
 
     private void onProgress(DownloadProgressParam param) {
-        long episodeId = Long.parseLong(param.identifier);
+        long episodeId = Long.parseLong(param.identifier());
 
         getChannelWithEpisodeId.execute(episodeId).subscribe(channelRealm -> {
                     Stream.of(channelRealm.getEpisodes())

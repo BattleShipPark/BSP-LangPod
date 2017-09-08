@@ -58,12 +58,12 @@ public class GetEntireChannelListTest {
         when(serverRepository.entireChannelList()).thenReturn(Observable.just(entireChannelListJson));
 
         DomainMapper domainMapper = new DomainMapper(realmHelper);
-        UseCase<Void, List<ChannelRealm>> useCase = new GetEntireChannelList(dbRepository, serverRepository,
+        GetEntireChannelList getEntireChannelList = new GetEntireChannelList(dbRepository, serverRepository,
                 Schedulers.immediate(), Schedulers.immediate(), domainMapper);
         TestSubscriber<List<ChannelRealm>> testSubscriber = new TestSubscriber<>();
 
 
-        useCase.execute(null).subscribe(testSubscriber);
+        getEntireChannelList.execute(null).subscribe(testSubscriber);
 
 
         testSubscriber.awaitTerminalEvent();

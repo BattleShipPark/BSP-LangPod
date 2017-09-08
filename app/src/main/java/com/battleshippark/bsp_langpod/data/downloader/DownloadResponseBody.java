@@ -57,7 +57,7 @@ class DownloadResponseBody extends ResponseBody {
                     totalBytesRead += bytesRead;
                 }
 
-                downloadProgress.onNext(new DownloadProgressParam(identifier, totalBytesRead, responseBody.contentLength(), bytesRead == -1));
+                downloadProgress.onNext(DownloadProgressParam.create(identifier, totalBytesRead, responseBody.contentLength(), bytesRead == -1));
 
                 return bytesRead;
             }
