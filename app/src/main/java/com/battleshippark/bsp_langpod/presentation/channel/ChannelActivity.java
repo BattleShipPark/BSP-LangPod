@@ -13,6 +13,9 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.Animation;
+import android.view.animation.RotateAnimation;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -283,8 +286,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
         holder.descView.setText(episode.getDesc());
         holder.dateView.setText(dateFormat.format(episode.getDate()));
         holder.statusTv.setText(getStatusText(episode));
-
-        Glide.with(this).load(getStatusImage(episode)).into(holder.statusIv);
+        holder.statusIv.setImageResource(getStatusImage(episode));
 /*        holder.subscribeView.setOnClickListener(
                 v -> subscribeChannel.execute(item)
                         .subscribe(
@@ -298,7 +300,6 @@ public class ChannelActivity extends Activity implements OnItemListener {
     private void onClickEpisode(EpisodeRealm episode) {
         if (episode.getDownloadState() == EpisodeRealm.DownloadState.NOT_DOWNLOADED) {
             tryDownload(episode);
-        } else if (episode.getDownloadState() == EpisodeRealm.DownloadState.DOWNLOADING) {
         } else if (episode.getDownloadState() == EpisodeRealm.DownloadState.DOWNLOADED) {
             if (episode.getPlayState() == EpisodeRealm.PlayState.NOT_PLAYED
                     || episode.getPlayState() == EpisodeRealm.PlayState.PLAYED) {
@@ -361,10 +362,9 @@ public class ChannelActivity extends Activity implements OnItemListener {
     }
 
     private int getStatusImage(EpisodeRealm episode) {
-        if (episode.getDownloadState() == EpisodeRealm.DownloadState.NOT_DOWNLOADED) {
+        if (episode.getDownloadState() == EpisodeRealm.DownloadState.NOT_DOWNLOADED
+                || episode.getDownloadState() == EpisodeRealm.DownloadState.DOWNLOADING) {
             return R.drawable.download;
-        } else if (episode.getDownloadState() == EpisodeRealm.DownloadState.DOWNLOADING) {
-            return R.drawable.downloading;
         } else if (episode.getDownloadState() == EpisodeRealm.DownloadState.DOWNLOADED) {
             if (episode.getPlayState() == EpisodeRealm.PlayState.NOT_PLAYED
                     || episode.getPlayState() == EpisodeRealm.PlayState.PLAYED) {
