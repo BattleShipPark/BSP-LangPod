@@ -396,11 +396,11 @@ public class ChannelActivity extends Activity implements OnItemListener {
 
     private void onDownloadCompleted(DownloadCompleteParam param) {
         Stream.of(channelRealm.getEpisodes())
-                .filter(episodeRealm -> episodeRealm.getId() == param.getEpisodeId())
+                .filter(episodeRealm -> episodeRealm.getId() == Long.valueOf(param.identifier()))
                 .findFirst()
                 .ifPresent(episodeRealm -> {
                     episodeRealm.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADED);
-                    episodeRealm.setDownloadedPath(param.getFile().getAbsolutePath());
+                    episodeRealm.setDownloadedPath(param.file().getAbsolutePath());
                     adapter.notifyDataSetChanged();
 
                     updateEpisode.execute(episodeRealm).subscribe(aVoid -> {

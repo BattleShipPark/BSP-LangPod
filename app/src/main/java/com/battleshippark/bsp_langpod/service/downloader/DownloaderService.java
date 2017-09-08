@@ -235,7 +235,7 @@ public class DownloaderService extends Service {
 
     private void sendCompleteBroadcast(EpisodeRealm episodeRealm, File file) {
         Intent intent = new Intent(ACTION_COMPLETED);
-        intent.putExtra(KEY_COMPLETE, new DownloadCompleteParam(episodeRealm.getId(), file));
+        intent.putExtra(KEY_COMPLETE, DownloadCompleteParam.create(String.valueOf(episodeRealm.getId()), file));
         sendBroadcast(intent);
     }
 
