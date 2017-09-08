@@ -241,7 +241,7 @@ public class DownloaderService extends Service {
 
     private void sendErrorBroadcast(EpisodeRealm episodeRealm, Throwable throwable) {
         Intent intent = new Intent(ACTION_ERROR);
-        intent.putExtra(KEY_ERROR, new DownloadErrorParam(episodeRealm.getId(), throwable));
+        intent.putExtra(KEY_ERROR, DownloadErrorParam.create(String.valueOf(episodeRealm.getId()), throwable));
         sendBroadcast(intent);
     }
 

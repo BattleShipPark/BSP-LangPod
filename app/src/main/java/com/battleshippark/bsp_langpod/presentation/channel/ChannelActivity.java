@@ -409,8 +409,8 @@ public class ChannelActivity extends Activity implements OnItemListener {
     }
 
     private void onDownloadError(DownloadErrorParam param) {
-        Toast.makeText(this, "Error: " + param.getEpisodeId(), Toast.LENGTH_SHORT).show();
-        logger.w(param.getThrowable());
+        Toast.makeText(this, "Error: " + param.identifier(), Toast.LENGTH_SHORT).show();
+        logger.w(param.throwable());
     }
 
     private void registerReceiver() {
