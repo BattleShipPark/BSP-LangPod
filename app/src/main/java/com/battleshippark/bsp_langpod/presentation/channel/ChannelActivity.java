@@ -377,17 +377,21 @@ public class ChannelActivity extends Activity implements OnItemListener {
     }
 
     private void onDownloadProgress(DownloadProgressParam param) {
-        for (EpisodeRealm episodeRealm : channelRealm.getEpisodes()) {
-            if (episodeRealm.getId() == Long.valueOf(param.identifier)) {
-                episodeRealm.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADING);
-                episodeRealm.setDownloadedBytes(param.bytesRead);
-                episodeRealm.setTotalBytes(param.contentLength);
-//                adapter.notifyDataSetChanged();
-                updateEpisode.execute(episodeRealm).subscribe(aVoid -> {
-                }, logger::w);
-                return;
-            }
+        if (param.done) {
+            return;
         }
+        Stream.of(channelRealm.getEpisodes())
+                .filter(episodeRealm -> episodeRealm.getId() == Long.valueOf(param.identifier))
+                .findFirst()
+                .ifPresent(episodeRealm -> {
+                    episodeRealm.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADING);
+                    episodeRealm.setDownloadedBytes(param.bytesRead);
+                    episodeRealm.setTotalBytes(param.contentLength);
+                    adapter.notifyDataSetChanged();
+
+                    updateEpisode.execute(episodeRealm).subscribe(aVoid -> {
+                    }, logger::w);
+                });
     }
 
     private void onDownloadCompleted(DownloadCompleteParam param) {
@@ -397,6 +401,8 @@ public class ChannelActivity extends Activity implements OnItemListener {
                 .ifPresent(episodeRealm -> {
                     episodeRealm.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADED);
                     episodeRealm.setDownloadedPath(param.getFile().getAbsolutePath());
+                    adapter.notifyDataSetChanged();
+
                     updateEpisode.execute(episodeRealm).subscribe(aVoid -> {
                     }, logger::w);
                 });
