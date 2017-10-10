@@ -13,9 +13,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.Animation;
-import android.view.animation.RotateAnimation;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -213,8 +210,6 @@ public class ChannelActivity extends Activity implements OnItemListener {
     @Override
     protected void onStop() {
         unregisterReceiver();
-        downloaderServiceFacade.onStop();
-        playerServiceFacade.onStop();
         super.onStop();
     }
 
