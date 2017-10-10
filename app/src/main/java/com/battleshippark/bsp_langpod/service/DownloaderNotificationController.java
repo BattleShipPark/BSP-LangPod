@@ -22,13 +22,16 @@ public class DownloaderNotificationController {
     private RemoteViews remoteViews;
     private Notification notification;
     private NotificationTarget notificationTarget;
+    private boolean prepared;
 
     public DownloaderNotificationController(Context context, int notificationId) {
         this.context = context;
         this.notificationId = notificationId;
+
+        create();
     }
 
-    public Notification create() {
+    private void create() {
         remoteViews = new RemoteViews(context.getPackageName(), R.layout.notification_download);
         remoteViews.setImageViewResource(R.id.image_iv, R.mipmap.ic_launcher);
 
@@ -44,11 +47,24 @@ public class DownloaderNotificationController {
                 R.id.image_iv,
                 notification,
                 notificationId);
+    }
+
+    public Notification prepare() {
+        remoteViews.setImageViewResource(R.id.image_iv, R.mipmap.ic_launcher);
+        remoteViews.setTextViewText(R.id.channel_tv, context.getString(R.string.notification_waiting_download));
+        remoteViews.setTextViewText(R.id.episode_tv, "");
+        remoteViews.setTextViewText(R.id.progress_tv, context.getString(R.string.episode_downloading, 0f, 0f));
+
+        prepared = true;
 
         return notification;
     }
 
     public void update(ChannelRealm channelRealm, EpisodeRealm episodeRealm, DownloadProgressParam param) {
+        if (!prepared) {
+            return;
+
+        }
         if (param != null) {
             if (param.done()) {
                 return;
@@ -63,5 +79,9 @@ public class DownloaderNotificationController {
         remoteViews.setTextViewText(R.id.episode_tv, episodeRealm.getTitle());
 
         ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE)).notify(notificationId, notification);
+    }
+
+    public void complete() {
+        prepared = false;
     }
 }

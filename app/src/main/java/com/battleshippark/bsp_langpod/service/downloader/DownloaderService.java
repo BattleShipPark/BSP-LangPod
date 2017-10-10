@@ -103,7 +103,7 @@ public class DownloaderService extends Service {
     }
 
     public void download(EpisodeRealm episodeRealm) {
-        startForeground(NOTIFICATION_ID, notificationController.create());
+        startForeground(NOTIFICATION_ID, notificationController.prepare());
 
         downloadMedia.execute(new DownloadMedia.Param(String.valueOf(episodeRealm.getId()), episodeRealm.getUrl(), progressSubject))
                 .subscribe(file -> onCompleted(episodeRealm, file),
@@ -113,6 +113,12 @@ public class DownloaderService extends Service {
     private void onCompleted(EpisodeRealm episodeRealm, File file) {
         sendCompleteBroadcast(episodeRealm, file);
         stopForeground(true);
+        notificationController.complete();
+
+        runNext();
+    }
+
+    private void runNext() {
         queue.poll();
 
         if (!queue.isEmpty()) {
