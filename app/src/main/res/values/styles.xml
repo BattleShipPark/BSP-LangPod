@@ -4,8 +4,18 @@
     <style name="ToolBarTheme" parent="Theme.AppCompat">
         <!-- Customize your theme here. -->
         <item name="android:windowNoTitle">true</item>
-        <!--We will be using the toolbar so no need to show ActionBar-->
+            <!--We will be using the toolbar so no need to show ActionBar-->
         <item name="android:windowActionBar">false</item>
     </style>
 
+    <style name="SettingItem">
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="SettingItemText" parent="SettingItem">
+        <item name="android:singleLine">false</item>
+    </style>
 </resources>

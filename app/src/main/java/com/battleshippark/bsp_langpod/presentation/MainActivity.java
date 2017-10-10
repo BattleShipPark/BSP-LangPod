@@ -7,6 +7,7 @@ import android.support.design.widget.TabLayout;
 import com.battleshippark.bsp_langpod.R;
 import com.battleshippark.bsp_langpod.presentation.entire_list.EntireChannelListFragment;
 import com.battleshippark.bsp_langpod.presentation.my_list.MyChannelListFragment;
+import com.battleshippark.bsp_langpod.presentation.setting.SettingFragment;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -43,6 +44,13 @@ public class MainActivity extends Activity {
                 .commit();
     }
 
+    private void showSetting() {
+        getFragmentManager()
+                .beginTransaction()
+                .replace(R.id.main_fragment_layout, SettingFragment.newInstance())
+                .commit();
+    }
+
     private void initUI() {
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -53,6 +61,9 @@ public class MainActivity extends Activity {
                         break;
                     case 1:
                         showMyList();
+                        break;
+                    case 2:
+                        showSetting();
                         break;
                 }
             }

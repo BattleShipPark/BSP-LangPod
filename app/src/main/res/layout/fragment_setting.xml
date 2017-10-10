@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp">
+
+        <android.support.constraint.Guideline
+            android:id="@+id/guide"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.72" />
+
+        <TextView
+            android:id="@+id/wifi_tv"
+            style="@style/SettingItemText"
+            android:gravity="center_vertical"
+            android:text="@string/setting_wifi"
+            app:layout_constraintRight_toLeftOf="@id/guide"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <CheckBox
+            android:id="@+id/wifi_checkbox"
+            style="@style/SettingItem"
+            android:checked="true"
+            android:gravity="center"
+            app:layout_constraintBottom_toBottomOf="@id/wifi_tv"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintLeft_toRightOf="@id/guide"
+            app:layout_constraintTop_toTopOf="@id/wifi_tv" />
+
+        <TextView
+            android:id="@+id/cache_tv"
+            style="@style/SettingItem"
+            android:gravity="center_vertical"
+            android:text="CACHE"
+            app:layout_constraintRight_toLeftOf="@id/guide"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/wifi_tv" />
+
+        <Button
+            android:id="@+id/cache_button"
+            style="@style/SettingItem"
+            android:gravity="center"
+            android:text="clear"
+            app:layout_constraintBottom_toBottomOf="@+id/cache_tv"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintLeft_toRightOf="@id/guide"
+            app:layout_constraintTop_toTopOf="@+id/cache_tv" />
+
+    </android.support.constraint.ConstraintLayout>
+</ScrollView>
