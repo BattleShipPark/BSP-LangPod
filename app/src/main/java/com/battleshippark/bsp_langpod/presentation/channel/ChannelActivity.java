@@ -210,6 +210,8 @@ public class ChannelActivity extends Activity implements OnItemListener {
     @Override
     protected void onStop() {
         unregisterReceiver();
+        downloaderServiceFacade.onStop();
+        playerServiceFacade.onStop();
         super.onStop();
     }
 
