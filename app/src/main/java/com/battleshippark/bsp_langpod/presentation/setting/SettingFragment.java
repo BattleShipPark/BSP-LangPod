@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 
 import com.battleshippark.bsp_langpod.R;
+import com.battleshippark.bsp_langpod.data.storedvalue.StoredValueApi;
 import com.battleshippark.bsp_langpod.domain.GetStoredValue;
 import com.battleshippark.bsp_langpod.domain.PutStoredValue;
 import com.battleshippark.bsp_langpod.util.Logger;
@@ -18,6 +19,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
+import rx.functions.Actions;
 import rx.subscriptions.CompositeSubscription;
 
 public class SettingFragment extends Fragment {
@@ -45,8 +47,9 @@ public class SettingFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getStoredValue = new GetStoredValue();
-        putStoredValue = new PutStoredValue();
+        StoredValueApi storedValueApi = new StoredValueApi(getActivity());
+        getStoredValue = new GetStoredValue(storedValueApi);
+        putStoredValue = new PutStoredValue(storedValueApi);
     }
 
     @Override
@@ -65,7 +68,7 @@ public class SettingFragment extends Fragment {
 
     private void initUI() {
         subscription.add(
-                getStoredValue.downloadOnlyWifi().subscribe(value -> wifiCheckbox.setSelected(value))
+                getStoredValue.downloadOnlyWifi().subscribe(wifiCheckbox::setChecked)
         );
     }
 
@@ -85,6 +88,8 @@ public class SettingFragment extends Fragment {
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.wifi_checkbox:
+                putStoredValue.downloadOnlyWifi(wifiCheckbox.isChecked())
+                        .subscribe(Actions.empty(), logger::w);
                 break;
             case R.id.cache_button:
                 break;
