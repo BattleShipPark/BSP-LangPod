@@ -3,10 +3,8 @@ package com.battleshippark.bsp_langpod.dagger;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.RealmConfigurationFactory;
 
-import dagger.Lazy;
 import dagger.Module;
 import dagger.Provides;
-import io.realm.Realm;
 import io.realm.RealmConfiguration;
 
 /**

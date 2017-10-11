@@ -13,6 +13,7 @@ public class PutStoredValue implements PutStoredValueUseCase {
     public PutStoredValue(StoredValueRepository repository) {
         this.repository = repository;
     }
+
     @Override
     public Completable downloadOnlyWifi(boolean value) {
         return repository.putDownloadWifiOnly(value);

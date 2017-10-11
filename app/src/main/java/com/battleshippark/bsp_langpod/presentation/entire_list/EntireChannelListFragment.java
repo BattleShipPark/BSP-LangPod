@@ -29,7 +29,6 @@ import java.util.List;
 
 import butterknife.ButterKnife;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Actions;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 

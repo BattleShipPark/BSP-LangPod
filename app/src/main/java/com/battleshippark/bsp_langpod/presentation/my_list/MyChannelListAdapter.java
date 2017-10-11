@@ -9,14 +9,12 @@ import android.widget.TextView;
 
 import com.battleshippark.bsp_langpod.R;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
-import com.battleshippark.bsp_langpod.presentation.RealmRecyclerViewAdapter;
 
 import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.realm.OrderedRealmCollection;
 
 class MyChannelListAdapter extends RecyclerView.Adapter<MyChannelListAdapter.ViewHolder> {
     private final OnItemListener mListener;

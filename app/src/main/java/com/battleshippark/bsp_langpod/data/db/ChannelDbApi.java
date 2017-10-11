@@ -8,7 +8,6 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import dagger.Lazy;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmQuery;
