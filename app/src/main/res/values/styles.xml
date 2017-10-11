@@ -9,13 +9,22 @@
     </style>
 
     <style name="SettingItem">
-        <item name="android:paddingTop">8dp</item>
-        <item name="android:paddingBottom">8dp</item>
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
     </style>
 
-    <style name="SettingItemText" parent="SettingItem">
+    <style name="SettingItemTopText" parent="SettingItem">
         <item name="android:singleLine">false</item>
+    </style>
+
+    <style name="SettingItemText" parent="SettingItemTopText">
+        <item name="android:layout_marginTop">12dp</item>
+    </style>
+
+    <style name="SettingItemSeperator">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:background">#3e3e3e</item>
+        <item name="android:layout_marginTop">12dp</item>
     </style>
 </resources>

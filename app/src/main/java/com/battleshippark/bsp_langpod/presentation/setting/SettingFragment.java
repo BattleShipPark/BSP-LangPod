@@ -28,8 +28,6 @@ public class SettingFragment extends Fragment {
 
     @BindView(R.id.wifi_checkbox)
     CheckBox wifiCheckbox;
-    @BindView(R.id.cache_button)
-    Button cacheButton;
     private Unbinder unbinder;
 
     private GetStoredValue getStoredValue;
@@ -84,14 +82,12 @@ public class SettingFragment extends Fragment {
         super.onDestroy();
     }
 
-    @OnClick({R.id.wifi_checkbox, R.id.cache_button})
+    @OnClick({R.id.wifi_checkbox})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.wifi_checkbox:
                 putStoredValue.downloadOnlyWifi(wifiCheckbox.isChecked())
                         .subscribe(Actions.empty(), logger::w);
-                break;
-            case R.id.cache_button:
                 break;
         }
     }

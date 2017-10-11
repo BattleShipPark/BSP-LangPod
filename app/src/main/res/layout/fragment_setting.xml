@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -19,9 +18,8 @@
 
         <TextView
             android:id="@+id/wifi_tv"
-            style="@style/SettingItemText"
-            android:gravity="center_vertical"
-            android:text="@string/setting_wifi"
+            style="@style/SettingItemTopText"
+            android:text="@string/setting_download_only_wifi"
             app:layout_constraintRight_toLeftOf="@id/guide"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -36,24 +34,35 @@
             app:layout_constraintLeft_toRightOf="@id/guide"
             app:layout_constraintTop_toTopOf="@id/wifi_tv" />
 
+        <View
+            android:id="@+id/seperator1"
+            style="@style/SettingItemSeperator"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/wifi_tv" />
+
         <TextView
             android:id="@+id/cache_tv"
-            style="@style/SettingItem"
-            android:gravity="center_vertical"
-            android:text="CACHE"
-            app:layout_constraintRight_toLeftOf="@id/guide"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/wifi_tv" />
-
-        <Button
-            android:id="@+id/cache_button"
-            style="@style/SettingItem"
-            android:gravity="center"
-            android:text="clear"
-            app:layout_constraintBottom_toBottomOf="@+id/cache_tv"
+            style="@style/SettingItemText"
+            android:text="@string/setting_clear_cache"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintLeft_toRightOf="@id/guide"
-            app:layout_constraintTop_toTopOf="@+id/cache_tv" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/seperator1" />
+
+        <View
+            android:id="@+id/seperator2"
+            style="@style/SettingItemSeperator"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cache_tv" />
+
+        <TextView
+            android:id="@+id/download_list_tv"
+            style="@style/SettingItemText"
+            android:text="@string/setting_download_list"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/seperator2" />
 
     </android.support.constraint.ConstraintLayout>
 </ScrollView>
