@@ -11,7 +11,8 @@
         android:label="${AppName}"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat">
+        android:theme="@style/Theme.AppCompat.NoActionBar">
+
         <activity android:name=".presentation.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -19,10 +20,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".presentation.channel.ChannelActivity"
-            android:theme="@style/ToolBarTheme" />
-        <activity android:name=".presentation.setting.SettingDownloadListActivity"></activity>
+        <activity android:name=".presentation.channel.ChannelActivity" />
+        <activity android:name=".presentation.setting.SettingDownloadListActivity" />
 
         <service android:name=".fcm.MyFirebaseMessagingService">
             <intent-filter>
