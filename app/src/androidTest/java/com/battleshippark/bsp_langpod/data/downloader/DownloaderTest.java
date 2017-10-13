@@ -19,7 +19,7 @@ public class DownloaderTest {
     @Test
     public void test() throws InterruptedException {
         Downloader downloader = new Downloader(new AppPhase(true));
-        String url = "http://open.live.bbc.co.uk/mediaselector/5/redir/version/2.0/mediaset/audio-nondrm-download-low/proto/http/vpid/p058jwmk.mp3";
+        String url = "http://open.live.bbc.co.uk/mediaselector/5/redir/version/2.0/mediaset/audio-nondrm-enqueue-low/proto/http/vpid/p058jwmk.mp3";
         PublishSubject<DownloadProgressParam> downloadProgress = PublishSubject.create();
 
         TestSubscriber<File> testSubscriber = new TestSubscriber<>();

@@ -12,6 +12,8 @@ import com.annimon.stream.Stream;
 import com.battleshippark.bsp_langpod.AppPhase;
 import com.battleshippark.bsp_langpod.BuildConfig;
 import com.battleshippark.bsp_langpod.dagger.DaggerDbApiGraph;
+import com.battleshippark.bsp_langpod.data.db.DownloadDbApi;
+import com.battleshippark.bsp_langpod.data.db.DownloadRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
 import com.battleshippark.bsp_langpod.data.downloader.DownloadCompleteParam;
 import com.battleshippark.bsp_langpod.data.downloader.DownloadErrorParam;
@@ -22,8 +24,7 @@ import com.battleshippark.bsp_langpod.service.DownloaderNotificationController;
 import com.battleshippark.bsp_langpod.util.Logger;
 
 import java.io.File;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import rx.android.schedulers.AndroidSchedulers;
@@ -48,11 +49,12 @@ public class DownloaderService extends Service {
     private static final int NOTIFICATION_ID = -1;
     private final IBinder mBinder = new LocalBinder();
     private final PublishSubject<DownloadProgressParam> progressSubject = PublishSubject.create();
-    private final Queue<EpisodeRealm> queue = new ConcurrentLinkedQueue<>();
+    private final DownloaderQueue<EpisodeRealm> queue = DownloaderQueue.getInstance();
     private HandlerThread downloadThread, operationThread;
     private Handler operationHandler;
     private DownloadMedia downloadMedia;
     private GetChannelWithEpisodeId getChannelWithEpisodeId;
+    private DownloadDbApi downloadDbApi;
     private CompositeSubscription subscription = new CompositeSubscription();
     private DownloaderNotificationController notificationController;
 
@@ -73,12 +75,23 @@ public class DownloaderService extends Service {
         downloadMedia = new DownloadMedia(this, downloadScheduler, operationScheduler, new AppPhase(BuildConfig.DEBUG));
         getChannelWithEpisodeId = new GetChannelWithEpisodeId(DaggerDbApiGraph.create().channelApi(), operationScheduler, operationScheduler);
 
+        downloadDbApi = DaggerDbApiGraph.create().downloadApi();
+
         notificationController = new DownloaderNotificationController(this, NOTIFICATION_ID);
 
         subscription.add(
                 progressSubject
                         .throttleLast(1000, TimeUnit.MILLISECONDS, operationScheduler)
                         .subscribe(this::onProgress, logger::w));
+        subscription.add(
+                downloadDbApi.getNotDownloaded()
+                        .subscribeOn(AndroidSchedulers.from(operationHandler.getLooper()))
+                        .subscribe(realmList -> {
+                            List<EpisodeRealm> episodeRealmList = Stream.of(realmList).map(DownloadRealm::getEpisodeRealm).toList();
+                            queue.clearWith(episodeRealmList);
+                        }));
+
+        runNext();
     }
 
     @Nullable
@@ -95,14 +108,7 @@ public class DownloaderService extends Service {
         subscription.unsubscribe();
     }
 
-    public void enqueue(EpisodeRealm episodeRealm) {
-        if (queue.isEmpty()) {
-            operationHandler.post(() -> download(episodeRealm));
-        }
-        queue.offer(episodeRealm);
-    }
-
-    public void download(EpisodeRealm episodeRealm) {
+    private void download(EpisodeRealm episodeRealm) {
         startForeground(NOTIFICATION_ID, notificationController.prepare());
 
         downloadMedia.execute(new DownloadMedia.Param(String.valueOf(episodeRealm.getId()), episodeRealm.getUrl(), progressSubject))
@@ -119,12 +125,14 @@ public class DownloaderService extends Service {
     }
 
     private void runNext() {
-        queue.poll();
-
-        if (!queue.isEmpty()) {
-            EpisodeRealm realm = queue.peek();
-            operationHandler.post(() -> download(realm));
-        }
+        operationHandler.post(() -> {
+            try {
+                EpisodeRealm realm = queue.take();
+                operationHandler.post(() -> download(realm));
+            } catch (InterruptedException e) {
+                logger.w(e);
+            }
+        });
     }
 
     private void onProgress(DownloadProgressParam param) {
@@ -172,7 +180,7 @@ public class DownloaderService extends Service {
         return intent.getParcelableExtra(DownloaderService.KEY_ERROR);
     }
 
-    public class LocalBinder extends Binder {
+    class LocalBinder extends Binder {
         DownloaderService getService() {
             return DownloaderService.this;
         }

@@ -19,22 +19,23 @@ import rx.functions.Action1;
 /**
  */
 
-public class DownloaderServiceFacade {
+public class Downloader {
     private final Context context;
     private final AppPhase appPhase;
     private final LocalServiceConnection connection = new LocalServiceConnection();
+    private final DownloaderQueue queue = DownloaderQueue.getInstance();
     private boolean bound;
 
-    public DownloaderServiceFacade(Context context, AppPhase appPhase) {
+    public Downloader(Context context, AppPhase appPhase) {
         this.context = context;
         this.appPhase = appPhase;
     }
 
-    public void download(ChannelRealm channelRealm, EpisodeRealm episodeRealm) {
+    public void enqueue(ChannelRealm channelRealm, EpisodeRealm episodeRealm) {
         if (isBound()) {
-            connection.getService().enqueue(episodeRealm);
+            queue.offer(episodeRealm);
         } else {
-            connection.setOnConnected(service -> service.enqueue(episodeRealm));
+//            connection.setOnConnected(service -> service.setQueue(queue));//enqueue(episodeRealm));
             context.bindService(new Intent(context, DownloaderService.class), connection, Context.BIND_AUTO_CREATE);
         }
     }

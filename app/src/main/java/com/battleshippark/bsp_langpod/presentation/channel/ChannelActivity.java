@@ -38,7 +38,7 @@ import com.battleshippark.bsp_langpod.domain.GetChannel;
 import com.battleshippark.bsp_langpod.domain.SubscribeChannel;
 import com.battleshippark.bsp_langpod.domain.UpdateEpisode;
 import com.battleshippark.bsp_langpod.service.downloader.DownloaderService;
-import com.battleshippark.bsp_langpod.service.downloader.DownloaderServiceFacade;
+import com.battleshippark.bsp_langpod.service.downloader.Downloader;
 import com.battleshippark.bsp_langpod.service.player.PlayerService;
 import com.battleshippark.bsp_langpod.service.player.PlayerServiceFacade;
 import com.battleshippark.bsp_langpod.util.Logger;
@@ -110,11 +110,11 @@ public class ChannelActivity extends Activity implements OnItemListener {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(DownloaderService.ACTION_PROGRESS)) {
-                onDownloadProgress(downloaderServiceFacade.getProgressParam(intent));
+                onDownloadProgress(downloader.getProgressParam(intent));
             } else if (intent.getAction().equals(DownloaderService.ACTION_COMPLETED)) {
-                onDownloadCompleted(downloaderServiceFacade.getCompleteParam(intent));
+                onDownloadCompleted(downloader.getCompleteParam(intent));
             } else if (intent.getAction().equals(DownloaderService.ACTION_ERROR)) {
-                onDownloadError(downloaderServiceFacade.getErrorParam(intent));
+                onDownloadError(downloader.getErrorParam(intent));
             }
         }
     };
@@ -122,7 +122,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
     private IntentFilter playerIntentFilter, downloaderIntentFilter;
 
     private PlayerServiceFacade playerServiceFacade;
-    private DownloaderServiceFacade downloaderServiceFacade;
+    private Downloader downloader;
 
     private GetChannel getChannel;
     private SubscribeChannel subscribeChannel;
@@ -157,10 +157,10 @@ public class ChannelActivity extends Activity implements OnItemListener {
         adapter = new ChannelAdapter(this);
 
         playerServiceFacade = new PlayerServiceFacade(this);
-        downloaderServiceFacade = new DownloaderServiceFacade(this, new AppPhase(BuildConfig.DEBUG));
+        downloader = new Downloader(this, new AppPhase(BuildConfig.DEBUG));
 
         playerIntentFilter = playerServiceFacade.createIntentFilter();
-        downloaderIntentFilter = downloaderServiceFacade.createIntentFilter();
+        downloaderIntentFilter = downloader.createIntentFilter();
 
         if (savedInstanceState == null) {
             channelId = getIntent().getLongExtra(KEY_ID, 0);
@@ -203,14 +203,14 @@ public class ChannelActivity extends Activity implements OnItemListener {
     protected void onStart() {
         super.onStart();
         playerServiceFacade.onStart();
-        downloaderServiceFacade.onStart();
+        downloader.onStart();
         registerReceiver();
     }
 
     @Override
     protected void onStop() {
         unregisterReceiver();
-        downloaderServiceFacade.onStop();
+        downloader.onStop();
         playerServiceFacade.onStop();
         super.onStop();
     }
@@ -346,7 +346,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
         episode.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADING);
         adapter.notifyDataSetChanged();
 
-        downloaderServiceFacade.download(channelRealm, episode);
+        downloader.enqueue(channelRealm, episode);
     }
 
     private String getStatusText(EpisodeRealm episode) {
