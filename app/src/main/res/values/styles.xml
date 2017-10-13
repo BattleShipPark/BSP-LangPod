@@ -14,11 +14,17 @@
     </style>
 
     <style name="SettingItemTopText" parent="SettingItem">
+        <item name="android:layout_marginLeft">8dp</item>
+        <item name="android:layout_marginTop">8dp</item>
         <item name="android:singleLine">false</item>
     </style>
 
     <style name="SettingItemText" parent="SettingItemTopText">
         <item name="android:layout_marginTop">12dp</item>
+    </style>
+
+    <style name="SettingItemOption" parent="SettingItem">
+        <item name="android:layout_marginRight">8dp</item>
     </style>
 
     <style name="SettingItemSeperator">

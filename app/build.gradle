@@ -14,13 +14,13 @@ android {
     }
     buildTypes {
         release {
-            manifestPlaceholders = [ AppName : "MoonCast" ]
+            manifestPlaceholders = [AppName: "MoonCast"]
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
 
         debug {
             applicationIdSuffix ".beta"
-            manifestPlaceholders = [ AppName : "MoonCast.beta" ]
+            manifestPlaceholders = [AppName: "MoonCast.beta"]
         }
     }
     compileOptions {

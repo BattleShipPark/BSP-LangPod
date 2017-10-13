@@ -1,12 +1,13 @@
 package com.battleshippark.bsp_langpod.presentation.setting;
 
 import android.app.Fragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.CheckBox;
 
 import com.battleshippark.bsp_langpod.R;
@@ -28,8 +29,8 @@ public class SettingFragment extends Fragment {
 
     @BindView(R.id.wifi_checkbox)
     CheckBox wifiCheckbox;
-    private Unbinder unbinder;
 
+    private Unbinder unbinder;
     private GetStoredValue getStoredValue;
     private PutStoredValue putStoredValue;
     private final CompositeSubscription subscription = new CompositeSubscription();
@@ -82,12 +83,21 @@ public class SettingFragment extends Fragment {
         super.onDestroy();
     }
 
-    @OnClick({R.id.wifi_checkbox})
+    @OnClick({R.id.wifi_checkbox, R.id.clear_cache_tv, R.id.download_list_tv})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.wifi_checkbox:
                 putStoredValue.downloadOnlyWifi(wifiCheckbox.isChecked())
                         .subscribe(Actions.empty(), logger::w);
+                break;
+            case R.id.clear_cache_tv:
+                new AlertDialog.Builder(getActivity()).setMessage(R.string.setting_clear_cache_message)
+                        .setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.cancel())
+                        .setNegativeButton(android.R.string.no, (dialog, which) -> dialog.cancel())
+                        .show();
+                break;
+            case R.id.download_list_tv:
+                startActivity(new Intent(getActivity(), SettingDownloadListActivity.class));
                 break;
         }
     }

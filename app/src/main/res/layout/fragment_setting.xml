@@ -7,7 +7,7 @@
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp">
+        android:layout_margin="8dp">
 
         <android.support.constraint.Guideline
             android:id="@+id/guide"
@@ -26,7 +26,7 @@
 
         <CheckBox
             android:id="@+id/wifi_checkbox"
-            style="@style/SettingItem"
+            style="@style/SettingItemOption"
             android:checked="true"
             android:gravity="center"
             app:layout_constraintBottom_toBottomOf="@id/wifi_tv"
@@ -42,7 +42,7 @@
             app:layout_constraintTop_toBottomOf="@+id/wifi_tv" />
 
         <TextView
-            android:id="@+id/cache_tv"
+            android:id="@+id/clear_cache_tv"
             style="@style/SettingItemText"
             android:text="@string/setting_clear_cache"
             app:layout_constraintEnd_toEndOf="parent"
@@ -54,7 +54,7 @@
             style="@style/SettingItemSeperator"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/cache_tv" />
+            app:layout_constraintTop_toBottomOf="@+id/clear_cache_tv" />
 
         <TextView
             android:id="@+id/download_list_tv"
@@ -63,6 +63,13 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/seperator2" />
+
+        <View
+            android:id="@+id/seperator3"
+            style="@style/SettingItemSeperator"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/download_list_tv" />
 
     </android.support.constraint.ConstraintLayout>
 </ScrollView>
