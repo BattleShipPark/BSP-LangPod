@@ -8,12 +8,23 @@ import io.realm.RealmObject;
  */
 
 public class DownloadRealm extends RealmObject {
-    public static final String FIELD_DOWNLOAD_DATE = "downloadDate";
-    public static final String FIELD_DOWNLOAD_STATE = "downloadState";
+    static final String FIELD_EPISODE_REALM = "episodeRealm";
+    static final String FIELD_DOWNLOAD_DATE = "downloadDate";
+    static final String FIELD_DOWNLOAD_STATE = "downloadState";
 
     private EpisodeRealm episodeRealm;
     private Date downloadDate;
     private String downloadState;
+
+    public DownloadRealm() {
+
+    }
+
+    DownloadRealm(EpisodeRealm episodeRealm) {
+        this.episodeRealm = episodeRealm;
+        this.downloadDate = new Date();
+        this.downloadState = DownloadState.NOT_DOWNLOADED.name();
+    }
 
     public EpisodeRealm getEpisodeRealm() {
         return episodeRealm;
@@ -48,9 +59,14 @@ public class DownloadRealm extends RealmObject {
                 '}';
     }
 
+    public static DownloadRealm of(EpisodeRealm episodeRealm) {
+        return new DownloadRealm(episodeRealm);
+    }
+
     public enum DownloadState {
         NOT_DOWNLOADED,
         DOWNLOADING,
-        DOWNLOADED;
+        DOWNLOADED,
+        FAILED_DOWNLOAD
     }
 }

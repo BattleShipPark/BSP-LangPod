@@ -12,6 +12,8 @@ import io.realm.annotations.PrimaryKey;
  */
 
 public class EpisodeRealm extends RealmObject {
+    static final String FIELD_ID = "id";
+
     @PrimaryKey
     private long id;
     private String title;

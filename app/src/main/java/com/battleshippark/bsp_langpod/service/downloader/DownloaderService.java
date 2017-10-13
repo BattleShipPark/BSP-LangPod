@@ -24,7 +24,6 @@ import com.battleshippark.bsp_langpod.service.DownloaderNotificationController;
 import com.battleshippark.bsp_langpod.util.Logger;
 
 import java.io.File;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import rx.android.schedulers.AndroidSchedulers;
@@ -49,7 +48,7 @@ public class DownloaderService extends Service {
     private static final int NOTIFICATION_ID = -1;
     private final IBinder mBinder = new LocalBinder();
     private final PublishSubject<DownloadProgressParam> progressSubject = PublishSubject.create();
-    private final DownloaderQueue<EpisodeRealm> queue = DownloaderQueue.getInstance();
+    private final DownloaderQueueManager queueManager = DownloaderQueueManager.getInstance();
     private HandlerThread downloadThread, operationThread;
     private Handler operationHandler;
     private DownloadMedia downloadMedia;
@@ -86,10 +85,7 @@ public class DownloaderService extends Service {
         subscription.add(
                 downloadDbApi.getNotDownloaded()
                         .subscribeOn(AndroidSchedulers.from(operationHandler.getLooper()))
-                        .subscribe(realmList -> {
-                            List<EpisodeRealm> episodeRealmList = Stream.of(realmList).map(DownloadRealm::getEpisodeRealm).toList();
-                            queue.clearWith(episodeRealmList);
-                        }));
+                        .subscribe(queueManager::clearWith));
 
         runNext();
     }
@@ -108,18 +104,29 @@ public class DownloaderService extends Service {
         subscription.unsubscribe();
     }
 
-    private void download(EpisodeRealm episodeRealm) {
+    private void download(DownloadRealm downloadRealm) {
         startForeground(NOTIFICATION_ID, notificationController.prepare());
 
+        EpisodeRealm episodeRealm = downloadRealm.getEpisodeRealm();
         downloadMedia.execute(new DownloadMedia.Param(String.valueOf(episodeRealm.getId()), episodeRealm.getUrl(), progressSubject))
-                .subscribe(file -> onCompleted(episodeRealm, file),
-                        throwable -> sendErrorBroadcast(episodeRealm, throwable));
+                .subscribe(file -> onCompleted(downloadRealm, file),
+                        throwable -> onError(downloadRealm, throwable));
     }
 
-    private void onCompleted(EpisodeRealm episodeRealm, File file) {
-        sendCompleteBroadcast(episodeRealm, file);
+    private void onCompleted(DownloadRealm downloadRealm, File file) {
+        sendCompleteBroadcast(downloadRealm.getEpisodeRealm(), file);
         stopForeground(true);
         notificationController.complete();
+        queueManager.markComplete(downloadRealm);
+
+        runNext();
+    }
+
+    private void onError(DownloadRealm downloadRealm, Throwable throwable) {
+        sendErrorBroadcast(downloadRealm.getEpisodeRealm(), throwable);
+        stopForeground(true);
+        notificationController.complete();
+        queueManager.markError(downloadRealm);
 
         runNext();
     }
@@ -127,8 +134,9 @@ public class DownloaderService extends Service {
     private void runNext() {
         operationHandler.post(() -> {
             try {
-                EpisodeRealm realm = queue.take();
-                operationHandler.post(() -> download(realm));
+                DownloadRealm downloadRealm = queueManager.peek();
+                queueManager.markDownloading(downloadRealm);
+                operationHandler.post(() -> download(downloadRealm));
             } catch (InterruptedException e) {
                 logger.w(e);
             }

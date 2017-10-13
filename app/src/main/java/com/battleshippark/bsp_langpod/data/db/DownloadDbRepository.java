@@ -13,7 +13,9 @@ public interface DownloadDbRepository {
 
     Observable<List<DownloadRealm>> getNotDownloaded();
 
-    Completable add(EpisodeRealm episodeRealm);
+    Completable add(DownloadRealm downloadRealm);
 
-    Completable remove(EpisodeRealm episodeRealm);
+    Completable remove(DownloadRealm downloadRealm);
+
+    Completable update(DownloadRealm downloadRealm);
 }

@@ -1,7 +1,10 @@
 package com.battleshippark.bsp_langpod.service.downloader;
 
+import com.battleshippark.bsp_langpod.data.db.DownloadRealm;
+
 import org.junit.Test;
 
+import java.util.Date;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -13,9 +16,9 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 public class DownloaderQueueTest {
     @Test
     public void 빈상태에서멈춰있다가_데이터들어오면가져오는지() throws InterruptedException {
-        DownloaderQueue<Integer> queue = DownloaderQueue.getInstance();
+        DownloaderQueue queue = new DownloaderQueue();
 
-        Integer[] results = new Integer[1];
+        DownloadRealm[] results = new DownloadRealm[1];
         CountDownLatch latch = new CountDownLatch(1);
 
         Thread pollThread = Executors.defaultThreadFactory().newThread(() -> {
@@ -26,7 +29,9 @@ public class DownloaderQueueTest {
             }
         });
         Thread offerThread = Executors.defaultThreadFactory().newThread(() -> {
-            queue.offer(0x1234);
+            DownloadRealm downloadRealm = new DownloadRealm();
+            downloadRealm.setDownloadDate(new Date(0x1234));
+            queue.offer(downloadRealm);
             latch.countDown();
         });
 
@@ -36,6 +41,6 @@ public class DownloaderQueueTest {
 
         offerThread.start();
         latch.await(100, TimeUnit.MILLISECONDS);
-        assertThat(results[0]).isEqualTo(0x1234);
+        assertThat(results[0].getDownloadDate()).isEqualTo(new Date(0x1234));
     }
 }

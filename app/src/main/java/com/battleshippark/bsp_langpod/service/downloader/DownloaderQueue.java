@@ -1,32 +1,32 @@
 package com.battleshippark.bsp_langpod.service.downloader;
 
+import com.battleshippark.bsp_langpod.data.db.DownloadRealm;
+
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.LinkedBlockingDeque;
 
 /**
  */
 
-class DownloaderQueue<E> {
-    private static final DownloaderQueue<?> QUEUE = new DownloaderQueue<>();
-    private final BlockingQueue<E> queue = new LinkedBlockingQueue<>();
+class DownloaderQueue {
+    private final BlockingDeque<DownloadRealm> queue = new LinkedBlockingDeque<>();
 
-    static <T> DownloaderQueue<T> getInstance() {
-        return (DownloaderQueue<T>) QUEUE;
+    boolean offer(DownloadRealm downloadRealm) {
+        return queue.offer(downloadRealm);
     }
 
-    private DownloaderQueue() {
-    }
-
-    boolean offer(E e) {
-        return queue.offer(e);
-    }
-
-    E take() throws InterruptedException {
+    DownloadRealm take() throws InterruptedException {
         return queue.take();
     }
 
-    void clearWith(List<E> list) {
+    DownloadRealm peek() throws InterruptedException {
+        DownloadRealm e = queue.take();
+        queue.offerFirst(e);
+        return e;
+    }
+
+    void clearWith(List<DownloadRealm> list) {
         queue.clear();
         queue.addAll(list);
     }

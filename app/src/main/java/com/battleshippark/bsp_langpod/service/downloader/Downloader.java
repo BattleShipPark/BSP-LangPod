@@ -9,6 +9,7 @@ import android.os.IBinder;
 
 import com.battleshippark.bsp_langpod.AppPhase;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
+import com.battleshippark.bsp_langpod.data.db.DownloadRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
 import com.battleshippark.bsp_langpod.data.downloader.DownloadCompleteParam;
 import com.battleshippark.bsp_langpod.data.downloader.DownloadErrorParam;
@@ -23,7 +24,7 @@ public class Downloader {
     private final Context context;
     private final AppPhase appPhase;
     private final LocalServiceConnection connection = new LocalServiceConnection();
-    private final DownloaderQueue queue = DownloaderQueue.getInstance();
+    private final DownloaderQueueManager queueManager = DownloaderQueueManager.getInstance();
     private boolean bound;
 
     public Downloader(Context context, AppPhase appPhase) {
@@ -33,7 +34,7 @@ public class Downloader {
 
     public void enqueue(ChannelRealm channelRealm, EpisodeRealm episodeRealm) {
         if (isBound()) {
-            queue.offer(episodeRealm);
+            queueManager.offer(DownloadRealm.of(episodeRealm));
         } else {
 //            connection.setOnConnected(service -> service.setQueue(queue));//enqueue(episodeRealm));
             context.bindService(new Intent(context, DownloaderService.class), connection, Context.BIND_AUTO_CREATE);
