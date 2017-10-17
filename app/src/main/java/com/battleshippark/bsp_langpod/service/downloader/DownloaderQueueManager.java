@@ -8,7 +8,7 @@ import java.util.List;
 /**
  */
 
-class DownloaderQueueManager {
+public class DownloaderQueueManager {
     private static DownloaderQueueManager MANAGER;
     private final DownloaderQueue queue = new DownloaderQueue();
     private final DownloadDbRepository downloadDbApi;
@@ -29,7 +29,7 @@ class DownloaderQueueManager {
     }
 
     void offer(DownloadRealm downloadRealm) {
-        downloadDbApi.add(downloadRealm);
+        downloadDbApi.insert(downloadRealm);
         queue.offer(downloadRealm);
     }
 

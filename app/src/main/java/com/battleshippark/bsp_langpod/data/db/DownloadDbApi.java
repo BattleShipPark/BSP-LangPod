@@ -20,7 +20,7 @@ public class DownloadDbApi implements DownloadDbRepository {
     private final RealmConfiguration realmConfiguration;
 
     @VisibleForTesting
-    public DownloadDbApi() {
+    DownloadDbApi() {
         this.realmConfiguration = RealmConfigurationFactory.createTest();
     }
 
@@ -53,10 +53,10 @@ public class DownloadDbApi implements DownloadDbRepository {
     }
 
     @Override
-    public Completable add(DownloadRealm downloadRealm) {
+    public Completable insert(DownloadRealm downloadRealm) {
         try (Realm realm = Realm.getInstance(realmConfiguration)) {
             realm.executeTransaction(realm1 -> {
-                realm1.copyToRealm(downloadRealm);
+                realm1.insert(downloadRealm);
             });
             return Completable.complete();
         } catch (Exception e) {
@@ -65,7 +65,7 @@ public class DownloadDbApi implements DownloadDbRepository {
     }
 
     @Override
-    public Completable remove(DownloadRealm downloadRealm) {
+    public Completable delete(DownloadRealm downloadRealm) {
         try (Realm realm = Realm.getInstance(realmConfiguration)) {
             RealmQuery<DownloadRealm> query = realm.where(DownloadRealm.class)
                     .equalTo(DownloadRealm.FIELD_DOWNLOAD_STATE, DownloadRealm.DownloadState.NOT_DOWNLOADED.name());
