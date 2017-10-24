@@ -43,6 +43,10 @@ public class DownloadRealm extends RealmObject {
         return id;
     }
 
+    public void setId(long id) {
+        this.id = id;
+    }
+
     public long getChannelId() {
         return channelId;
     }
@@ -97,6 +101,21 @@ public class DownloadRealm extends RealmObject {
                 ", downloadDate=" + downloadDate +
                 ", downloadState=" + downloadState +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DownloadRealm that = (DownloadRealm) o;
+
+        return id == that.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) (id ^ (id >>> 32));
     }
 
     public enum DownloadState {

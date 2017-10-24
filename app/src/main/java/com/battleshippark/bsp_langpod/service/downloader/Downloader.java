@@ -9,7 +9,6 @@ import android.os.IBinder;
 
 import com.battleshippark.bsp_langpod.AppPhase;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
-import com.battleshippark.bsp_langpod.data.db.DownloadRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
 import com.battleshippark.bsp_langpod.data.downloader.DownloadCompleteParam;
 import com.battleshippark.bsp_langpod.data.downloader.DownloadErrorParam;
@@ -34,7 +33,7 @@ public class Downloader {
 
     public void enqueue(ChannelRealm channelRealm, EpisodeRealm episodeRealm) {
         if (isBound()) {
-            queueManager.offer(DownloadRealm.of(channelRealm, episodeRealm));
+            queueManager.offer(channelRealm, episodeRealm);
         } else {
             context.bindService(new Intent(context, DownloaderService.class), connection, Context.BIND_AUTO_CREATE);
         }

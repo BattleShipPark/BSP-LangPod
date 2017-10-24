@@ -10,6 +10,7 @@ public class MetaRealm extends RealmObject {
 
     private long entireChannelId;
     private long episodeId = 1;
+    private long downloadId = 1;
 
     public MetaRealm() {
     }
@@ -26,7 +27,15 @@ public class MetaRealm extends RealmObject {
         return episodeId;
     }
 
-    public void setEpisodeId(long episodeId) {
-        this.episodeId = episodeId;
+    public void setEpisodeId(long id) {
+        this.episodeId = id;
+    }
+
+    public long getDownloadId() {
+        return downloadId;
+    }
+
+    public void setDownloadId(long id) {
+        this.downloadId = id;
     }
 }

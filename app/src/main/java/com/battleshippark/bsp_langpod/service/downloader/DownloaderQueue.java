@@ -26,6 +26,10 @@ class DownloaderQueue {
         return e;
     }
 
+    void remove(DownloadRealm downloadRealm) {
+        queue.remove(downloadRealm);
+    }
+
     void clearWith(List<DownloadRealm> list) {
         queue.clear();
         queue.addAll(list);

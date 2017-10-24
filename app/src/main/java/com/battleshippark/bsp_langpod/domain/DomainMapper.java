@@ -3,6 +3,7 @@ package com.battleshippark.bsp_langpod.domain;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
+import com.battleshippark.bsp_langpod.data.db.DownloadRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
 import com.battleshippark.bsp_langpod.data.db.MyChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.RealmHelper;
@@ -149,5 +150,11 @@ public class DomainMapper {
                 channelJson.copyright(),
                 episodeRealmList,
                 channelRealm.isSubscribed());
+    }
+
+    public DownloadRealm asDownloadRealm(ChannelRealm channelRealm, EpisodeRealm episodeRealm) {
+        DownloadRealm downloadRealm = DownloadRealm.of(channelRealm, episodeRealm);
+        downloadRealm.setId(realmHelper.getNextDownloadId());
+        return downloadRealm;
     }
 }

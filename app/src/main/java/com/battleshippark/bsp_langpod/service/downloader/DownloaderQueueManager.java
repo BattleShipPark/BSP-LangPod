@@ -1,7 +1,10 @@
 package com.battleshippark.bsp_langpod.service.downloader;
 
+import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.DownloadDbRepository;
 import com.battleshippark.bsp_langpod.data.db.DownloadRealm;
+import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
+import com.battleshippark.bsp_langpod.domain.DomainMapper;
 
 import java.util.List;
 
@@ -12,9 +15,10 @@ public class DownloaderQueueManager {
     private static DownloaderQueueManager MANAGER;
     private final DownloaderQueue queue = new DownloaderQueue();
     private final DownloadDbRepository downloadDbApi;
+    private final DomainMapper domainMapper;
 
-    public static void create(DownloadDbRepository repository) {
-        MANAGER = new DownloaderQueueManager(repository);
+    public static void create(DownloadDbRepository repository, DomainMapper domainMapper) {
+        MANAGER = new DownloaderQueueManager(repository, domainMapper);
     }
 
     static DownloaderQueueManager getInstance() {
@@ -24,17 +28,23 @@ public class DownloaderQueueManager {
         return MANAGER;
     }
 
-    DownloaderQueueManager(DownloadDbRepository repository) {
-        downloadDbApi = repository;
+    DownloaderQueueManager(DownloadDbRepository repository, DomainMapper domainMapper) {
+        this.downloadDbApi = repository;
+        this.domainMapper = domainMapper;
     }
 
-    void offer(DownloadRealm downloadRealm) {
+    void offer(ChannelRealm channelRealm, EpisodeRealm episodeRealm) {
+        DownloadRealm downloadRealm = domainMapper.asDownloadRealm(channelRealm, episodeRealm);
         downloadDbApi.insert(downloadRealm).subscribe();
         queue.offer(downloadRealm);
     }
 
     DownloadRealm peek() throws InterruptedException {
         return queue.peek();
+    }
+
+    void remove(DownloadRealm downloadRealm) {
+        queue.remove(downloadRealm);
     }
 
     void clearWith(List<DownloadRealm> downloadRealms) {

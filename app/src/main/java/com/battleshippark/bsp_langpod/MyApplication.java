@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Intent;
 
 import com.battleshippark.bsp_langpod.dagger.DaggerDbApiGraph;
+import com.battleshippark.bsp_langpod.dagger.DaggerDomainMapperGraph;
 import com.battleshippark.bsp_langpod.service.downloader.DownloaderQueueManager;
 import com.battleshippark.bsp_langpod.service.downloader.DownloaderService;
 import com.battleshippark.bsp_langpod.service.player.PlayerService;
@@ -28,7 +29,8 @@ public class MyApplication extends Application {
                         .enableWebKitInspector(RealmInspectorModulesProvider.builder(this).build())
                         .build());
 
-        DownloaderQueueManager.create(DaggerDbApiGraph.create().downloadApi());
+        DownloaderQueueManager.create(DaggerDbApiGraph.create().downloadApi(),
+                DaggerDomainMapperGraph.create().domainMapper());
 
         startService(new Intent(this, PlayerService.class));
         startService(new Intent(this, DownloaderService.class));

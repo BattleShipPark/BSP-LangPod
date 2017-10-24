@@ -40,6 +40,29 @@ public class RealmHelperImpl implements RealmHelper {
     }
 
     @Override
+    public long getNextDownloadId() {
+        long id;
+        RealmQuery<MetaRealm> query = realm.where(MetaRealm.class);
+        final MetaRealm metaRealm = query.findFirst();
+
+        if (metaRealm == null) {
+            id = 1;
+        } else {
+            id = metaRealm.getDownloadId() + 1;
+        }
+
+        realm.executeTransaction(realm1 -> {
+            if (metaRealm == null) {
+                realm1.createObject(MetaRealm.class);
+            } else {
+                metaRealm.setDownloadId(id);
+            }
+        });
+
+        return id;
+    }
+
+    @Override
     public <T extends RealmModel> List<T> fromRealm(RealmList<T> episodes) {
         return realm.copyFromRealm(episodes);
     }

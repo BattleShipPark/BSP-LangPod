@@ -118,6 +118,7 @@ public class DownloaderService extends Service {
         stopForeground(true);
         notificationController.complete();
         queueManager.markComplete(downloadRealm);
+        queueManager.remove(downloadRealm);
 
         runNext();
     }
@@ -127,8 +128,6 @@ public class DownloaderService extends Service {
         stopForeground(true);
         notificationController.complete();
         queueManager.markError(downloadRealm);
-
-        runNext();
     }
 
     private void runNext() {
