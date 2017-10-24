@@ -31,64 +31,77 @@ public class DownloadDbApi implements DownloadDbRepository {
 
     @Override
     public Observable<List<DownloadRealm>> all() {
-        try (Realm realm = Realm.getInstance(realmConfiguration)) {
-            RealmQuery<DownloadRealm> query = realm.where(DownloadRealm.class);
-            RealmResults<DownloadRealm> results = query.findAllSorted(DownloadRealm.FIELD_DOWNLOAD_DATE);
-            return Observable.just(realm.copyFromRealm(results));
-        } catch (Exception e) {
-            return Observable.error(e);
-        }
+        return Observable.create(subscriber -> {
+            try (Realm realm = Realm.getInstance(realmConfiguration)) {
+                RealmQuery<DownloadRealm> query = realm.where(DownloadRealm.class);
+                RealmResults<DownloadRealm> results = query.findAllSorted(DownloadRealm.FIELD_DOWNLOAD_DATE);
+                subscriber.onNext(realm.copyFromRealm(results));
+                subscriber.onCompleted();
+            } catch (Exception e) {
+                subscriber.onError(e);
+            }
+        });
     }
 
     @Override
     public Observable<List<DownloadRealm>> getNotDownloaded() {
-        try (Realm realm = Realm.getInstance(realmConfiguration)) {
-            RealmQuery<DownloadRealm> query = realm.where(DownloadRealm.class)
-                    .equalTo(DownloadRealm.FIELD_DOWNLOAD_STATE, DownloadRealm.DownloadState.NOT_DOWNLOADED.name());
-            RealmResults<DownloadRealm> results = query.findAllSorted(DownloadRealm.FIELD_DOWNLOAD_DATE);
-            return Observable.just(realm.copyFromRealm(results));
-        } catch (Exception e) {
-            return Observable.error(e);
-        }
+        return Observable.create(subscriber -> {
+            try (Realm realm = Realm.getInstance(realmConfiguration)) {
+                RealmQuery<DownloadRealm> query = realm.where(DownloadRealm.class)
+                        .equalTo(DownloadRealm.FIELD_DOWNLOAD_STATE, DownloadRealm.DownloadState.NOT_DOWNLOADED.name());
+                RealmResults<DownloadRealm> results = query.findAllSorted(DownloadRealm.FIELD_DOWNLOAD_DATE);
+                subscriber.onNext(realm.copyFromRealm(results));
+                subscriber.onCompleted();
+            } catch (Exception e) {
+                subscriber.onError(e);
+            }
+        });
     }
 
     @Override
     public Completable insert(DownloadRealm downloadRealm) {
-        try (Realm realm = Realm.getInstance(realmConfiguration)) {
-            realm.executeTransaction(realm1 -> realm1.insert(downloadRealm));
-            return Completable.complete();
-        } catch (Exception e) {
-            return Completable.error(e);
-        }
+        return Completable.create(subscriber -> {
+            try (Realm realm = Realm.getInstance(realmConfiguration)) {
+                realm.executeTransaction(realm1 -> realm1.insert(downloadRealm));
+                subscriber.onCompleted();
+            } catch (Exception e) {
+                subscriber.onError(e);
+            }
+        });
     }
 
     @Override
     public Completable delete(DownloadRealm downloadRealm) {
-        try (Realm realm = Realm.getInstance(realmConfiguration)) {
-            RealmQuery<DownloadRealm> query = realm.where(DownloadRealm.class)
-                    .equalTo(DownloadRealm.FIELD_DOWNLOAD_STATE, DownloadRealm.DownloadState.NOT_DOWNLOADED.name());
-            RealmResults<DownloadRealm> results = query.findAllSorted(DownloadRealm.FIELD_DOWNLOAD_DATE);
-            return Completable.complete();
-        } catch (Exception e) {
-            return Completable.error(e);
-        }
+        return Completable.create(subscriber -> {
+            try (Realm realm = Realm.getInstance(realmConfiguration)) {
+                RealmQuery<DownloadRealm> query = realm.where(DownloadRealm.class)
+                        .equalTo(DownloadRealm.FIELD_DOWNLOAD_STATE, DownloadRealm.DownloadState.NOT_DOWNLOADED.name());
+                RealmResults<DownloadRealm> results = query.findAllSorted(DownloadRealm.FIELD_DOWNLOAD_DATE);
+                results.deleteAllFromRealm();
+                subscriber.onCompleted();
+            } catch (Exception e) {
+                subscriber.onError(e);
+            }
+        });
     }
 
     @Override
     public Completable update(DownloadRealm downloadRealm) {
-        try (Realm realm = Realm.getInstance(realmConfiguration)) {
-            realm.executeTransaction(realm1 -> {
-                RealmQuery<DownloadRealm> query = realm.where(DownloadRealm.class)
-                        .equalTo(DownloadRealm.FIELD_EPISODE_REALM + "." + EpisodeRealm.FIELD_ID, downloadRealm.getEpisodeRealm().getId());
-                DownloadRealm queriedDownloadRealm = query.findFirst();
+        return Completable.create(subscriber -> {
+            try (Realm realm = Realm.getInstance(realmConfiguration)) {
+                realm.executeTransaction(realm1 -> {
+                    RealmQuery<DownloadRealm> query = realm.where(DownloadRealm.class)
+                            .equalTo(DownloadRealm.FIELD_EPISODE_REALM + "." + EpisodeRealm.FIELD_ID, downloadRealm.getEpisodeRealm().getId());
+                    DownloadRealm queriedDownloadRealm = query.findFirst();
 
-                queriedDownloadRealm.setEpisodeRealm(downloadRealm.getEpisodeRealm());
-                queriedDownloadRealm.setDownloadDate(downloadRealm.getDownloadDate());
-                queriedDownloadRealm.setDownloadState(downloadRealm.getDownloadState());
-            });
-            return Completable.complete();
-        } catch (Exception e) {
-            return Completable.error(e);
-        }
+                    queriedDownloadRealm.setEpisodeRealm(downloadRealm.getEpisodeRealm());
+                    queriedDownloadRealm.setDownloadDate(downloadRealm.getDownloadDate());
+                    queriedDownloadRealm.setDownloadState(downloadRealm.getDownloadState());
+                });
+                subscriber.onCompleted();
+            } catch (Exception e) {
+                subscriber.onError(e);
+            }
+        });
     }
 }
