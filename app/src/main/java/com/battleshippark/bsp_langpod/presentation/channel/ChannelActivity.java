@@ -380,9 +380,6 @@ public class ChannelActivity extends Activity implements OnItemListener {
                     episodeRealm.setDownloadedBytes(param.bytesRead());
                     episodeRealm.setTotalBytes(param.contentLength());
                     adapter.notifyDataSetChanged();
-
-                    updateEpisode.execute(episodeRealm).subscribe(aVoid -> {
-                    }, logger::w);
                 });
     }
 

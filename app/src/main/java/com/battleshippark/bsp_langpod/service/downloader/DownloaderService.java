@@ -12,6 +12,7 @@ import com.annimon.stream.Stream;
 import com.battleshippark.bsp_langpod.AppPhase;
 import com.battleshippark.bsp_langpod.BuildConfig;
 import com.battleshippark.bsp_langpod.dagger.DaggerDbApiGraph;
+import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.DownloadDbApi;
 import com.battleshippark.bsp_langpod.data.db.DownloadRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
@@ -20,6 +21,7 @@ import com.battleshippark.bsp_langpod.data.downloader.DownloadErrorParam;
 import com.battleshippark.bsp_langpod.data.downloader.DownloadProgressParam;
 import com.battleshippark.bsp_langpod.domain.DownloadMedia;
 import com.battleshippark.bsp_langpod.domain.GetChannelWithEpisodeId;
+import com.battleshippark.bsp_langpod.domain.UpdateEpisode;
 import com.battleshippark.bsp_langpod.service.DownloaderNotificationController;
 import com.battleshippark.bsp_langpod.util.Logger;
 
@@ -53,6 +55,7 @@ public class DownloaderService extends Service {
     private Handler operationHandler;
     private DownloadMedia downloadMedia;
     private GetChannelWithEpisodeId getChannelWithEpisodeId;
+    private UpdateEpisode updateEpisode;
     private DownloadDbApi downloadDbApi;
     private CompositeSubscription subscription = new CompositeSubscription();
     private DownloaderNotificationController notificationController;
@@ -71,8 +74,12 @@ public class DownloaderService extends Service {
 
         HandlerScheduler downloadScheduler = HandlerScheduler.from(downloadHandler);
         HandlerScheduler operationScheduler = HandlerScheduler.from(operationHandler);
+
         downloadMedia = new DownloadMedia(this, downloadScheduler, operationScheduler, new AppPhase(BuildConfig.DEBUG));
-        getChannelWithEpisodeId = new GetChannelWithEpisodeId(DaggerDbApiGraph.create().channelApi(), operationScheduler, operationScheduler);
+
+        ChannelDbApi channelDbApi = DaggerDbApiGraph.create().channelApi();
+        getChannelWithEpisodeId = new GetChannelWithEpisodeId(channelDbApi, operationScheduler, operationScheduler);
+        updateEpisode = new UpdateEpisode(channelDbApi, operationScheduler, operationScheduler);
 
         downloadDbApi = DaggerDbApiGraph.create().downloadApi();
 
@@ -151,9 +158,16 @@ public class DownloaderService extends Service {
                             .findFirst()
                             .ifPresent(episodeRealm -> {
                                 AndroidSchedulers.mainThread().createWorker().schedule(() -> notificationController.update(channelRealm, episodeRealm, param));
+
+                                episodeRealm.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADING);
+                                episodeRealm.setDownloadedBytes(param.bytesRead());
+                                episodeRealm.setTotalBytes(param.contentLength());
+                                updateEpisode.execute(episodeRealm).subscribe(aVoid -> {
+                                }, logger::w);
                             });
                 },
                 logger::w);
+
         sendProgressBroadcast(param);
     }
 
