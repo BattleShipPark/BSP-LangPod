@@ -13,6 +13,7 @@
     <string name="notification_waiting_download">Waiting for download…</string>
     <string name="setting_download_only_wifi">Download only with WIFI</string>
     <string name="setting_clear_cache">Clear Cache</string>
-    <string name="setting_download_list">Download List</string>
     <string name="setting_clear_cache_message">Clear All Downloaded Files?</string>
+    <string name="setting_download_list">Download List</string>
+    <string name="setting_download_list_empty_msg">You have no download list.</string>
 </resources>

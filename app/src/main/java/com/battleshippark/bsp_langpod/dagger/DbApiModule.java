@@ -4,6 +4,8 @@ import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.DownloadDbApi;
 import com.battleshippark.bsp_langpod.data.db.RealmConfigurationFactory;
 
+import javax.inject.Singleton;
+
 import dagger.Module;
 import dagger.Provides;
 import io.realm.RealmConfiguration;
@@ -23,6 +25,7 @@ class DbApiModule {
         return new DownloadDbApi(configuration);
     }
 
+    @Singleton
     @Provides
     RealmConfiguration realmConfiguration() {
         return RealmConfigurationFactory.create();

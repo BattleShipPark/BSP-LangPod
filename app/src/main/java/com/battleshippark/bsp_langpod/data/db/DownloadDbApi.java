@@ -33,7 +33,7 @@ public class DownloadDbApi implements DownloadDbRepository {
     public Observable<List<DownloadRealm>> all() {
         try (Realm realm = Realm.getInstance(realmConfiguration)) {
             RealmQuery<DownloadRealm> query = realm.where(DownloadRealm.class);
-            RealmResults<DownloadRealm> results = query.findAll();
+            RealmResults<DownloadRealm> results = query.findAllSorted(DownloadRealm.FIELD_DOWNLOAD_DATE);
             return Observable.just(realm.copyFromRealm(results));
         } catch (Exception e) {
             return Observable.error(e);
@@ -55,9 +55,7 @@ public class DownloadDbApi implements DownloadDbRepository {
     @Override
     public Completable insert(DownloadRealm downloadRealm) {
         try (Realm realm = Realm.getInstance(realmConfiguration)) {
-            realm.executeTransaction(realm1 -> {
-                realm1.insert(downloadRealm);
-            });
+            realm.executeTransaction(realm1 -> realm1.insert(downloadRealm));
             return Completable.complete();
         } catch (Exception e) {
             return Completable.error(e);

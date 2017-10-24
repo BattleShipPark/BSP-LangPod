@@ -16,7 +16,6 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 /**
  */
 public class DownloadDbApiTest {
-    private RealmConfiguration configuration;
     private Realm realm;
     private DownloadDbApi api;
     private DownloadRealm downloadRealm1, downloadRealm2;
@@ -24,7 +23,7 @@ public class DownloadDbApiTest {
 
     @Before
     public void before() {
-        configuration = RealmConfigurationFactory.createTest();
+        RealmConfiguration configuration = RealmConfigurationFactory.createTest();
         realm = Realm.getInstance(configuration);
         api = new DownloadDbApi(configuration);
 
