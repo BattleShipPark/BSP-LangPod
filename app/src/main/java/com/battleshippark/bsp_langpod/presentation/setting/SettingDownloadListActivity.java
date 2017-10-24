@@ -2,7 +2,9 @@ package com.battleshippark.bsp_langpod.presentation.setting;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toolbar;
@@ -65,6 +67,7 @@ public class SettingDownloadListActivity extends Activity implements OnItemListe
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setDisplayShowHomeEnabled(true);
 
+        downloadRv.setLayoutManager(new LinearLayoutManager(this));
         downloadRv.setAdapter(adapter);
     }
 
@@ -80,6 +83,17 @@ public class SettingDownloadListActivity extends Activity implements OnItemListe
             msgTv.setVisibility(View.VISIBLE);
         } else {
             msgTv.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 

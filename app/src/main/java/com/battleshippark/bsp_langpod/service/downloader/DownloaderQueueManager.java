@@ -29,7 +29,7 @@ public class DownloaderQueueManager {
     }
 
     void offer(DownloadRealm downloadRealm) {
-        downloadDbApi.insert(downloadRealm);
+        downloadDbApi.insert(downloadRealm).subscribe();
         queue.offer(downloadRealm);
     }
 
@@ -43,16 +43,16 @@ public class DownloaderQueueManager {
 
     void markComplete(DownloadRealm downloadRealm) {
         downloadRealm.setDownloadState(DownloadRealm.DownloadState.DOWNLOADED);
-        downloadDbApi.update(downloadRealm);
+        downloadDbApi.update(downloadRealm).subscribe();
     }
 
     void markError(DownloadRealm downloadRealm) {
         downloadRealm.setDownloadState(DownloadRealm.DownloadState.FAILED_DOWNLOAD);
-        downloadDbApi.update(downloadRealm);
+        downloadDbApi.update(downloadRealm).subscribe();
     }
 
     void markDownloading(DownloadRealm downloadRealm) {
         downloadRealm.setDownloadState(DownloadRealm.DownloadState.DOWNLOADING);
-        downloadDbApi.update(downloadRealm);
+        downloadDbApi.update(downloadRealm).subscribe();
     }
 }

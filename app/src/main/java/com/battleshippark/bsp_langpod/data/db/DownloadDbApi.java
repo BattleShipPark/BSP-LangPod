@@ -2,6 +2,8 @@ package com.battleshippark.bsp_langpod.data.db;
 
 import android.support.annotation.VisibleForTesting;
 
+import com.annimon.stream.Stream;
+
 import java.util.List;
 
 import javax.inject.Inject;
@@ -18,6 +20,7 @@ import rx.Observable;
 
 public class DownloadDbApi implements DownloadDbRepository {
     private final RealmConfiguration realmConfiguration;
+    private ChannelDbRepository channelDbRepository;
 
     @VisibleForTesting
     DownloadDbApi() {
@@ -25,8 +28,9 @@ public class DownloadDbApi implements DownloadDbRepository {
     }
 
     @Inject
-    public DownloadDbApi(RealmConfiguration realmConfiguration) {
+    public DownloadDbApi(RealmConfiguration realmConfiguration, ChannelDbRepository channelDbRepository) {
         this.realmConfiguration = realmConfiguration;
+        this.channelDbRepository = channelDbRepository;
     }
 
     @Override
@@ -35,12 +39,27 @@ public class DownloadDbApi implements DownloadDbRepository {
             try (Realm realm = Realm.getInstance(realmConfiguration)) {
                 RealmQuery<DownloadRealm> query = realm.where(DownloadRealm.class);
                 RealmResults<DownloadRealm> results = query.findAllSorted(DownloadRealm.FIELD_DOWNLOAD_DATE);
-                subscriber.onNext(realm.copyFromRealm(results));
+
+                List<DownloadRealm> downloadRealmList = Stream.of(realm.copyFromRealm(results)).map(this::populate).toList();
+                subscriber.onNext(downloadRealmList);
                 subscriber.onCompleted();
             } catch (Exception e) {
                 subscriber.onError(e);
             }
         });
+    }
+
+    private DownloadRealm populate(DownloadRealm downloadRealm) {
+        ChannelRealm channelRealm = channelDbRepository.channel(downloadRealm.getChannelId()).toBlocking().first();
+
+        EpisodeRealm episodeRealm = Stream.of(channelRealm.getEpisodes())
+                .filter(episodeRealm1 -> episodeRealm1.getId() == downloadRealm.getEpisodeId())
+                .findFirst().get();
+
+        DownloadRealm result = new DownloadRealm(channelRealm, episodeRealm);
+        result.setDownloadDate(downloadRealm.getDownloadDate());
+        result.setDownloadState(downloadRealm.getDownloadState());
+        return result;
     }
 
     @Override
@@ -90,11 +109,9 @@ public class DownloadDbApi implements DownloadDbRepository {
         return Completable.create(subscriber -> {
             try (Realm realm = Realm.getInstance(realmConfiguration)) {
                 realm.executeTransaction(realm1 -> {
-                    RealmQuery<DownloadRealm> query = realm.where(DownloadRealm.class)
-                            .equalTo(DownloadRealm.FIELD_EPISODE_REALM + "." + EpisodeRealm.FIELD_ID, downloadRealm.getEpisodeRealm().getId());
-                    DownloadRealm queriedDownloadRealm = query.findFirst();
+                    DownloadRealm queriedDownloadRealm = realm.where(DownloadRealm.class)
+                            .equalTo(DownloadRealm.FIELD_ID, downloadRealm.getId()).findFirst();
 
-                    queriedDownloadRealm.setEpisodeRealm(downloadRealm.getEpisodeRealm());
                     queriedDownloadRealm.setDownloadDate(downloadRealm.getDownloadDate());
                     queriedDownloadRealm.setDownloadState(downloadRealm.getDownloadState());
                 });

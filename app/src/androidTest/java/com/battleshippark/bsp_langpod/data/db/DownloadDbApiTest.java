@@ -25,7 +25,7 @@ public class DownloadDbApiTest {
     public void before() {
         RealmConfiguration configuration = RealmConfigurationFactory.createTest();
         realm = Realm.getInstance(configuration);
-        api = new DownloadDbApi(configuration);
+        api = new DownloadDbApi(configuration, new ChannelDbApi(configuration));
 
         downloadRealm1 = new DownloadRealm();
         downloadRealm1.setDownloadDate(new Date(0x1234));

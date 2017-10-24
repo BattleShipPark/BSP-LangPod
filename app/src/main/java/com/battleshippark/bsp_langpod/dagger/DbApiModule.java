@@ -21,8 +21,8 @@ class DbApiModule {
     }
 
     @Provides
-    DownloadDbApi downloadApi(RealmConfiguration configuration) {
-        return new DownloadDbApi(configuration);
+    DownloadDbApi downloadApi(RealmConfiguration configuration, ChannelDbApi channelDbApi) {
+        return new DownloadDbApi(configuration, channelDbApi);
     }
 
     @Singleton
