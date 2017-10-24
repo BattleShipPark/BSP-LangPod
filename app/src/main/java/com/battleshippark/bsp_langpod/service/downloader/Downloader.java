@@ -34,9 +34,8 @@ public class Downloader {
 
     public void enqueue(ChannelRealm channelRealm, EpisodeRealm episodeRealm) {
         if (isBound()) {
-            queueManager.offer(DownloadRealm.of(episodeRealm));
+            queueManager.offer(DownloadRealm.of(channelRealm, episodeRealm));
         } else {
-//            connection.setOnConnected(service -> service.setQueue(queue));//enqueue(episodeRealm));
             context.bindService(new Intent(context, DownloaderService.class), connection, Context.BIND_AUTO_CREATE);
         }
     }

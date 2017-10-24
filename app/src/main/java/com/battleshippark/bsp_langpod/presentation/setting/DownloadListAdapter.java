@@ -53,7 +53,7 @@ class DownloadListAdapter extends RecyclerView.Adapter<DownloadListAdapter.ViewH
         @BindView(R.id.image_iv)
         ImageView imageView;
         @BindView(R.id.channel_tv)
-        TextView titleView;
+        TextView channelView;
         @BindView(R.id.episode_tv)
         TextView episodeView;
         @BindView(R.id.date_tv)

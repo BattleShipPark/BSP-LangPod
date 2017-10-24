@@ -10,7 +10,10 @@ import android.widget.Toolbar;
 import com.battleshippark.bsp_langpod.R;
 import com.battleshippark.bsp_langpod.dagger.DaggerDbApiGraph;
 import com.battleshippark.bsp_langpod.data.db.DownloadRealm;
+import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
 import com.battleshippark.bsp_langpod.domain.GetDownloadList;
+import com.battleshippark.bsp_langpod.presentation.EpisodeDateFormat;
+import com.bumptech.glide.Glide;
 
 import java.util.List;
 
@@ -20,6 +23,8 @@ import butterknife.Unbinder;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
+
+import static com.battleshippark.bsp_langpod.Const.MEGA_BYTE;
 
 public class SettingDownloadListActivity extends Activity implements OnItemListener {
 
@@ -33,7 +38,9 @@ public class SettingDownloadListActivity extends Activity implements OnItemListe
     private Unbinder unbinder;
     private DownloadListAdapter adapter;
     private GetDownloadList getDownloadList;
-    private CompositeSubscription subscription = new CompositeSubscription();
+    private final CompositeSubscription subscription = new CompositeSubscription();
+
+    private final EpisodeDateFormat dateFormat = new EpisodeDateFormat();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +92,25 @@ public class SettingDownloadListActivity extends Activity implements OnItemListe
 
     @Override
     public void onBindViewHolder(DownloadListAdapter.ViewHolder holder, DownloadRealm downloadRealm) {
+        Glide.with(holder.imageView.getContext()).load(downloadRealm.getChannelRealm().getImage()).into(holder.imageView);
+        holder.channelView.setText(downloadRealm.getChannelRealm().getTitle());
 
+        holder.episodeView.setText(downloadRealm.getEpisodeRealm().getTitle());
+        holder.dateView.setText(dateFormat.format(downloadRealm.getEpisodeRealm().getDate()));
+        holder.statusView.setText(getStatusText(downloadRealm.getDownloadState(), downloadRealm.getEpisodeRealm()));
+    }
+
+    private String getStatusText(DownloadRealm.DownloadState state, EpisodeRealm episodeRealm) {
+        switch (state) {
+            case NOT_DOWNLOADED:
+                return getString(R.string.download_list_episode_not_downloaded);
+            case DOWNLOADING:
+                return getString(R.string.download_list_episode_downloading, episodeRealm.getDownloadedBytes() / MEGA_BYTE, episodeRealm.getTotalBytes() / MEGA_BYTE);
+            case DOWNLOADED:
+                return getString(R.string.download_list_episode_downloaded);
+            case FAILED_DOWNLOAD:
+                return getString(R.string.download_list_episode_failed_download);
+        }
+        return "";
     }
 }

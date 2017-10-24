@@ -12,6 +12,7 @@ public class DownloadRealm extends RealmObject {
     static final String FIELD_DOWNLOAD_DATE = "downloadDate";
     static final String FIELD_DOWNLOAD_STATE = "downloadState";
 
+    private ChannelRealm channelRealm;
     private EpisodeRealm episodeRealm;
     private Date downloadDate;
     private String downloadState;
@@ -20,11 +21,21 @@ public class DownloadRealm extends RealmObject {
 
     }
 
-    DownloadRealm(EpisodeRealm episodeRealm) {
+    DownloadRealm(ChannelRealm channelRealm, EpisodeRealm episodeRealm) {
+        this.channelRealm = channelRealm;
         this.episodeRealm = episodeRealm;
         this.downloadDate = new Date();
         this.downloadState = DownloadState.NOT_DOWNLOADED.name();
     }
+
+    public ChannelRealm getChannelRealm() {
+        return channelRealm;
+    }
+
+    public void setChannelRealm(ChannelRealm channelRealm) {
+        this.channelRealm = channelRealm;
+    }
+
 
     public EpisodeRealm getEpisodeRealm() {
         return episodeRealm;
@@ -53,14 +64,15 @@ public class DownloadRealm extends RealmObject {
     @Override
     public String toString() {
         return "DownloadRealm{" +
-                "episodeRealm=" + episodeRealm +
+                "channelRealm=" + channelRealm +
+                ", episodeRealm=" + episodeRealm +
                 ", downloadDate=" + downloadDate +
                 ", downloadState=" + downloadState +
                 '}';
     }
 
-    public static DownloadRealm of(EpisodeRealm episodeRealm) {
-        return new DownloadRealm(episodeRealm);
+    public static DownloadRealm of(ChannelRealm channelRealm, EpisodeRealm episodeRealm) {
+        return new DownloadRealm(channelRealm, episodeRealm);
     }
 
     public enum DownloadState {

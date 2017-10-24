@@ -15,5 +15,9 @@
     <string name="setting_clear_cache">Clear Cache</string>
     <string name="setting_clear_cache_message">Clear All Downloaded Files?</string>
     <string name="setting_download_list">Download List</string>
-    <string name="setting_download_list_empty_msg">You have no download list.</string>
+    <string name="download_list_empty_msg">You have no download list.</string>
+    <string name="download_list_episode_not_downloaded">Not Downloaded</string>
+    <string name="download_list_episode_downloading">Downloading (%1$.1f/%2$.1fMB)</string>
+    <string name="download_list_episode_downloaded">Downloaded</string>
+    <string name="download_list_episode_failed_download">Failed to Download</string>
 </resources>

@@ -37,16 +37,13 @@ import com.battleshippark.bsp_langpod.domain.DomainMapper;
 import com.battleshippark.bsp_langpod.domain.GetChannel;
 import com.battleshippark.bsp_langpod.domain.SubscribeChannel;
 import com.battleshippark.bsp_langpod.domain.UpdateEpisode;
-import com.battleshippark.bsp_langpod.service.downloader.DownloaderService;
+import com.battleshippark.bsp_langpod.presentation.EpisodeDateFormat;
 import com.battleshippark.bsp_langpod.service.downloader.Downloader;
+import com.battleshippark.bsp_langpod.service.downloader.DownloaderService;
 import com.battleshippark.bsp_langpod.service.player.PlayerService;
 import com.battleshippark.bsp_langpod.service.player.PlayerServiceFacade;
 import com.battleshippark.bsp_langpod.util.Logger;
 import com.bumptech.glide.Glide;
-
-import java.text.SimpleDateFormat;
-import java.util.Locale;
-import java.util.TimeZone;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -55,10 +52,11 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 
+import static com.battleshippark.bsp_langpod.Const.MEGA_BYTE;
+
 public class ChannelActivity extends Activity implements OnItemListener {
     private static final String TAG = ChannelActivity.class.getSimpleName();
     private static final String KEY_ID = "keyId";
-    private static final float MEGA_BYTE = 1024 * 1024 * 1.0f;
     private static final Logger logger = new Logger(TAG);
 
     @BindView(R.id.toolbar)
@@ -130,7 +128,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
 
     private long channelId;
     private ChannelRealm channelRealm;
-    private SimpleDateFormat dateFormat;
+    private EpisodeDateFormat dateFormat = new EpisodeDateFormat();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -167,9 +165,6 @@ public class ChannelActivity extends Activity implements OnItemListener {
         } else {
             channelId = savedInstanceState.getLong(KEY_ID);
         }
-
-        dateFormat = new SimpleDateFormat("MM/dd", Locale.US);
-        dateFormat.setTimeZone(TimeZone.getDefault());
     }
 
     private void initUI() {
