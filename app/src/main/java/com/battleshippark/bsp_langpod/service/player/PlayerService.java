@@ -99,7 +99,7 @@ public class PlayerService extends Service {
     }
 
     private void play(long channelId, long episodeId) {
-        getChannel.execute(new GetChannel.Param(channelId, GetChannel.Source.DB)).subscribe(channelRealm -> {
+        getChannel.execute(new GetChannel.Param(channelId, GetChannel.Type.ONLY_DB)).subscribe(channelRealm -> {
             for (EpisodeRealm episodeRealm : channelRealm.getEpisodes()) {
                 if (episodeRealm.getId() == episodeId) {
                     play(channelRealm, episodeRealm);
@@ -131,7 +131,7 @@ public class PlayerService extends Service {
     }
 
     private void pause(long channelId, long episodeId) {
-        getChannel.execute(new GetChannel.Param(channelId, GetChannel.Source.DB)).subscribe(channelRealm -> {
+        getChannel.execute(new GetChannel.Param(channelId, GetChannel.Type.ONLY_DB)).subscribe(channelRealm -> {
             for (EpisodeRealm episodeRealm : channelRealm.getEpisodes()) {
                 if (episodeRealm.getId() == episodeId) {
                     pause(channelRealm, episodeRealm);

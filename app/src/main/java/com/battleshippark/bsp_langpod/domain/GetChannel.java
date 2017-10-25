@@ -33,18 +33,18 @@ public class GetChannel implements UseCase<GetChannel.Param, ChannelRealm> {
         return Observable.create(subscriber ->
                 dbRepository.channel(param.channelId).subscribeOn(scheduler).observeOn(postScheduler)
                         .subscribe(channelRealm -> onDbLoaded(param, subscriber, channelRealm),
-                                throwable -> subscriber.onError(new GetChannelThrowable(throwable, Source.DB))));
+                                throwable -> subscriber.onError(new GetChannelThrowable(throwable, Type.ONLY_DB))));
     }
 
     private void onDbLoaded(Param param, Subscriber<? super ChannelRealm> subscriber, ChannelRealm channelRealm) {
         subscriber.onNext(channelRealm);
 
-        if (param.source == Source.DB) {
+        if (param.type == Type.ONLY_DB) {
             subscriber.onCompleted();
         } else {
             serverRepository.myChannel(channelRealm.getUrl()).subscribeOn(scheduler).observeOn(postScheduler)
                     .subscribe(myChannelJson -> onServerLoaded(subscriber, channelRealm, myChannelJson),
-                            throwable -> subscriber.onError(new GetChannelThrowable(throwable, Source.DB_NETWORK)),
+                            throwable -> subscriber.onError(new GetChannelThrowable(throwable, Type.DB_AND_SERVER)),
                             subscriber::onCompleted);
         }
     }
@@ -53,33 +53,33 @@ public class GetChannel implements UseCase<GetChannel.Param, ChannelRealm> {
         ChannelRealm newChannelRealm = domainMapper.channelJsonAsRealm(channelRealm, channelJson);
         subscriber.onNext(newChannelRealm);
         dbRepository.putChannel(newChannelRealm).subscribeOn(scheduler).observeOn(postScheduler)
-                .subscribe(subscriber::onCompleted, throwable -> subscriber.onError(new GetChannelThrowable(throwable, Source.DB_NETWORK)));
+                .subscribe(subscriber::onCompleted, throwable -> subscriber.onError(new GetChannelThrowable(throwable, Type.DB_AND_SERVER)));
     }
 
     public static class Param {
         final long channelId;
-        final Source source;
+        final Type type;
 
-        public Param(long channelId, Source source) {
+        public Param(long channelId, Type type) {
             this.channelId = channelId;
-            this.source = source;
+            this.type = type;
         }
     }
 
-    public enum Source {
-        DB, DB_NETWORK
+    public enum Type {
+        ONLY_DB, DB_AND_SERVER
     }
 
     public static class GetChannelThrowable extends Throwable {
-        private final Source source;
+        private final Type type;
 
-        GetChannelThrowable(Throwable t, Source source) {
+        GetChannelThrowable(Throwable t, Type type) {
             super(t);
-            this.source = source;
+            this.type = type;
         }
 
-        public Source getSource() {
-            return source;
+        public Type getType() {
+            return type;
         }
     }
 }

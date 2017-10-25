@@ -73,7 +73,7 @@ public class GetChannelTest {
 
         GetChannel getChannel = new GetChannel(dbRepository, serverRepository,
                 Schedulers.immediate(), Schedulers.immediate(), domainMapper);
-        getChannel.execute(new GetChannel.Param(1, GetChannel.Source.DB)).subscribe(testSubscriber);
+        getChannel.execute(new GetChannel.Param(1, GetChannel.Type.ONLY_DB)).subscribe(testSubscriber);
 
         verify(serverRepository, never()).myChannel(any());
 
@@ -88,12 +88,12 @@ public class GetChannelTest {
 
         GetChannel getChannel = new GetChannel(dbRepository, serverRepository,
                 Schedulers.immediate(), Schedulers.immediate(), domainMapper);
-        getChannel.execute(new GetChannel.Param(1, GetChannel.Source.DB)).subscribe(testSubscriber);
+        getChannel.execute(new GetChannel.Param(1, GetChannel.Type.ONLY_DB)).subscribe(testSubscriber);
 
         testSubscriber.assertNotCompleted();
         assertThat(testSubscriber.getOnErrorEvents()).hasSize(1);
         GetChannel.GetChannelThrowable throwable = (GetChannel.GetChannelThrowable) testSubscriber.getOnErrorEvents().get(0);
-        assertThat(throwable.getSource()).isEqualTo(GetChannel.Source.DB);
+        assertThat(throwable.getType()).isEqualTo(GetChannel.Type.ONLY_DB);
     }
 
     @Test
@@ -103,7 +103,7 @@ public class GetChannelTest {
 
         GetChannel getChannel = new GetChannel(dbRepository, serverRepository,
                 Schedulers.immediate(), Schedulers.immediate(), domainMapper);
-        getChannel.execute(new GetChannel.Param(1, GetChannel.Source.DB_NETWORK)).subscribe(testSubscriber);
+        getChannel.execute(new GetChannel.Param(1, GetChannel.Type.DB_AND_SERVER)).subscribe(testSubscriber);
 
         verify(serverRepository).myChannel(any());
         verify(dbRepository).putChannel(any());
@@ -116,12 +116,12 @@ public class GetChannelTest {
 
         GetChannel getChannel = new GetChannel(dbRepository, serverRepository,
                 Schedulers.immediate(), Schedulers.immediate(), domainMapper);
-        getChannel.execute(new GetChannel.Param(1, GetChannel.Source.DB_NETWORK)).subscribe(testSubscriber);
+        getChannel.execute(new GetChannel.Param(1, GetChannel.Type.DB_AND_SERVER)).subscribe(testSubscriber);
 
         testSubscriber.assertNotCompleted();
         assertThat(testSubscriber.getOnErrorEvents()).hasSize(1);
         GetChannel.GetChannelThrowable throwable = (GetChannel.GetChannelThrowable) testSubscriber.getOnErrorEvents().get(0);
-        assertThat(throwable.getSource()).isEqualTo(GetChannel.Source.DB_NETWORK);
+        assertThat(throwable.getType()).isEqualTo(GetChannel.Type.DB_AND_SERVER);
     }
 
     @Test
@@ -134,7 +134,7 @@ public class GetChannelTest {
                 Schedulers.immediate(), Schedulers.immediate(), domainMapper);
 
 
-        getChannel.execute(new GetChannel.Param(1L, GetChannel.Source.DB_NETWORK)).subscribe(testSubscriber); //1번ID 조회
+        getChannel.execute(new GetChannel.Param(1L, GetChannel.Type.DB_AND_SERVER)).subscribe(testSubscriber); //1번ID 조회
 
 
         testSubscriber.awaitTerminalEvent();

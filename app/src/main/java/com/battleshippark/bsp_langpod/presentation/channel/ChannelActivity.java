@@ -179,7 +179,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
     private void requestChannel() {
         progressBar.setVisibility(View.VISIBLE);
         subscription.add(
-                getChannel.execute(new GetChannel.Param(channelId, GetChannel.Source.DB_NETWORK))
+                getChannel.execute(new GetChannel.Param(channelId, GetChannel.Type.DB_AND_SERVER))
                         .subscribe(this::showData, this::showError, this::dataCompleted));
     }
 
@@ -235,7 +235,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
             return;
         }
         GetChannel.GetChannelThrowable t = (GetChannel.GetChannelThrowable) throwable;
-        if (t.getSource() == GetChannel.Source.DB) {
+        if (t.getType() == GetChannel.Type.ONLY_DB) {
             progressBar.setVisibility(View.GONE);
             rv.setVisibility(View.GONE);
             msgTextView.setVisibility(View.VISIBLE);
