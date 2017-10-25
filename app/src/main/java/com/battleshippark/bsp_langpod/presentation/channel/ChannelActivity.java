@@ -224,7 +224,6 @@ public class ChannelActivity extends Activity implements OnItemListener {
 
         this.channelRealm = channelRealm;
         adapter.setItems(this.channelRealm);
-        adapter.notifyDataSetChanged();
 
         rv.setVisibility(View.VISIBLE);
         msgTextView.setVisibility(View.GONE);

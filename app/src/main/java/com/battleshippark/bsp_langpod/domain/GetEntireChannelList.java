@@ -39,7 +39,7 @@ public class GetEntireChannelList implements UseCase<GetEntireChannelList.Type, 
                 dbRepository.entireChannelList().subscribeOn(scheduler).observeOn(postScheduler)
                         .subscribe(
                                 entireChannelRealmList -> onDbLoaded(subscriber, param, entireChannelRealmList),
-                                subscriber::onError));
+                                throwable -> subscriber.onError(new GetEntireChannelListThrowable(throwable, Type.ONLY_DB))));
     }
 
     private void onDbLoaded(Subscriber<? super List<ChannelRealm>> subscriber, Type param, List<ChannelRealm> channelRealmList) {
@@ -50,7 +50,8 @@ public class GetEntireChannelList implements UseCase<GetEntireChannelList.Type, 
                 serverRepository.entireChannelList().subscribeOn(scheduler).observeOn(postScheduler)
                         .subscribe(
                                 channelListJson -> onServerLoaded(subscriber, channelRealmList, channelListJson),
-                                subscriber::onError, subscriber::onCompleted);
+                                throwable -> subscriber.onError(new GetEntireChannelListThrowable(throwable, Type.DB_AND_SERVER)),
+                                subscriber::onCompleted);
             } else {
                 subscriber.onCompleted();
             }
@@ -62,13 +63,26 @@ public class GetEntireChannelList implements UseCase<GetEntireChannelList.Type, 
     private void onServerLoaded(Subscriber<? super List<ChannelRealm>> subscriber, List<ChannelRealm> localChannelRealmList, EntireChannelListJson entireChannelListJson) {
         List<ChannelRealm> channelRealmList = domainMapper.entireChannelListJsonAsRealm(localChannelRealmList, entireChannelListJson);
         subscriber.onNext(channelRealmList);
-        dbRepository.putEntireChannelList(channelRealmList)
-                .subscribeOn(scheduler).observeOn(postScheduler)
-                .subscribe(subscriber::onCompleted, subscriber::onError);
+        dbRepository.putEntireChannelList(channelRealmList).subscribeOn(scheduler).observeOn(postScheduler)
+                .subscribe(subscriber::onCompleted,
+                        throwable -> subscriber.onError(new GetEntireChannelListThrowable(throwable, Type.DB_AND_SERVER)));
     }
 
     public enum Type {
         ONLY_DB,
         DB_AND_SERVER
+    }
+
+    public static class GetEntireChannelListThrowable extends Throwable {
+        private final Type type;
+
+        GetEntireChannelListThrowable(Throwable t, Type type) {
+            super(t);
+            this.type = type;
+        }
+
+        public Type getType() {
+            return type;
+        }
     }
 }

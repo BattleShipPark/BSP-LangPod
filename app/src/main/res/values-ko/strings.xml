@@ -4,6 +4,8 @@
     <string name="main_tab_entire">전체 목록</string>
     <string name="main_tab_my">구독 목록</string>
     <string name="main_tab_setting">설정</string>
+    <string name="entire_channel_failed_load_from_db">리스트를 읽으면서 에러가 발생했습니다.</string>
+    <string name="entire_channel_failed_load_from_network">서버에서 리스트를 가져오지 못했습니다.</string>
     <string name="my_list_empty_msg">구독 목록이 비어 있습니다. 전체 목록에서 추가해 주세요.</string>
     <string name="my_list_error_msg">리스트를 읽으면서 에러가 발생했습니다.</string>
     <string name="channel_failed_load_from_network">서버에서 리스트를 가져오지 못했습니다.</string>

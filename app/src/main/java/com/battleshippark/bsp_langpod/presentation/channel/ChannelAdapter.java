@@ -66,6 +66,7 @@ class ChannelAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     public void setItems(ChannelRealm channelRealm) {
         this.channelRealm = channelRealm;
+        notifyDataSetChanged();
     }
 
     enum ViewType {HEADER, EPISODE}

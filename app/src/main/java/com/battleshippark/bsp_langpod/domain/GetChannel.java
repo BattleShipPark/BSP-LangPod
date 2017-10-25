@@ -53,7 +53,8 @@ public class GetChannel implements UseCase<GetChannel.Param, ChannelRealm> {
         ChannelRealm newChannelRealm = domainMapper.channelJsonAsRealm(channelRealm, channelJson);
         subscriber.onNext(newChannelRealm);
         dbRepository.putChannel(newChannelRealm).subscribeOn(scheduler).observeOn(postScheduler)
-                .subscribe(subscriber::onCompleted, throwable -> subscriber.onError(new GetChannelThrowable(throwable, Type.DB_AND_SERVER)));
+                .subscribe(subscriber::onCompleted,
+                        throwable -> subscriber.onError(new GetChannelThrowable(throwable, Type.DB_AND_SERVER)));
     }
 
     public static class Param {
