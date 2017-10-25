@@ -179,7 +179,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
     private void requestChannel() {
         progressBar.setVisibility(View.VISIBLE);
         subscription.add(
-                getChannel.execute(channelId)
+                getChannel.execute(new GetChannel.Param(channelId, GetChannel.Source.DB_NETWORK))
                         .subscribe(this::showData, this::showError, this::dataCompleted));
     }
 

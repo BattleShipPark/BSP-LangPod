@@ -1,8 +1,13 @@
 package com.battleshippark.bsp_langpod.service.downloader;
 
+import com.battleshippark.bsp_langpod.dagger.DaggerDomainMapperGraph;
+import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.DownloadDbRepository;
 import com.battleshippark.bsp_langpod.data.db.DownloadRealm;
+import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
+import com.battleshippark.bsp_langpod.domain.DomainMapper;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -18,26 +23,40 @@ public class DownloaderQueueManagerTest {
     @Mock
     DownloadDbRepository repository;
 
+    DomainMapper domainMapper = DaggerDomainMapperGraph.create().domainMapper();
+    DownloaderQueueManager manager;
+    ChannelRealm channelRealm;
+    EpisodeRealm episodeRealm;
+
+    @Before
+    public void setup() {
+        DownloaderQueueManager.create(repository, domainMapper);
+        manager = DownloaderQueueManager.getInstance();
+
+        channelRealm = new ChannelRealm();
+        channelRealm.setId(0x12);
+        episodeRealm = new EpisodeRealm();
+        episodeRealm.setId(0x23);
+    }
+
     @Test
     public void offer_peek() throws InterruptedException {
-        DownloaderQueueManager.create(repository);
-        DownloaderQueueManager manager = DownloaderQueueManager.getInstance();
-        DownloadRealm downloadRealm = new DownloadRealm();
-        manager.offer(downloadRealm);
+        manager.offer(channelRealm, episodeRealm);
 
-        assertThat(manager.peek()).isEqualTo(downloadRealm);
+        DownloadRealm downloadRealm = manager.peek();
+        assertThat(downloadRealm.getChannelRealm()).isEqualTo(channelRealm);
+        assertThat(downloadRealm.getEpisodeRealm()).isEqualTo(episodeRealm);
 
-        assertThat(manager.peek()).isEqualTo(downloadRealm); //one more time
+        downloadRealm = manager.peek();
+        assertThat(downloadRealm.getChannelRealm()).isEqualTo(channelRealm);
+        assertThat(downloadRealm.getEpisodeRealm()).isEqualTo(episodeRealm); //one more time
     }
 
     @Test
     public void peek한결과를수정() throws InterruptedException {
-        DownloaderQueueManager.create(repository);
-        DownloaderQueueManager manager = DownloaderQueueManager.getInstance();
-        DownloadRealm downloadRealm = new DownloadRealm();
-        manager.offer(downloadRealm);
+        manager.offer(channelRealm, episodeRealm);
 
-        downloadRealm = manager.peek();
+        DownloadRealm downloadRealm = manager.peek();
         manager.markComplete(downloadRealm);
         assertThat(manager.peek().getDownloadState()).isEqualTo(DownloadRealm.DownloadState.DOWNLOADED);
 

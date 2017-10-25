@@ -17,11 +17,9 @@ import android.widget.RemoteViews;
 import com.battleshippark.bsp_langpod.R;
 import com.battleshippark.bsp_langpod.dagger.DaggerDbApiGraph;
 import com.battleshippark.bsp_langpod.dagger.DaggerDomainMapperGraph;
-import com.battleshippark.bsp_langpod.dagger.DaggerServerApiGraph;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
-import com.battleshippark.bsp_langpod.data.server.ChannelServerApi;
 import com.battleshippark.bsp_langpod.domain.DomainMapper;
 import com.battleshippark.bsp_langpod.domain.GetChannel;
 import com.battleshippark.bsp_langpod.util.Logger;
@@ -62,11 +60,10 @@ public class PlayerService extends Service {
         handler = new Handler(thread.getLooper());
 
         ChannelDbApi channelDbApi = DaggerDbApiGraph.create().channelApi();
-        ChannelServerApi channelServerApi = DaggerServerApiGraph.create().channelApi();
         DomainMapper domainMapper = DaggerDomainMapperGraph.create().domainMapper();
 
         HandlerScheduler handlerScheduler = HandlerScheduler.from(handler);
-        getChannel = new GetChannel(channelDbApi, channelServerApi, handlerScheduler, handlerScheduler, domainMapper);
+        getChannel = new GetChannel(channelDbApi, null, handlerScheduler, handlerScheduler, domainMapper);
     }
 
     @Override
@@ -102,7 +99,7 @@ public class PlayerService extends Service {
     }
 
     private void play(long channelId, long episodeId) {
-        getChannel.execute(channelId).subscribe(channelRealm -> {
+        getChannel.execute(new GetChannel.Param(channelId, GetChannel.Source.DB)).subscribe(channelRealm -> {
             for (EpisodeRealm episodeRealm : channelRealm.getEpisodes()) {
                 if (episodeRealm.getId() == episodeId) {
                     play(channelRealm, episodeRealm);
@@ -134,7 +131,7 @@ public class PlayerService extends Service {
     }
 
     private void pause(long channelId, long episodeId) {
-        getChannel.execute(channelId).subscribe(channelRealm -> {
+        getChannel.execute(new GetChannel.Param(channelId, GetChannel.Source.DB)).subscribe(channelRealm -> {
             for (EpisodeRealm episodeRealm : channelRealm.getEpisodes()) {
                 if (episodeRealm.getId() == episodeId) {
                     pause(channelRealm, episodeRealm);

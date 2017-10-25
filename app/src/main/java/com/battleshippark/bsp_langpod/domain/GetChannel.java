@@ -12,7 +12,7 @@ import rx.Subscriber;
 /**
  */
 
-public class GetChannel implements UseCase<Long, ChannelRealm> {
+public class GetChannel implements UseCase<GetChannel.Param, ChannelRealm> {
     private final ChannelDbRepository dbRepository;
     private final ChannelServerRepository serverRepository;
     private final Scheduler scheduler;
@@ -29,17 +29,17 @@ public class GetChannel implements UseCase<Long, ChannelRealm> {
     }
 
     @Override
-    public Observable<ChannelRealm> execute(Long id) {
+    public Observable<ChannelRealm> execute(Param param) {
         return Observable.create(subscriber ->
-                dbRepository.channel(id).subscribeOn(scheduler).observeOn(postScheduler)
-                        .subscribe(channelRealm -> onDbLoaded(subscriber, channelRealm),
+                dbRepository.channel(param.channelId).subscribeOn(scheduler).observeOn(postScheduler)
+                        .subscribe(channelRealm -> onDbLoaded(param, subscriber, channelRealm),
                                 subscriber::onError));
     }
 
-    private void onDbLoaded(Subscriber<? super ChannelRealm> subscriber, ChannelRealm channelRealm) {
+    private void onDbLoaded(Param param, Subscriber<? super ChannelRealm> subscriber, ChannelRealm channelRealm) {
         subscriber.onNext(channelRealm);
 
-        if (serverRepository == null) {
+        if (param.source == Source.DB) {
             subscriber.onCompleted();
         } else {
             serverRepository.myChannel(channelRealm.getUrl()).subscribeOn(scheduler).observeOn(postScheduler)
@@ -53,5 +53,19 @@ public class GetChannel implements UseCase<Long, ChannelRealm> {
         subscriber.onNext(newChannelRealm);
         dbRepository.putChannel(newChannelRealm).subscribeOn(scheduler).observeOn(postScheduler)
                 .subscribe(subscriber::onCompleted, subscriber::onError);
+    }
+
+    public static class Param {
+        final long channelId;
+        final Source source;
+
+        public Param(long channelId, Source source) {
+            this.channelId = channelId;
+            this.source = source;
+        }
+    }
+
+    public enum Source {
+        DB, DB_NETWORK
     }
 }
