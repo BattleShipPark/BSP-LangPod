@@ -8,6 +8,7 @@
     <string name="episode_not_downloaded">Not Downloaded</string>
     <string name="episode_downloading">Downloading (%1$.1f/%2$.1fMB)</string>
     <string name="episode_downloaded">Downloaded</string>
+    <string name="episode_failed_download">Failed to Download</string>
     <string name="download_in_mobile_network">You are not connected with Wifi. Will you continue to download?</string>
     <string name="unavailable_network">Network is unavailable. Please retry a while later.</string>
     <string name="notification_waiting_download">Waiting for download…</string>

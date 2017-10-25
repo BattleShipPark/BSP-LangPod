@@ -184,7 +184,8 @@ public class EpisodeRealm extends RealmObject {
     public enum DownloadState {
         NOT_DOWNLOADED(R.string.episode_not_downloaded),
         DOWNLOADING(R.string.episode_downloading),
-        DOWNLOADED(R.string.episode_downloaded);
+        DOWNLOADED(R.string.episode_downloaded),
+        FAILED_DOWNLOAD(R.string.episode_failed_download);
 
         public int resId;
 

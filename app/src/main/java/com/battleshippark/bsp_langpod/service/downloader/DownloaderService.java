@@ -13,6 +13,7 @@ import com.battleshippark.bsp_langpod.AppPhase;
 import com.battleshippark.bsp_langpod.BuildConfig;
 import com.battleshippark.bsp_langpod.dagger.DaggerDbApiGraph;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
+import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.DownloadDbApi;
 import com.battleshippark.bsp_langpod.data.db.DownloadRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
@@ -30,6 +31,8 @@ import java.util.concurrent.TimeUnit;
 
 import rx.android.schedulers.AndroidSchedulers;
 import rx.android.schedulers.HandlerScheduler;
+import rx.functions.Action2;
+import rx.functions.Actions;
 import rx.subjects.PublishSubject;
 import rx.subscriptions.CompositeSubscription;
 
@@ -127,6 +130,11 @@ public class DownloaderService extends Service {
         queueManager.markComplete(downloadRealm);
         queueManager.remove(downloadRealm);
 
+        getChannel(downloadRealm.getEpisodeId(), (channelRealm, episodeRealm) -> {
+            episodeRealm.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADED);
+            updateEpisode.execute(episodeRealm).subscribe(Actions.empty(), logger::w);
+        });
+
         runNext();
     }
 
@@ -135,6 +143,11 @@ public class DownloaderService extends Service {
         stopForeground(true);
         notificationController.complete();
         queueManager.markError(downloadRealm);
+
+        getChannel(downloadRealm.getEpisodeId(), (channelRealm, episodeRealm) -> {
+            episodeRealm.setDownloadState(EpisodeRealm.DownloadState.FAILED_DOWNLOAD);
+            updateEpisode.execute(episodeRealm).subscribe(Actions.empty(), logger::w);
+        });
     }
 
     private void runNext() {
@@ -150,25 +163,30 @@ public class DownloaderService extends Service {
     }
 
     private void onProgress(DownloadProgressParam param) {
-        long episodeId = Long.parseLong(param.identifier());
+        sendProgressBroadcast(param);
 
+        long episodeId = Long.parseLong(param.identifier());
+        getChannel(episodeId, (channelRealm, episodeRealm) -> {
+            AndroidSchedulers.mainThread().createWorker().schedule(() -> notificationController.update(channelRealm, episodeRealm, param));
+
+            episodeRealm.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADING);
+            episodeRealm.setDownloadedBytes(param.bytesRead());
+            episodeRealm.setTotalBytes(param.contentLength());
+            updateEpisode.execute(episodeRealm).subscribe(Actions.empty(), logger::w);
+        });
+
+    }
+
+    private void getChannel(long episodeId, Action2<ChannelRealm, EpisodeRealm> action) {
         getChannelWithEpisodeId.execute(episodeId).subscribe(channelRealm -> {
                     Stream.of(channelRealm.getEpisodes())
                             .filter(episodeRealm -> episodeRealm.getId() == episodeId)
                             .findFirst()
                             .ifPresent(episodeRealm -> {
-                                AndroidSchedulers.mainThread().createWorker().schedule(() -> notificationController.update(channelRealm, episodeRealm, param));
-
-                                episodeRealm.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADING);
-                                episodeRealm.setDownloadedBytes(param.bytesRead());
-                                episodeRealm.setTotalBytes(param.contentLength());
-                                updateEpisode.execute(episodeRealm).subscribe(aVoid -> {
-                                }, logger::w);
+                                action.call(channelRealm, episodeRealm);
                             });
                 },
                 logger::w);
-
-        sendProgressBroadcast(param);
     }
 
     private void sendProgressBroadcast(DownloadProgressParam param) {

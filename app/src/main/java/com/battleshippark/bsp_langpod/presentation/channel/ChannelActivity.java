@@ -321,6 +321,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
         NetworkInfo networkInfo = cm.getActiveNetworkInfo();
         if (networkInfo == null || !networkInfo.isAvailable() || !networkInfo.isConnected()) {
             new AlertDialog.Builder(this).setMessage(R.string.unavailable_network)
+                    .setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss())
                     .show();
         } else {
             if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
@@ -372,9 +373,8 @@ public class ChannelActivity extends Activity implements OnItemListener {
         if (param.done()) {
             return;
         }
-        Stream.of(channelRealm.getEpisodes())
-                .filter(episodeRealm -> episodeRealm.getId() == Long.valueOf(param.identifier()))
-                .findFirst()
+
+        findEpisode(param.identifier())
                 .ifPresent(episodeRealm -> {
                     episodeRealm.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADING);
                     episodeRealm.setDownloadedBytes(param.bytesRead());
@@ -384,22 +384,29 @@ public class ChannelActivity extends Activity implements OnItemListener {
     }
 
     private void onDownloadCompleted(DownloadCompleteParam param) {
-        Stream.of(channelRealm.getEpisodes())
-                .filter(episodeRealm -> episodeRealm.getId() == Long.valueOf(param.identifier()))
-                .findFirst()
+        findEpisode(param.identifier())
                 .ifPresent(episodeRealm -> {
                     episodeRealm.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADED);
                     episodeRealm.setDownloadedPath(param.file().getAbsolutePath());
                     adapter.notifyDataSetChanged();
-
-                    updateEpisode.execute(episodeRealm).subscribe(aVoid -> {
-                    }, logger::w);
                 });
     }
 
     private void onDownloadError(DownloadErrorParam param) {
-        Toast.makeText(this, "Error: " + param.identifier(), Toast.LENGTH_SHORT).show();
+        findEpisode(param.identifier())
+                .ifPresent(episodeRealm -> {
+                    episodeRealm.setDownloadState(EpisodeRealm.DownloadState.FAILED_DOWNLOAD);
+                    adapter.notifyDataSetChanged();
+
+                    Toast.makeText(this, "Download Error: " + param.identifier(), Toast.LENGTH_SHORT).show();
+                });
         logger.w(param.throwable());
+    }
+
+    private Optional<EpisodeRealm> findEpisode(String episodeId) {
+        return Stream.of(channelRealm.getEpisodes())
+                .filter(episodeRealm -> episodeRealm.getId() == Long.valueOf(episodeId))
+                .findFirst();
     }
 
     private void registerReceiver() {
