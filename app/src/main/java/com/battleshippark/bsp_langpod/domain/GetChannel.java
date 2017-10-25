@@ -33,7 +33,7 @@ public class GetChannel implements UseCase<GetChannel.Param, ChannelRealm> {
         return Observable.create(subscriber ->
                 dbRepository.channel(param.channelId).subscribeOn(scheduler).observeOn(postScheduler)
                         .subscribe(channelRealm -> onDbLoaded(param, subscriber, channelRealm),
-                                subscriber::onError));
+                                throwable -> subscriber.onError(new GetChannelThrowable(throwable, Source.DB))));
     }
 
     private void onDbLoaded(Param param, Subscriber<? super ChannelRealm> subscriber, ChannelRealm channelRealm) {
@@ -44,7 +44,8 @@ public class GetChannel implements UseCase<GetChannel.Param, ChannelRealm> {
         } else {
             serverRepository.myChannel(channelRealm.getUrl()).subscribeOn(scheduler).observeOn(postScheduler)
                     .subscribe(myChannelJson -> onServerLoaded(subscriber, channelRealm, myChannelJson),
-                            subscriber::onError, subscriber::onCompleted);
+                            throwable -> subscriber.onError(new GetChannelThrowable(throwable, Source.DB_NETWORK)),
+                            subscriber::onCompleted);
         }
     }
 
@@ -52,7 +53,7 @@ public class GetChannel implements UseCase<GetChannel.Param, ChannelRealm> {
         ChannelRealm newChannelRealm = domainMapper.channelJsonAsRealm(channelRealm, channelJson);
         subscriber.onNext(newChannelRealm);
         dbRepository.putChannel(newChannelRealm).subscribeOn(scheduler).observeOn(postScheduler)
-                .subscribe(subscriber::onCompleted, subscriber::onError);
+                .subscribe(subscriber::onCompleted, throwable -> subscriber.onError(new GetChannelThrowable(throwable, Source.DB_NETWORK)));
     }
 
     public static class Param {
@@ -67,5 +68,18 @@ public class GetChannel implements UseCase<GetChannel.Param, ChannelRealm> {
 
     public enum Source {
         DB, DB_NETWORK
+    }
+
+    public static class GetChannelThrowable extends Throwable {
+        private final Source source;
+
+        GetChannelThrowable(Throwable t, Source source) {
+            super(t);
+            this.source = source;
+        }
+
+        public Source getSource() {
+            return source;
+        }
     }
 }

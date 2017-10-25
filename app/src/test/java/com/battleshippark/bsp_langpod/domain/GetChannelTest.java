@@ -68,7 +68,7 @@ public class GetChannelTest {
     }
 
     @Test
-    public void execute_호출상태_DB에서만() {
+    public void execute_호출상태_DB() {
         when(dbRepository.channel(1)).thenReturn(Observable.just(channelRealm));
 
         GetChannel getChannel = new GetChannel(dbRepository, serverRepository,
@@ -83,7 +83,21 @@ public class GetChannelTest {
     }
 
     @Test
-    public void execute_DB와NETWORK() {
+    public void execute_호출상태_DB_예외발생() {
+        when(dbRepository.channel(1)).thenReturn(Observable.error(new Exception()));
+
+        GetChannel getChannel = new GetChannel(dbRepository, serverRepository,
+                Schedulers.immediate(), Schedulers.immediate(), domainMapper);
+        getChannel.execute(new GetChannel.Param(1, GetChannel.Source.DB)).subscribe(testSubscriber);
+
+        testSubscriber.assertNotCompleted();
+        assertThat(testSubscriber.getOnErrorEvents()).hasSize(1);
+        GetChannel.GetChannelThrowable throwable = (GetChannel.GetChannelThrowable) testSubscriber.getOnErrorEvents().get(0);
+        assertThat(throwable.getSource()).isEqualTo(GetChannel.Source.DB);
+    }
+
+    @Test
+    public void execute_호출상태_DB_NETWORK() {
         when(dbRepository.channel(1)).thenReturn(Observable.just(channelRealm));
         when(serverRepository.myChannel("url1")).thenReturn(Observable.just(channelJson));
 
@@ -93,6 +107,21 @@ public class GetChannelTest {
 
         verify(serverRepository).myChannel(any());
         verify(dbRepository).putChannel(any());
+    }
+
+    @Test
+    public void execute_호출상태_DB_NETWORK_예외발생() {
+        when(dbRepository.channel(1)).thenReturn(Observable.just(channelRealm));
+        when(serverRepository.myChannel("url1")).thenReturn(Observable.error(new Exception()));
+
+        GetChannel getChannel = new GetChannel(dbRepository, serverRepository,
+                Schedulers.immediate(), Schedulers.immediate(), domainMapper);
+        getChannel.execute(new GetChannel.Param(1, GetChannel.Source.DB_NETWORK)).subscribe(testSubscriber);
+
+        testSubscriber.assertNotCompleted();
+        assertThat(testSubscriber.getOnErrorEvents()).hasSize(1);
+        GetChannel.GetChannelThrowable throwable = (GetChannel.GetChannelThrowable) testSubscriber.getOnErrorEvents().get(0);
+        assertThat(throwable.getSource()).isEqualTo(GetChannel.Source.DB_NETWORK);
     }
 
     @Test
