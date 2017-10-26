@@ -3,6 +3,7 @@ package com.battleshippark.bsp_langpod.presentation;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
+import android.view.View;
 
 import com.battleshippark.bsp_langpod.R;
 import com.battleshippark.bsp_langpod.presentation.entire_list.EntireChannelListFragment;
@@ -14,10 +15,13 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
 public class MainActivity extends Activity {
-    private Unbinder unbinder;
-
     @BindView(R.id.tab_layout)
     TabLayout tabLayout;
+    @BindView(R.id.backpress)
+    View backPressView;
+
+    private Unbinder unbinder;
+    private BackPressHandler backPressHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,9 +29,14 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         unbinder = ButterKnife.bind(this);
 
+        initData();
         initUI();
 
         showEntireList();
+    }
+
+    private void initData() {
+        backPressHandler = new BackPressHandler(this);
     }
 
     private void showEntireList() {
@@ -84,5 +93,14 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         unbinder.unbind();
         super.onDestroy();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (backPressHandler.isClosable()) {
+            super.onBackPressed();
+        } else {
+            backPressHandler.show(backPressView);
+        }
     }
 }
