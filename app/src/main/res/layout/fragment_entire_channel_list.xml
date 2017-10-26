@@ -7,13 +7,12 @@
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/entire_list_rv"
-        android:name="com.battleshippark.bsp_langpod.presentation.entire_list.EntireListFragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layoutManager="LinearLayoutManager"
-        app:layout_constraintBottom_toTopOf="parent"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:context="com.battleshippark.bsp_langpod.presentation.entire_list.EntireChannelListFragment"
         tools:listitem="@layout/fragment_entire_channel_list_item" />
 
     <TextView

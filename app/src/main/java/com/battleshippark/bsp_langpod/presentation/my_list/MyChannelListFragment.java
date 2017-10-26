@@ -79,9 +79,6 @@ public class MyChannelListFragment extends Fragment implements OnItemListener {
         rv = ButterKnife.findById(view, R.id.my_list_rv);
         rv.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        adapter = new MyChannelListAdapter(this);
-        rv.setAdapter(adapter);
-
         msgTextView = ButterKnife.findById(view, R.id.msg_tv);
 
         return view;
@@ -91,6 +88,9 @@ public class MyChannelListFragment extends Fragment implements OnItemListener {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        adapter = new MyChannelListAdapter(this);
+        rv.setAdapter(adapter);
 
         loadList();
     }

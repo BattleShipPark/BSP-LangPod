@@ -16,7 +16,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-class EntireChannelListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+class EntireChannelListAdapter extends RecyclerView.Adapter<EntireChannelListAdapter.ViewHolder> {
     private final OnItemListener mListener;
     private List<ChannelRealm> channelRealmList = Collections.EMPTY_LIST;
 
@@ -33,10 +33,10 @@ class EntireChannelListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(ViewHolder holder, int position) {
         ChannelRealm channelRealm = channelRealmList.get(position);
 
-        mListener.onBindViewHolder((ViewHolder) holder, channelRealm);
+        mListener.onBindViewHolder(holder, channelRealm);
     }
 
     @Override
