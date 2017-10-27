@@ -29,10 +29,12 @@ import com.battleshippark.bsp_langpod.util.Logger;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
+import rx.Scheduler;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.android.schedulers.HandlerScheduler;
 import rx.functions.Action2;
 import rx.functions.Actions;
+import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
 import rx.subscriptions.CompositeSubscription;
 
@@ -81,8 +83,8 @@ public class DownloaderService extends Service {
         downloadMedia = new DownloadMedia(this, downloadScheduler, operationScheduler, new AppPhase(BuildConfig.DEBUG));
 
         ChannelDbApi channelDbApi = DaggerDbApiGraph.create().channelApi();
-        getChannelWithEpisodeId = new GetChannelWithEpisodeId(channelDbApi, operationScheduler, operationScheduler);
-        updateEpisode = new UpdateEpisode(channelDbApi, operationScheduler, operationScheduler);
+        getChannelWithEpisodeId = new GetChannelWithEpisodeId(channelDbApi, Schedulers.immediate(), Schedulers.immediate());
+        updateEpisode = new UpdateEpisode(channelDbApi, Schedulers.immediate(), Schedulers.immediate());
 
         downloadDbApi = DaggerDbApiGraph.create().downloadApi();
 
@@ -124,6 +126,7 @@ public class DownloaderService extends Service {
     }
 
     private void onCompleted(DownloadRealm downloadRealm, File file) {
+        logger.d("onCompleted(): " + file);
         sendCompleteBroadcast(downloadRealm.getEpisodeRealm(), file);
         stopForeground(true);
         notificationController.complete();
@@ -132,6 +135,7 @@ public class DownloaderService extends Service {
 
         getChannel(downloadRealm.getEpisodeId(), (channelRealm, episodeRealm) -> {
             episodeRealm.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADED);
+            logger.d("onCompleted(): " + episodeRealm);
             updateEpisode.execute(episodeRealm).subscribe(Actions.empty(), logger::w);
         });
 
@@ -163,6 +167,9 @@ public class DownloaderService extends Service {
     }
 
     private void onProgress(DownloadProgressParam param) {
+        if (param.done()) {
+            return;
+        }
         sendProgressBroadcast(param);
 
         long episodeId = Long.parseLong(param.identifier());
@@ -179,6 +186,7 @@ public class DownloaderService extends Service {
 
     private void getChannel(long episodeId, Action2<ChannelRealm, EpisodeRealm> action) {
         getChannelWithEpisodeId.execute(episodeId).subscribe(channelRealm -> {
+                    logger.d("getChannel(): %d", episodeId);
                     Stream.of(channelRealm.getEpisodes())
                             .filter(episodeRealm -> episodeRealm.getId() == episodeId)
                             .findFirst()

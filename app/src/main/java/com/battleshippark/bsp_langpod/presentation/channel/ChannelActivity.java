@@ -374,9 +374,9 @@ public class ChannelActivity extends Activity implements OnItemListener {
     }
 
     private void onDownloadProgress(DownloadProgressParam param) {
-        if (param.done()) {
-            return;
-        }
+//        if (param.done()) {
+//            return;
+//        }
 
         findEpisode(param.identifier())
                 .ifPresent(episodeRealm -> {
@@ -384,6 +384,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
                     episodeRealm.setDownloadedBytes(param.bytesRead());
                     episodeRealm.setTotalBytes(param.contentLength());
                     adapter.notifyDataSetChanged();
+                    logger.d("episode=%d, bytes=%d, total=%d", episodeRealm.getId(), param.bytesRead(), param.contentLength());
                 });
     }
 

@@ -85,7 +85,7 @@ public class GetChannelTest {
         });
 
 
-        getChannel.execute(1L).subscribe(testSubscriber);
+        getChannel.execute(new GetChannel.Param(1L, GetChannel.Type.DB_AND_SERVER)).subscribe(testSubscriber);
 
 
         testSubscriber.awaitTerminalEvent();

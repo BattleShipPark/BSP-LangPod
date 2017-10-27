@@ -34,8 +34,8 @@
         android:layout_marginTop="10dp"
         android:layout_toEndOf="@id/image_iv"
         android:maxLines="1"
-        android:text="ChannelTitle"
-        android:textColor="@android:color/black" />
+        android:textColor="@android:color/black"
+        tools:text="ChannelTitle" />
 
     <TextView
         android:id="@+id/episode_tv"
@@ -46,6 +46,6 @@
         android:layout_marginStart="8dp"
         android:layout_toEndOf="@id/image_iv"
         android:layout_toStartOf="@id/progress_tv"
-        android:text="EpisodeTitle"
-        android:textColor="@android:color/black" />
+        android:textColor="@android:color/black"
+        tools:text="EpisodeTitle" />
 </RelativeLayout>
