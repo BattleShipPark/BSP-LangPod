@@ -5,11 +5,9 @@ import com.annimon.stream.Stream;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.DownloadRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
-import com.battleshippark.bsp_langpod.data.db.MyChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.RealmHelper;
 import com.battleshippark.bsp_langpod.data.server.ChannelJson;
 import com.battleshippark.bsp_langpod.data.server.EntireChannelListJson;
-import com.battleshippark.bsp_langpod.data.server.EpisodeJson;
 
 import java.util.List;
 import java.util.Map;
@@ -24,78 +22,6 @@ public class DomainMapper {
 
     public DomainMapper(RealmHelper realmHelper) {
         this.realmHelper = realmHelper;
-    }
-
-    public List<EntireChannelData> asData(List<ChannelRealm> channelRealmList) {
-        return Stream.of(channelRealmList)
-                .map(entireChannelRealm -> EntireChannelData.create(entireChannelRealm.getId(),
-                        entireChannelRealm.getOrder(), entireChannelRealm.getTitle(),
-                        entireChannelRealm.getDesc(), entireChannelRealm.getImage()))
-                .collect(Collectors.toList());
-    }
-
-    public List<MyChannelData> myChannelRealmAsData(List<MyChannelRealm> myChannelRealmList) {
-        return Stream.of(myChannelRealmList)
-                .map(myChannelRealm ->
-                        MyChannelData.create(myChannelRealm.getId(),
-                                myChannelRealm.getOrder(),
-                                myChannelRealm.getTitle(),
-                                myChannelRealm.getDesc(),
-                                myChannelRealm.getCopyright(),
-                                myChannelRealm.getImage(),
-                                myChannelRealm.getUrl(),
-                                null
-                        )
-                ).collect(Collectors.toList());
-    }
-
-    public MyChannelData myChannelRealmAsData(MyChannelRealm myChannelRealm) {
-        return MyChannelData.create(myChannelRealm.getId(),
-                myChannelRealm.getOrder(),
-                myChannelRealm.getTitle(),
-                myChannelRealm.getDesc(),
-                myChannelRealm.getCopyright(),
-                myChannelRealm.getImage(),
-                myChannelRealm.getUrl(),
-                episodeRealmAsData(myChannelRealm.getItems())
-        );
-    }
-
-    List<EpisodeData> episodeRealmAsData(List<EpisodeRealm> episodeRealmList) {
-        return Stream.of(episodeRealmList).map(this::episodeRealmAsData).collect(Collectors.toList());
-    }
-
-    EpisodeData episodeRealmAsData(EpisodeRealm episodeRealm) {
-        return EpisodeData.create(episodeRealm.getTitle(), episodeRealm.getDesc(), episodeRealm.getUrl());
-    }
-
-    public List<EntireChannelData> asData(EntireChannelListJson entireChannelListJson) {
-        return Stream.of(entireChannelListJson.items())
-                .map(entireChannelData -> EntireChannelData.create(entireChannelData.id(),
-                        entireChannelData.order(),
-                        entireChannelData.title(),
-                        entireChannelData.desc(),
-                        entireChannelData.image())
-                ).collect(Collectors.toList());
-    }
-
-    public MyChannelData myChannelJsonAsData(String url, ChannelJson channelJson) {
-        return MyChannelData.create(
-                channelJson.title(),
-                channelJson.desc(),
-                channelJson.copyright(),
-                channelJson.image(),
-                url,
-                Stream.of(channelJson.episodes()).map(this::episodeJsonAsData).collect(Collectors.toList())
-        );
-    }
-
-    public EpisodeData episodeJsonAsData(EpisodeJson episodeJson) {
-        return EpisodeData.create(
-                episodeJson.title(),
-                episodeJson.desc(),
-                episodeJson.url()
-        );
     }
 
     List<ChannelRealm> entireChannelListJsonAsRealm(List<ChannelRealm> channelRealmList, EntireChannelListJson entireChannelListJson) {
