@@ -42,7 +42,13 @@ public class Downloader {
         return service.download(identifier, url)
                 .flatMap(response -> {
                     try {
+                        if (!response.isSuccessful()) {
+                            throw new IOException();
+                        }
+
                         File file = new File(outputPath);
+                        file.getParentFile().mkdirs();
+
                         try (BufferedSink sink = Okio.buffer(Okio.sink(file))) {
                             sink.writeAll(response.body().source());
                         }

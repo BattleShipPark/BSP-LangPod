@@ -273,18 +273,11 @@ public class ChannelActivity extends Activity implements OnItemListener {
         holder.dateView.setText(dateFormat.format(episode.getDate()));
         holder.statusTv.setText(getStatusText(episode));
         holder.statusIv.setImageResource(getStatusImage(episode));
-/*        holder.subscribeView.setOnClickListener(
-                v -> subscribeChannel.execute(item)
-                        .subscribe(
-                                aVoid -> {
-                                },
-                                throwable -> Log.w(TAG, throwable)
-                        )
-        );*/
     }
 
     private void onClickEpisode(EpisodeRealm episode) {
-        if (episode.getDownloadState() == EpisodeRealm.DownloadState.NOT_DOWNLOADED) {
+        if (episode.getDownloadState() == EpisodeRealm.DownloadState.NOT_DOWNLOADED
+                || episode.getDownloadState() == EpisodeRealm.DownloadState.FAILED_DOWNLOAD) {
             tryDownload(episode);
         } else if (episode.getDownloadState() == EpisodeRealm.DownloadState.DOWNLOADED) {
             if (episode.getPlayState() == EpisodeRealm.PlayState.NOT_PLAYED
@@ -344,13 +337,16 @@ public class ChannelActivity extends Activity implements OnItemListener {
             return getString(R.string.episode_not_downloaded);
         } else if (episode.getDownloadState() == EpisodeRealm.DownloadState.DOWNLOADING) {
             return getString(R.string.episode_downloading, episode.getDownloadedBytes() / MEGA_BYTE, episode.getTotalBytes() / MEGA_BYTE);
+        } else if (episode.getDownloadState() == EpisodeRealm.DownloadState.FAILED_DOWNLOAD) {
+            return getString(R.string.episode_failed_download);
         }
         return "";
     }
 
     private int getStatusImage(EpisodeRealm episode) {
         if (episode.getDownloadState() == EpisodeRealm.DownloadState.NOT_DOWNLOADED
-                || episode.getDownloadState() == EpisodeRealm.DownloadState.DOWNLOADING) {
+                || episode.getDownloadState() == EpisodeRealm.DownloadState.DOWNLOADING
+                || episode.getDownloadState() == EpisodeRealm.DownloadState.FAILED_DOWNLOAD) {
             return R.drawable.download;
         } else if (episode.getDownloadState() == EpisodeRealm.DownloadState.DOWNLOADED) {
             if (episode.getPlayState() == EpisodeRealm.PlayState.NOT_PLAYED

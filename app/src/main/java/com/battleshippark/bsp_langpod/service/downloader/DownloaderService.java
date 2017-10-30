@@ -73,7 +73,7 @@ public class DownloaderService extends Service {
         HandlerScheduler downloadScheduler = HandlerScheduler.from(downloadHandler);
         HandlerScheduler operationScheduler = HandlerScheduler.from(operationHandler);
 
-        downloadMedia = new DownloadMedia(this, downloadScheduler, operationScheduler, new AppPhase(BuildConfig.DEBUG));
+        downloadMedia = new DownloadMedia(downloadScheduler, operationScheduler, new AppPhase(BuildConfig.DEBUG));
 
         ChannelDbApi channelDbApi = DaggerDbApiGraph.create().channelApi();
         getChannelWithEpisodeId = new GetChannelWithEpisodeId(channelDbApi, Schedulers.immediate(), Schedulers.immediate());
@@ -112,10 +112,20 @@ public class DownloaderService extends Service {
     private void download(DownloadRealm downloadRealm) {
         startForeground(NOTIFICATION_ID, notificationController.prepare());
 
+        ChannelRealm channelRealm = downloadRealm.getChannelRealm();
         EpisodeRealm episodeRealm = downloadRealm.getEpisodeRealm();
-        downloadMedia.execute(new DownloadMedia.Param(String.valueOf(episodeRealm.getId()), episodeRealm.getUrl(), progressSubject))
+
+        String fileName = channelRealm.getTitle().replaceAll(" ", "") + "/"
+                + episodeRealm.getUrl().substring(episodeRealm.getUrl().lastIndexOf('/') + 1);
+        String path = new File(getExternalFilesDir(null), fileName).getAbsolutePath();
+        episodeRealm.setDownloadedPath(path);
+
+        downloadMedia.execute(
+                new DownloadMedia.Param(String.valueOf(episodeRealm.getId()), episodeRealm.getUrl(), path, progressSubject))
                 .subscribe(file -> onCompleted(downloadRealm, file),
                         throwable -> onError(downloadRealm, throwable));
+
+        updateEpisode.execute(episodeRealm).subscribe(Actions.empty(), logger::w);
     }
 
     private void onCompleted(DownloadRealm downloadRealm, File file) {
