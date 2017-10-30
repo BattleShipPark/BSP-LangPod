@@ -22,14 +22,19 @@ import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
 import com.battleshippark.bsp_langpod.domain.DomainMapper;
 import com.battleshippark.bsp_langpod.domain.GetChannel;
+import com.battleshippark.bsp_langpod.domain.UpdateEpisode;
 import com.battleshippark.bsp_langpod.util.Logger;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.NotificationTarget;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
+import rx.Observable;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.android.schedulers.HandlerScheduler;
+import rx.functions.Actions;
 
 /**
  */
@@ -48,8 +53,10 @@ public class PlayerService extends Service {
     private HandlerThread thread;
     private Handler handler;
     private GetChannel getChannel;
+    private UpdateEpisode updateEpisode;
     private long playingEpisodeId = -1;
-
+    private Observable<Long> timer;
+    private Subscription subscription;
 
     @Override
     public void onCreate() {
@@ -64,6 +71,9 @@ public class PlayerService extends Service {
 
         HandlerScheduler handlerScheduler = HandlerScheduler.from(handler);
         getChannel = new GetChannel(channelDbApi, null, handlerScheduler, handlerScheduler, domainMapper);
+        updateEpisode = new UpdateEpisode(channelDbApi, handlerScheduler, handlerScheduler);
+
+        timer = Observable.timer(1, TimeUnit.SECONDS, handlerScheduler);
     }
 
     @Override
@@ -117,17 +127,35 @@ public class PlayerService extends Service {
                     mp.reset();
                     mp.setDataSource("file://" + episodeRealm.getDownloadedPath());
                     mp.prepare();
+                    mp.seekTo(episodeRealm.getPlayTime());
                 }
                 mp.start();
+
                 playingEpisodeId = episodeRealm.getId();
+
+                if (subscription != null) {
+                    subscription.unsubscribe();
+                }
+                subscription = timer.subscribe(aLong -> {
+                    updatePlayTime(mp.getCurrentPosition(), episodeRealm);
+                });
+
                 sendBroadcast(playIntent, episodeRealm.getId());
             } catch (IOException e) {
                 logger.w(e);
                 playingEpisodeId = -1;
                 cancelNotification(channelRealm);
+                if (subscription != null) {
+                    subscription.unsubscribe();
+                }
             }
         });
         showNotification(channelRealm, episodeRealm, true);
+    }
+
+    private void updatePlayTime(int currentPosition, EpisodeRealm episodeRealm) {
+        episodeRealm.setPlayTime(currentPosition);
+        updateEpisode.execute(episodeRealm).subscribe(Actions.empty(), logger::w);
     }
 
     private void pause(long channelId, long episodeId) {
@@ -145,6 +173,11 @@ public class PlayerService extends Service {
         handler.post(() -> {
             if (mp.isPlaying()) {
                 mp.pause();
+
+                if (subscription != null) {
+                    subscription.unsubscribe();
+                }
+
                 AndroidSchedulers.mainThread().createWorker().schedule(() -> showNotification(channelRealm, episodeRealm, false));
             }
         });
