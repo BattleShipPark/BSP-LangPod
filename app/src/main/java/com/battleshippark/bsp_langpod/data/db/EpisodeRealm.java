@@ -44,6 +44,7 @@ public class EpisodeRealm extends RealmObject {
     public EpisodeRealm(EpisodeRealm realm) {
         this(realm.id, realm.title, realm.desc, realm.url, realm.length, realm.date);
         this.playState = realm.playState;
+        this.playTime = realm.playTime;
         this.downloadState = realm.downloadState;
         this.downloadedPath = realm.downloadedPath;
         this.downloadedBytes = realm.downloadedBytes;

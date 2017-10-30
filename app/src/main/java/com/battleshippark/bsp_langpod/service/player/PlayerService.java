@@ -73,7 +73,7 @@ public class PlayerService extends Service {
         getChannel = new GetChannel(channelDbApi, null, handlerScheduler, handlerScheduler, domainMapper);
         updateEpisode = new UpdateEpisode(channelDbApi, handlerScheduler, handlerScheduler);
 
-        timer = Observable.timer(1, TimeUnit.SECONDS, handlerScheduler);
+        timer = Observable.interval(1, TimeUnit.SECONDS, handlerScheduler);
     }
 
     @Override
@@ -156,6 +156,7 @@ public class PlayerService extends Service {
     private void updatePlayTime(int currentPosition, EpisodeRealm episodeRealm) {
         episodeRealm.setPlayTime(currentPosition);
         updateEpisode.execute(episodeRealm).subscribe(Actions.empty(), logger::w);
+        logger.d("updatePlayTime: %d, %s", currentPosition, episodeRealm);
     }
 
     private void pause(long channelId, long episodeId) {
