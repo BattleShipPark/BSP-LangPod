@@ -39,7 +39,7 @@ import com.battleshippark.bsp_langpod.domain.SubscribeChannel;
 import com.battleshippark.bsp_langpod.domain.UpdateEpisode;
 import com.battleshippark.bsp_langpod.presentation.EpisodeDateFormat;
 import com.battleshippark.bsp_langpod.service.downloader.Downloader;
-import com.battleshippark.bsp_langpod.service.downloader.DownloaderService;
+import com.battleshippark.bsp_langpod.service.downloader.DownloaderBroadcastReceiver;
 import com.battleshippark.bsp_langpod.service.player.PlayerService;
 import com.battleshippark.bsp_langpod.service.player.PlayerServiceFacade;
 import com.battleshippark.bsp_langpod.util.Logger;
@@ -104,20 +104,9 @@ public class ChannelActivity extends Activity implements OnItemListener {
                     .filter(episodeRealm -> episodeRealm.getId() == episodeId).findFirst();
         }
     };
-    private BroadcastReceiver downloaderBcReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(DownloaderService.ACTION_PROGRESS)) {
-                onDownloadProgress(downloader.getProgressParam(intent));
-            } else if (intent.getAction().equals(DownloaderService.ACTION_COMPLETED)) {
-                onDownloadCompleted(downloader.getCompleteParam(intent));
-            } else if (intent.getAction().equals(DownloaderService.ACTION_ERROR)) {
-                onDownloadError(downloader.getErrorParam(intent));
-            }
-        }
-    };
+    private DownloaderBroadcastReceiver downloaderBcReceiver;
 
-    private IntentFilter playerIntentFilter, downloaderIntentFilter;
+    private IntentFilter playerIntentFilter;
 
     private PlayerServiceFacade playerServiceFacade;
     private Downloader downloader;
@@ -158,7 +147,8 @@ public class ChannelActivity extends Activity implements OnItemListener {
         downloader = new Downloader(this, new AppPhase(BuildConfig.DEBUG));
 
         playerIntentFilter = playerServiceFacade.createIntentFilter();
-        downloaderIntentFilter = downloader.createIntentFilter();
+        downloaderBcReceiver = new DownloaderBroadcastReceiver(this,
+                this::onDownloadProgress, this::onDownloadCompleted, this::onDownloadError);
 
         if (savedInstanceState == null) {
             channelId = getIntent().getLongExtra(KEY_ID, 0);
@@ -416,11 +406,11 @@ public class ChannelActivity extends Activity implements OnItemListener {
 
     private void registerReceiver() {
         registerReceiver(playerBcReceiver, playerIntentFilter);
-        registerReceiver(downloaderBcReceiver, downloaderIntentFilter);
+        downloaderBcReceiver.register();
     }
 
     private void unregisterReceiver() {
-        unregisterReceiver(downloaderBcReceiver);
+        downloaderBcReceiver.unregister();
         unregisterReceiver(playerBcReceiver);
     }
 

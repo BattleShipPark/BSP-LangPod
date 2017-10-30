@@ -3,16 +3,12 @@ package com.battleshippark.bsp_langpod.service.downloader;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 
 import com.battleshippark.bsp_langpod.AppPhase;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
-import com.battleshippark.bsp_langpod.data.downloader.DownloadCompleteParam;
-import com.battleshippark.bsp_langpod.data.downloader.DownloadErrorParam;
-import com.battleshippark.bsp_langpod.data.downloader.DownloadProgressParam;
 
 import rx.functions.Action1;
 
@@ -62,26 +58,6 @@ public class Downloader {
 
     private boolean isBound() {
         return bound;
-    }
-
-    public IntentFilter createIntentFilter() {
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(DownloaderService.ACTION_PROGRESS);
-        intentFilter.addAction(DownloaderService.ACTION_COMPLETED);
-        intentFilter.addAction(DownloaderService.ACTION_ERROR);
-        return intentFilter;
-    }
-
-    public DownloadProgressParam getProgressParam(Intent intent) {
-        return connection.getService().getProgressParam(intent);
-    }
-
-    public DownloadCompleteParam getCompleteParam(Intent intent) {
-        return connection.getService().getCompleteParam(intent);
-    }
-
-    public DownloadErrorParam getErrorParam(Intent intent) {
-        return connection.getService().getErrorParam(intent);
     }
 
     class LocalServiceConnection implements ServiceConnection {

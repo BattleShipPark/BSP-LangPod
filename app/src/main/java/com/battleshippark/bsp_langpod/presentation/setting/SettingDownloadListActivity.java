@@ -109,7 +109,7 @@ public class SettingDownloadListActivity extends Activity implements OnItemListe
         Glide.with(holder.imageView.getContext()).load(downloadRealm.getChannelRealm().getImage()).into(holder.imageView);
         holder.channelView.setText(downloadRealm.getChannelRealm().getTitle());
 
-        holder.episodeView.setText(downloadRealm.getEpisodeRealm().getTitle());
+        holder.episodeView.setText(downloadRealm.getEpisodeRealm().getDesc());
         holder.dateView.setText(dateFormat.format(downloadRealm.getEpisodeRealm().getDate()));
         holder.statusView.setText(getStatusText(downloadRealm.getDownloadState(), downloadRealm.getEpisodeRealm()));
     }

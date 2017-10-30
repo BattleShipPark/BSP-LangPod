@@ -17,8 +17,6 @@ import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.DownloadDbApi;
 import com.battleshippark.bsp_langpod.data.db.DownloadRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
-import com.battleshippark.bsp_langpod.data.downloader.DownloadCompleteParam;
-import com.battleshippark.bsp_langpod.data.downloader.DownloadErrorParam;
 import com.battleshippark.bsp_langpod.data.downloader.DownloadProgressParam;
 import com.battleshippark.bsp_langpod.domain.DownloadMedia;
 import com.battleshippark.bsp_langpod.domain.GetChannelWithEpisodeId;
@@ -29,7 +27,6 @@ import com.battleshippark.bsp_langpod.util.Logger;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
-import rx.Scheduler;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.android.schedulers.HandlerScheduler;
 import rx.functions.Action2;
@@ -43,26 +40,22 @@ import rx.subscriptions.CompositeSubscription;
 
 public class DownloaderService extends Service {
     private static final String TAG = DownloaderService.class.getSimpleName();
-    public static final String ACTION_PROGRESS = TAG + ".actionProgress";
-    public static final String ACTION_COMPLETED = TAG + ".actionCompleted";
-    public static final String ACTION_ERROR = TAG + ".actionError";
-    public static final String KEY_CHANNEL_ID = "keyChannelId";
-    public static final String KEY_EPISODE_ID = "keyEpisodeId";
-    public static final String KEY_PROGRESS = "keyProgress";
-    public static final String KEY_COMPLETE = "keyComplete";
-    private static final String KEY_ERROR = "keyError";
+    static final String ACTION_PROGRESS = TAG + ".actionProgress";
+    static final String ACTION_COMPLETED = TAG + ".actionCompleted";
+    static final String ACTION_ERROR = TAG + ".actionError";
     private static final Logger logger = new Logger(TAG);
     private static final int NOTIFICATION_ID = -1;
     private final IBinder mBinder = new LocalBinder();
     private final PublishSubject<DownloadProgressParam> progressSubject = PublishSubject.create();
     private final DownloaderQueueManager queueManager = DownloaderQueueManager.getInstance();
+    private final CompositeSubscription subscription = new CompositeSubscription();
+    private final ParamManager paramManager = new ParamManager();
     private HandlerThread downloadThread, operationThread;
     private Handler operationHandler;
     private DownloadMedia downloadMedia;
     private GetChannelWithEpisodeId getChannelWithEpisodeId;
     private UpdateEpisode updateEpisode;
     private DownloadDbApi downloadDbApi;
-    private CompositeSubscription subscription = new CompositeSubscription();
     private DownloaderNotificationController notificationController;
 
     @Override
@@ -198,33 +191,15 @@ public class DownloaderService extends Service {
     }
 
     private void sendProgressBroadcast(DownloadProgressParam param) {
-        Intent intent = new Intent(ACTION_PROGRESS);
-        intent.putExtra(KEY_PROGRESS, param);
-        sendBroadcast(intent);
+        sendBroadcast(paramManager.getProgressIntent(param));
     }
 
     private void sendCompleteBroadcast(EpisodeRealm episodeRealm, File file) {
-        Intent intent = new Intent(ACTION_COMPLETED);
-        intent.putExtra(KEY_COMPLETE, DownloadCompleteParam.create(String.valueOf(episodeRealm.getId()), file));
-        sendBroadcast(intent);
+        sendBroadcast(paramManager.getCompleteIntent(episodeRealm, file));
     }
 
     private void sendErrorBroadcast(EpisodeRealm episodeRealm, Throwable throwable) {
-        Intent intent = new Intent(ACTION_ERROR);
-        intent.putExtra(KEY_ERROR, DownloadErrorParam.create(String.valueOf(episodeRealm.getId()), throwable));
-        sendBroadcast(intent);
-    }
-
-    public DownloadProgressParam getProgressParam(Intent intent) {
-        return intent.getParcelableExtra(DownloaderService.KEY_PROGRESS);
-    }
-
-    public DownloadCompleteParam getCompleteParam(Intent intent) {
-        return intent.getParcelableExtra(DownloaderService.KEY_COMPLETE);
-    }
-
-    public DownloadErrorParam getErrorParam(Intent intent) {
-        return intent.getParcelableExtra(DownloaderService.KEY_ERROR);
+        sendBroadcast(paramManager.getErrorIntent(episodeRealm, throwable));
     }
 
     class LocalBinder extends Binder {
