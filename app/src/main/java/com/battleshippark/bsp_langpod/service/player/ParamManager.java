@@ -45,6 +45,12 @@ class ParamManager {
         return intent;
     }
 
+    Intent getPlayedIntent(long episodeId) {
+        Intent intent = new Intent(PlayerService.ACTION_PLAYED);
+        intent.putExtra(KEY_EPISODE_ID, episodeId);
+        return intent;
+    }
+
     Intent getPlayingIntent(EpisodeRealm episodeRealm, Throwable throwable) {
         Intent intent = new Intent(PlayerService.ACTION_PLAYING);
 //        intent.putExtra(KEY_ERROR, DownloadErrorParam.create(String.valueOf(episodeRealm.getId()), throwable));
@@ -53,7 +59,7 @@ class ParamManager {
 
     Intent getServiceIntent(Context context, boolean isPlaying, long channelId, long episodeId) {
         Intent intent = new Intent(context, PlayerService.class);
-        intent.setAction(isPlaying ? PlayerService.ACTION_PLAY : PlayerService.ACTION_PAUSE);
+        intent.setAction(isPlaying ? PlayerService.ACTION_PAUSE : PlayerService.ACTION_PLAY);
         intent.putExtra(KEY_CHANNEL_ID, channelId);
         intent.putExtra(KEY_EPISODE_ID, episodeId);
         return intent;

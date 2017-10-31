@@ -44,6 +44,7 @@ public class PlayerService extends Service {
     private static final String TAG = PlayerService.class.getSimpleName();
     public static final String ACTION_PLAY = TAG + ".actionPlay";
     public static final String ACTION_PAUSE = TAG + ".actionPause";
+    public static final String ACTION_PLAYED = TAG + ".actionPlayed";
     public static final String ACTION_PLAYING = TAG + ".actionPlaying";
     private static final Logger logger = new Logger(TAG);
     private static final MediaPlayer mp = new MediaPlayer();
@@ -122,35 +123,50 @@ public class PlayerService extends Service {
                     mp.stop();
                     mp.reset();
                     mp.setDataSource("file://" + episodeRealm.getDownloadedPath());
+                    mp.setOnCompletionListener(mp1 -> {
+                        unsubscribeTimer();
+                        updateEpisode(episodeRealm, EpisodeRealm.PlayState.PLAYED);
+                        sendPlayedBroadcast(episodeRealm.getId());
+                        AndroidSchedulers.mainThread().createWorker().schedule(() -> showNotification(channelRealm, episodeRealm, true));
+                    });
                     mp.prepare();
-                    mp.seekTo(episodeRealm.getPlayTime());
+                    mp.seekTo(episodeRealm.getPlayTimeInMs());
                 }
                 mp.start();
 
                 playingEpisodeId = episodeRealm.getId();
 
-                if (subscription != null) {
-                    subscription.unsubscribe();
-                }
+                unsubscribeTimer();
                 subscription = timer.subscribe(aLong -> {
                     updatePlayTime(mp.getCurrentPosition(), episodeRealm);
                 });
 
+                updateEpisode(episodeRealm, EpisodeRealm.PlayState.PLAYING);
                 sendPlayBroadcast(episodeRealm.getId());
+                AndroidSchedulers.mainThread().createWorker().schedule(() -> showNotification(channelRealm, episodeRealm, true));
             } catch (IOException e) {
                 logger.w(e);
                 playingEpisodeId = -1;
                 cancelNotification(channelRealm);
-                if (subscription != null) {
-                    subscription.unsubscribe();
-                }
+                unsubscribeTimer();
+                updateEpisode(episodeRealm, EpisodeRealm.PlayState.PAUSE);
             }
         });
-        showNotification(channelRealm, episodeRealm, true);
+    }
+
+    private void unsubscribeTimer() {
+        if (subscription != null) {
+            subscription.unsubscribe();
+        }
+    }
+
+    private void updateEpisode(EpisodeRealm episodeRealm, EpisodeRealm.PlayState state) {
+        episodeRealm.setPlayState(state);
+        updateEpisode.execute(episodeRealm).subscribe(Actions.empty(), logger::w);
     }
 
     private void updatePlayTime(int currentPosition, EpisodeRealm episodeRealm) {
-        episodeRealm.setPlayTime(currentPosition);
+        episodeRealm.setPlayTimeInMs(currentPosition);
         updateEpisode.execute(episodeRealm).subscribe(Actions.empty(), logger::w);
         logger.d("updatePlayTime: %d, %s", currentPosition, episodeRealm);
     }
@@ -170,11 +186,8 @@ public class PlayerService extends Service {
         handler.post(() -> {
             if (mp.isPlaying()) {
                 mp.pause();
-
-                if (subscription != null) {
-                    subscription.unsubscribe();
-                }
-
+                unsubscribeTimer();
+                updateEpisode(episodeRealm, EpisodeRealm.PlayState.PAUSE);
                 AndroidSchedulers.mainThread().createWorker().schedule(() -> showNotification(channelRealm, episodeRealm, false));
             }
         });
@@ -223,7 +236,11 @@ public class PlayerService extends Service {
         sendBroadcast(paramManager.getPauseIntent(episodeId));
     }
 
-    public class LocalBinder extends Binder {
+    private void sendPlayedBroadcast(long episodeId) {
+        sendBroadcast(paramManager.getPlayedIntent(episodeId));
+    }
+
+    class LocalBinder extends Binder {
         PlayerService getService() {
             return PlayerService.this;
         }

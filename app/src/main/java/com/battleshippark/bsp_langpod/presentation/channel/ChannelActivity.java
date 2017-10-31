@@ -246,6 +246,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
             tryDownload(episode);
         } else if (episode.getDownloadState() == EpisodeRealm.DownloadState.DOWNLOADED) {
             if (episode.getPlayState() == EpisodeRealm.PlayState.NOT_PLAYED
+                    || episode.getPlayState() == EpisodeRealm.PlayState.PAUSE
                     || episode.getPlayState() == EpisodeRealm.PlayState.PLAYED) {
                 playEpisode(episode);
             } else if (episode.getPlayState() == EpisodeRealm.PlayState.PLAYING) {
@@ -257,15 +258,15 @@ public class ChannelActivity extends Activity implements OnItemListener {
     private void pauseEpisode(EpisodeRealm episode) {
         player.pause(channelRealm, episode);
 
-        episode.setPlayState(EpisodeRealm.PlayState.PLAYED);
-        updateEpisode.execute(episode).subscribe();
+        episode.setPlayState(EpisodeRealm.PlayState.PAUSE);
+        adapter.notifyDataSetChanged();
     }
 
     private void playEpisode(EpisodeRealm episode) {
         player.play(channelRealm, episode);
 
         episode.setPlayState(EpisodeRealm.PlayState.PLAYING);
-        updateEpisode.execute(episode).subscribe();
+        adapter.notifyDataSetChanged();
     }
 
     private void tryDownload(EpisodeRealm episode) {
@@ -306,7 +307,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
             return getString(R.string.episode_failed_download);
         } else {
             if (episode.getPlayState() == EpisodeRealm.PlayState.PLAYING) {
-                return getString(R.string.episode_playing, toTimeFormat(episode.getPlayTime()), toTimeFormat(episode.getLength()));
+                return getString(R.string.episode_playing, toTimeFormat(episode.getPlayTimeInMs() / 1000), toTimeFormat(episode.getLength()));
             }
         }
         return "";

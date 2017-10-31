@@ -22,7 +22,7 @@ public class EpisodeRealm extends RealmObject {
     private long length;
     private Date date;
     private String playState = PlayState.NOT_PLAYED.name();
-    private int playTime;
+    private int playTimeInMs;
     private String downloadState = DownloadState.NOT_DOWNLOADED.name();
     private String downloadedPath;
 
@@ -44,7 +44,7 @@ public class EpisodeRealm extends RealmObject {
         this(realm.id, realm.title, realm.desc, realm.url, realm.date);
         this.length = realm.length;
         this.playState = realm.playState;
-        this.playTime = realm.playTime;
+        this.playTimeInMs = realm.playTimeInMs;
         this.downloadState = realm.downloadState;
         this.downloadedPath = realm.downloadedPath;
         this.downloadedBytes = realm.downloadedBytes;
@@ -107,12 +107,12 @@ public class EpisodeRealm extends RealmObject {
         this.playState = playState.name();
     }
 
-    public int getPlayTime() {
-        return this.playTime;
+    public int getPlayTimeInMs() {
+        return this.playTimeInMs;
     }
 
-    public void setPlayTime(int timeInMs) {
-        this.playTime = timeInMs;
+    public void setPlayTimeInMs(int timeInMs) {
+        this.playTimeInMs = timeInMs;
     }
 
     public DownloadState getDownloadState() {
@@ -157,7 +157,7 @@ public class EpisodeRealm extends RealmObject {
                 ", length=" + length +
                 ", date=" + date +
                 ", playState='" + playState + '\'' +
-                ", playTime='" + playTime + '\'' +
+                ", playTimeInMs='" + playTimeInMs + '\'' +
                 ", downloadState='" + downloadState + '\'' +
                 ", downloadedPath='" + downloadedPath + '\'' +
                 ", downloadedBytes=" + downloadedBytes +
@@ -182,7 +182,7 @@ public class EpisodeRealm extends RealmObject {
         if (date != null ? !date.equals(that.date) : that.date != null) return false;
         if (playState != null ? !playState.equals(that.playState) : that.playState != null)
             return false;
-        if (playTime != that.playTime) return false;
+        if (playTimeInMs != that.playTimeInMs) return false;
         if (downloadState != null ? !downloadState.equals(that.downloadState) : that.downloadState != null)
             return false;
         return downloadedPath != null ? downloadedPath.equals(that.downloadedPath) : that.downloadedPath == null;
