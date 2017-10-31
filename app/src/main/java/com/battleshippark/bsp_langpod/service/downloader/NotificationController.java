@@ -1,10 +1,11 @@
-package com.battleshippark.bsp_langpod.service;
+package com.battleshippark.bsp_langpod.service.downloader;
 
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.widget.RemoteViews;
 
+import com.battleshippark.bsp_langpod.Const;
 import com.battleshippark.bsp_langpod.R;
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
@@ -15,8 +16,7 @@ import com.bumptech.glide.request.target.NotificationTarget;
 /**
  */
 
-public class DownloaderNotificationController {
-    private static final float MEGA_BYTE = 1024 * 1024 * 1.0f;
+class NotificationController {
     private final Context context;
     private final int notificationId;
     private RemoteViews remoteViews;
@@ -24,7 +24,7 @@ public class DownloaderNotificationController {
     private NotificationTarget notificationTarget;
     private boolean prepared;
 
-    public DownloaderNotificationController(Context context, int notificationId) {
+    NotificationController(Context context, int notificationId) {
         this.context = context;
         this.notificationId = notificationId;
 
@@ -49,7 +49,7 @@ public class DownloaderNotificationController {
                 notificationId);
     }
 
-    public Notification prepare() {
+    Notification prepare() {
         remoteViews.setImageViewResource(R.id.image_iv, R.mipmap.ic_launcher);
         remoteViews.setTextViewText(R.id.channel_tv, context.getString(R.string.notification_waiting_download));
         remoteViews.setTextViewText(R.id.episode_tv, "");
@@ -70,7 +70,8 @@ public class DownloaderNotificationController {
                 return;
             }
             remoteViews.setTextViewText(R.id.progress_tv,
-                    context.getString(R.string.episode_downloading, param.bytesRead() / MEGA_BYTE, param.contentLength() / MEGA_BYTE));
+                    context.getString(R.string.episode_downloading,
+                            param.bytesRead() / Const.MEGA_BYTE, param.contentLength() / Const.MEGA_BYTE));
         }
 
         Glide.with(context).load(channelRealm.getImage()).asBitmap().into(notificationTarget);
@@ -81,7 +82,7 @@ public class DownloaderNotificationController {
         ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE)).notify(notificationId, notification);
     }
 
-    public void complete() {
+    void complete() {
         prepared = false;
     }
 }

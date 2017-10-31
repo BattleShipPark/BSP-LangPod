@@ -22,7 +22,6 @@ import com.battleshippark.bsp_langpod.data.downloader.DownloadProgressParam;
 import com.battleshippark.bsp_langpod.domain.DownloadMedia;
 import com.battleshippark.bsp_langpod.domain.GetChannelWithEpisodeId;
 import com.battleshippark.bsp_langpod.domain.UpdateEpisode;
-import com.battleshippark.bsp_langpod.service.DownloaderNotificationController;
 import com.battleshippark.bsp_langpod.util.Logger;
 
 import java.io.File;
@@ -57,7 +56,7 @@ public class DownloaderService extends Service {
     private GetChannelWithEpisodeId getChannelWithEpisodeId;
     private UpdateEpisode updateEpisode;
     private DownloadDbApi downloadDbApi;
-    private DownloaderNotificationController notificationController;
+    private NotificationController notificationController;
 
     @Override
     public void onCreate() {
@@ -82,7 +81,7 @@ public class DownloaderService extends Service {
 
         downloadDbApi = DaggerDbApiGraph.create().downloadApi();
 
-        notificationController = new DownloaderNotificationController(this, NOTIFICATION_ID);
+        notificationController = new NotificationController(this, NOTIFICATION_ID);
 
         subscription.add(
                 progressSubject
