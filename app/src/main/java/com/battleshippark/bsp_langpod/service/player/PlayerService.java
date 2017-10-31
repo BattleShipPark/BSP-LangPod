@@ -57,6 +57,7 @@ public class PlayerService extends Service {
     private long playingEpisodeId = -1;
     private Observable<Long> timer;
     private Subscription subscription;
+    private NotificationController notificationController;
 
     @Override
     public void onCreate() {
@@ -74,6 +75,8 @@ public class PlayerService extends Service {
         updateEpisode = new UpdateEpisode(channelDbApi, handlerScheduler, Schedulers.immediate());
 
         timer = Observable.interval(1, TimeUnit.SECONDS, handlerScheduler);
+
+        notificationController = new NotificationController(this);
     }
 
     @Override
@@ -120,6 +123,8 @@ public class PlayerService extends Service {
         handler.post(() -> {
             try {
                 if (playingEpisodeId != episodeRealm.getId()) {
+                    startForeground((int) episodeRealm.getId(), notificationController.prepare());
+
                     mp.stop();
                     mp.reset();
                     mp.setDataSource("file://" + episodeRealm.getDownloadedPath());
@@ -127,7 +132,7 @@ public class PlayerService extends Service {
                         unsubscribeTimer();
                         updateEpisode(episodeRealm, EpisodeRealm.PlayState.PLAYED);
                         sendPlayedBroadcast(episodeRealm.getId());
-                        AndroidSchedulers.mainThread().createWorker().schedule(() -> showNotification(channelRealm, episodeRealm, true));
+                        updateNotification(channelRealm, episodeRealm);
                     });
                     mp.prepare();
                     mp.seekTo(episodeRealm.getPlayTimeInMs());
@@ -144,7 +149,7 @@ public class PlayerService extends Service {
 
                 updateEpisode(episodeRealm, EpisodeRealm.PlayState.PLAYING);
                 sendPlayBroadcast(episodeRealm.getId());
-                AndroidSchedulers.mainThread().createWorker().schedule(() -> showNotification(channelRealm, episodeRealm, true));
+                updateNotification(channelRealm, episodeRealm);
             } catch (IOException e) {
                 logger.w(e);
                 playingEpisodeId = -1;
@@ -153,6 +158,10 @@ public class PlayerService extends Service {
                 updateEpisode(episodeRealm, EpisodeRealm.PlayState.PAUSE);
             }
         });
+    }
+
+    private void updateNotification(ChannelRealm channelRealm, EpisodeRealm episodeRealm) {
+        AndroidSchedulers.mainThread().createWorker().schedule(() -> notificationController.update(channelRealm, episodeRealm));
     }
 
     private void unsubscribeTimer() {
@@ -189,44 +198,15 @@ public class PlayerService extends Service {
                 mp.pause();
                 unsubscribeTimer();
                 updateEpisode(episodeRealm, EpisodeRealm.PlayState.PAUSE);
-                AndroidSchedulers.mainThread().createWorker().schedule(() -> showNotification(channelRealm, episodeRealm, false));
+                updateNotification(channelRealm, episodeRealm);
             }
         });
         sendPauseBroadcast(episodeRealm.getId());
     }
 
-    private void showNotification(ChannelRealm channelRealm, EpisodeRealm episodeRealm, boolean isPlaying) {
-        PendingIntent pendingIntent = createPendingIntent(isPlaying, channelRealm.getId(), episodeRealm.getId());
-
-        RemoteViews rv = new RemoteViews(getPackageName(), R.layout.notification_play);
-        rv.setImageViewResource(R.id.image_iv, R.mipmap.ic_launcher);
-        rv.setTextViewText(R.id.channel_tv, channelRealm.getTitle());
-        rv.setTextViewText(R.id.episode_tv, episodeRealm.getTitle());
-        rv.setImageViewResource(R.id.play_iv, isPlaying ? R.drawable.pause : R.drawable.play);
-        rv.setOnClickPendingIntent(R.id.play_iv, pendingIntent);
-
-        Notification.Builder mBuilder = new Notification.Builder(this)
-                .setSmallIcon(R.drawable.download)
-                .setContent(rv);
-        final Notification notification = mBuilder.build();
-        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify((int) channelRealm.getId(), notification);
-
-        NotificationTarget notificationTarget = new NotificationTarget(
-                this,
-                rv,
-                R.id.image_iv,
-                notification,
-                (int) channelRealm.getId());
-        Glide.with(getApplicationContext()).load(channelRealm.getImage()).asBitmap().into(notificationTarget);
-    }
-
     private void cancelNotification(ChannelRealm channelRealm) {
-        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).cancel((int) channelRealm.getId());
-    }
-
-    private PendingIntent createPendingIntent(boolean isPlaying, long channelId, long episodeId) {
-        Intent intent = paramManager.getServiceIntent(this, isPlaying, channelId, episodeId);
-        return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        stopForeground(true);
+        notificationController.complete();
     }
 
     private void sendPlayBroadcast(long episodeId) {

@@ -3,6 +3,8 @@ package com.battleshippark.bsp_langpod.service.player;
 import android.content.Context;
 import android.content.Intent;
 
+import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
+
 /**
  */
 
@@ -61,9 +63,13 @@ class ParamManager {
         return intent;
     }
 
-    Intent getServiceIntent(Context context, boolean isPlaying, long channelId, long episodeId) {
+    Intent getServiceIntent(Context context, EpisodeRealm.PlayState state, long channelId, long episodeId) {
         Intent intent = new Intent(context, PlayerService.class);
-        intent.setAction(isPlaying ? PlayerService.ACTION_PAUSE : PlayerService.ACTION_PLAY);
+        if (state == EpisodeRealm.PlayState.PLAYING) {
+            intent.setAction(PlayerService.ACTION_PAUSE);
+        } else if (state == EpisodeRealm.PlayState.PAUSE || state == EpisodeRealm.PlayState.PLAYED) {
+            intent.setAction(PlayerService.ACTION_PLAY);
+        }
         intent.putExtra(KEY_CHANNEL_ID, channelId);
         intent.putExtra(KEY_EPISODE_ID, episodeId);
         return intent;
