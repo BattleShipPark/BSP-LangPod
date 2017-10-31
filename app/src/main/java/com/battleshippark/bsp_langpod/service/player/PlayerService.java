@@ -1,10 +1,6 @@
 package com.battleshippark.bsp_langpod.service.player;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Binder;
@@ -12,9 +8,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.widget.RemoteViews;
 
-import com.battleshippark.bsp_langpod.R;
 import com.battleshippark.bsp_langpod.dagger.DaggerDbApiGraph;
 import com.battleshippark.bsp_langpod.dagger.DaggerDomainMapperGraph;
 import com.battleshippark.bsp_langpod.data.db.ChannelDbApi;
@@ -24,8 +18,6 @@ import com.battleshippark.bsp_langpod.domain.DomainMapper;
 import com.battleshippark.bsp_langpod.domain.GetChannel;
 import com.battleshippark.bsp_langpod.domain.UpdateEpisode;
 import com.battleshippark.bsp_langpod.util.Logger;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.NotificationTarget;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -133,6 +125,7 @@ public class PlayerService extends Service {
                         updateEpisode(episodeRealm, EpisodeRealm.PlayState.PLAYED);
                         sendPlayedBroadcast(episodeRealm.getId());
                         updateNotification(channelRealm, episodeRealm);
+                        mp1.seekTo(0);
                     });
                     mp.prepare();
                     mp.seekTo(episodeRealm.getPlayTimeInMs());
@@ -172,6 +165,9 @@ public class PlayerService extends Service {
 
     private void updateEpisode(EpisodeRealm episodeRealm, EpisodeRealm.PlayState state) {
         episodeRealm.setPlayState(state);
+        if (state == EpisodeRealm.PlayState.PLAYED) {
+            episodeRealm.setPlayTimeInMs(0);
+        }
         updateEpisode.execute(episodeRealm).subscribe(Actions.empty(), logger::w);
     }
 

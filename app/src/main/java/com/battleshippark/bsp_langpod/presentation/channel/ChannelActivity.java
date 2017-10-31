@@ -384,6 +384,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
     private void onMediaPlayed(long episodeId) {
         findEpisode(String.valueOf(episodeId)).ifPresent(episodeRealm -> {
             episodeRealm.setPlayState(EpisodeRealm.PlayState.PLAYED);
+            episodeRealm.setPlayTimeInMs(0);
             adapter.notifyDataSetChanged();
         });
     }
