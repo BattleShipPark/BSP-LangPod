@@ -2,6 +2,7 @@ package com.battleshippark.bsp_langpod.service.downloader;
 
 import android.app.Service;
 import android.content.Intent;
+import android.media.MediaMetadataRetriever;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -130,6 +131,9 @@ public class DownloaderService extends Service {
 
     private void onCompleted(DownloadRealm downloadRealm, File file) {
         logger.d("onCompleted(): " + file);
+
+        downloadRealm.getEpisodeRealm().setLength(getLength(file));
+
         sendCompleteBroadcast(downloadRealm.getEpisodeRealm(), file);
         stopForeground(true);
         notificationController.complete();
@@ -138,11 +142,20 @@ public class DownloaderService extends Service {
 
         getChannel(downloadRealm.getEpisodeId(), (channelRealm, episodeRealm) -> {
             episodeRealm.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADED);
+            episodeRealm.setLength(getLength(file));
             logger.d("onCompleted(): " + episodeRealm);
             updateEpisode.execute(episodeRealm).subscribe(Actions.empty(), logger::w);
         });
 
         runNext();
+    }
+
+    private long getLength(File file) {
+        MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
+        mediaMetadataRetriever.setDataSource(file.getAbsolutePath());
+        String duration = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+        mediaMetadataRetriever.release();
+        return Long.parseLong(duration) / 1000;
     }
 
     private void onError(DownloadRealm downloadRealm, Throwable throwable) {

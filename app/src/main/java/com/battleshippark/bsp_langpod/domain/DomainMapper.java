@@ -55,12 +55,11 @@ public class DomainMapper {
                     int hash = (episodeJson.title() + episodeJson.desc()).hashCode();
                     EpisodeRealm episodeRealm = curEpisodeHashRealmMap.get(hash);
                     if (episodeRealm == null) {
-                        return new EpisodeRealm(realmHelper.getNextEpisodeId(), episodeJson.title(), episodeJson.desc(), episodeJson.url(), episodeJson.length(), episodeJson.date());
+                        return new EpisodeRealm(realmHelper.getNextEpisodeId(), episodeJson.title(), episodeJson.desc(), episodeJson.url(), episodeJson.date());
                     } else {
                         EpisodeRealm newEpisodeRealm = new EpisodeRealm(episodeRealm);
                         newEpisodeRealm.setTitle(episodeJson.title());
                         newEpisodeRealm.setUrl(episodeJson.url());
-                        newEpisodeRealm.setLength(episodeJson.length());
                         newEpisodeRealm.setDate(episodeJson.date());
                         return newEpisodeRealm;
                     }

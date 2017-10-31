@@ -26,9 +26,9 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
  */
 public class ChannelDbApiTest {
     private ChannelRealm channelRealm1 = new ChannelRealm(1, 10, "title1", "desc1", "image1", "url1", "cr1",
-            new RealmList<>(new EpisodeRealm(2, "ep.title1", "ep.desc1", "ep.url1", 11, new Date(111))), false);
+            new RealmList<>(new EpisodeRealm(2, "ep.title1", "ep.desc1", "ep.url1", new Date(111))), false);
     private ChannelRealm channelRealm2 = new ChannelRealm(2, 11, "title2", "desc2", "image2", "url2", "cr2",
-            new RealmList<>(new EpisodeRealm(1, "ep.title2", "ep.desc2", "ep.url2", 22, new Date(222))), true);
+            new RealmList<>(new EpisodeRealm(1, "ep.title2", "ep.desc2", "ep.url2", new Date(222))), true);
 
     private Realm realm;
     private RealmConfiguration configuration;
@@ -160,7 +160,7 @@ public class ChannelDbApiTest {
     @Test
     public void putEpisode() throws InterruptedException {
         //ID1으로 저장해 놓고
-        EpisodeRealm episodeRealm = new EpisodeRealm(1, "ep.title1", "ep.desc1", "ep.url1", 11, new Date(111));
+        EpisodeRealm episodeRealm = new EpisodeRealm(1, "ep.title1", "ep.desc1", "ep.url1", new Date(111));
         realm.executeTransaction(realm1 -> {
             realm1.insert(episodeRealm);
         });

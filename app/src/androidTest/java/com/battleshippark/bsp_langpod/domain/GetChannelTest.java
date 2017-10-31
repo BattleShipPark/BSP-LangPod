@@ -55,23 +55,23 @@ public class GetChannelTest {
         List<ChannelRealm> channelRealmList = Arrays.asList( //DB에 있는 url1을 대상으로,
                 new ChannelRealm(1, 10, "title1", "desc1", "image1", "url1", "cr1",
                         new RealmList<>(
-                                new EpisodeRealm(1, "ep.title1", "ep.desc1", "ep.url1", 11, new Date()),
-                                new EpisodeRealm(2, "ep.title2", "ep.desc2", "ep.url2", 22, new Date())
+                                new EpisodeRealm(1, "ep.title1", "ep.desc1", "ep.url1", new Date()),
+                                new EpisodeRealm(2, "ep.title2", "ep.desc2", "ep.url2", new Date())
                         ), false
                 ),
                 new ChannelRealm(2, 11, "title2", "desc2", "image2", "url2", "cr2",
                         new RealmList<>(
-                                new EpisodeRealm(3, "ep2.title1", "ep2.desc1", "ep2.url1", 33, new Date()),
-                                new EpisodeRealm(4, "ep2.title2", "ep2.desc2", "ep2.url2", 44, new Date())
+                                new EpisodeRealm(3, "ep2.title1", "ep2.desc1", "ep2.url1", new Date()),
+                                new EpisodeRealm(4, "ep2.title2", "ep2.desc2", "ep2.url2", new Date())
                         ), true
                 )
         );
         ChannelJson channelJson = ChannelJson.create( //새로운 에피소드가 추가됐다
                 "title1", "desc1", "cr1", "image1",
                 Arrays.asList(
-                        EpisodeJson.create("ep.title1", "ep.desc1", "ep.url1", 1, new Date()),
-                        EpisodeJson.create("ep.title2", "ep.desc2", "ep.url2", 2, new Date()),
-                        EpisodeJson.create("ep.title3", "ep.desc3", "ep.url3", 3, new Date())
+                        EpisodeJson.create("ep.title1", "ep.desc1", "ep.url1", new Date()),
+                        EpisodeJson.create("ep.title2", "ep.desc2", "ep.url2", new Date()),
+                        EpisodeJson.create("ep.title3", "ep.desc3", "ep.url3", new Date())
                 )
         );
         TestSubscriber<ChannelRealm> testSubscriber = new TestSubscriber<>();

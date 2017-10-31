@@ -24,7 +24,6 @@ public class RssResponseMapper {
                                         syndEntry.getTitle(),
                                         syndEntry.getDescription().getValue(),
                                         syndEntry.getEnclosures().get(0).getUrl(),
-                                        syndEntry.getEnclosures().get(0).getLength(),
                                         syndEntry.getPublishedDate()))
                         .collect(Collectors.toList())
         );

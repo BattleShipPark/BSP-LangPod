@@ -32,17 +32,17 @@ public class EpisodeRealm extends RealmObject {
     public EpisodeRealm() {
     }
 
-    public EpisodeRealm(long id, String title, String desc, String url, long length, Date date) {
+    public EpisodeRealm(long id, String title, String desc, String url, Date date) {
         this.id = id;
         this.title = title;
         this.desc = desc;
         this.url = url;
-        this.length = length;
         this.date = date;
     }
 
     public EpisodeRealm(EpisodeRealm realm) {
-        this(realm.id, realm.title, realm.desc, realm.url, realm.length, realm.date);
+        this(realm.id, realm.title, realm.desc, realm.url, realm.date);
+        this.length = realm.length;
         this.playState = realm.playState;
         this.playTime = realm.playTime;
         this.downloadState = realm.downloadState;

@@ -33,7 +33,7 @@ public class DomainMapperTest {
 
         ChannelRealm channelRealm = new ChannelRealm(1, 10, "title", "desc", "image", "url", "copyright", new RealmList<>(), false);
         ChannelJson channelJson = ChannelJson.create("title", "desc", "copyright2", "image2",
-                Collections.singletonList(EpisodeJson.create("ep.title", "ep.desc", "ep.url", 111, new Date(1234))));
+                Collections.singletonList(EpisodeJson.create("ep.title", "ep.desc", "ep.url", new Date(1234))));
         ChannelRealm newChannelRealm = domainMapper.channelJsonAsRealm(channelRealm, channelJson);
 
         assertThat(newChannelRealm.getTitle()).isEqualTo("title");
@@ -56,11 +56,11 @@ public class DomainMapperTest {
         when(realmHelper.getNextEpisodeId()).thenReturn(2L);
 
         ChannelRealm channelRealm = new ChannelRealm(1, 10, "title", "desc", "image", "url", "copyright",
-                new RealmList<>(new EpisodeRealm(1, "ep.title", "ep.desc", "ep.url", 11, new Date(111))), false);
+                new RealmList<>(new EpisodeRealm(1, "ep.title", "ep.desc", "ep.url", new Date(111))), false);
         ChannelJson channelJson = ChannelJson.create("title", "desc", "copyright2", "image2",
                 Arrays.asList(
-                        EpisodeJson.create("ep.title", "ep.desc", "ep.url1", 111, new Date(1111)), //같은 title, desc에 내용이 바뀜
-                        EpisodeJson.create("ep.title2", "ep.desc2", "ep.url2", 222, new Date(2222)) //새로운 에피소드
+                        EpisodeJson.create("ep.title", "ep.desc", "ep.url1", new Date(1111)), //같은 title, desc에 내용이 바뀜
+                        EpisodeJson.create("ep.title2", "ep.desc2", "ep.url2", new Date(2222)) //새로운 에피소드
                 ));
 
 

@@ -45,6 +45,8 @@ import com.battleshippark.bsp_langpod.service.player.PlayerServiceFacade;
 import com.battleshippark.bsp_langpod.util.Logger;
 import com.bumptech.glide.Glide;
 
+import java.util.Locale;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
@@ -244,8 +246,6 @@ public class ChannelActivity extends Activity implements OnItemListener {
 
     @Override
     public void onBindHeaderViewHolder(ChannelAdapter.HeaderViewHolder holder, ChannelRealm channel) {
-//        holder.itemView.setOnClickListener(v -> mListener.onClickMyChannelItem(item));
-
         Glide.with(holder.imageView.getContext()).load(channel.getImage()).into(holder.imageView);
 
         holder.descView.setText(channel.getDesc());
@@ -339,8 +339,16 @@ public class ChannelActivity extends Activity implements OnItemListener {
             return getString(R.string.episode_downloading, episode.getDownloadedBytes() / MEGA_BYTE, episode.getTotalBytes() / MEGA_BYTE);
         } else if (episode.getDownloadState() == EpisodeRealm.DownloadState.FAILED_DOWNLOAD) {
             return getString(R.string.episode_failed_download);
+        } else {
+            if (episode.getPlayState() == EpisodeRealm.PlayState.PLAYING) {
+                return getString(R.string.episode_playing, toTimeFormat(episode.getPlayTime()), toTimeFormat(episode.getLength()));
+            }
         }
         return "";
+    }
+
+    private String toTimeFormat(long seconds) {
+        return String.format(Locale.getDefault(), "%02d:%02d", seconds / 60, seconds % 60);
     }
 
     private int getStatusImage(EpisodeRealm episode) {
