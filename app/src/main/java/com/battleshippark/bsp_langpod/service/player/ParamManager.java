@@ -3,14 +3,13 @@ package com.battleshippark.bsp_langpod.service.player;
 import android.content.Context;
 import android.content.Intent;
 
-import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
-
 /**
  */
 
 class ParamManager {
     private static final String KEY_CHANNEL_ID = "keyChannelId";
     private static final String KEY_EPISODE_ID = "keyEpisodeId";
+    private static final String KEY_CURRENT_POSITION = "keyCurrentPosition";
 
     boolean hasPlayAction(Intent intent) {
         return checkIntent(intent, PlayerService.ACTION_PLAY);
@@ -18,6 +17,10 @@ class ParamManager {
 
     boolean hasPauseAction(Intent intent) {
         return checkIntent(intent, PlayerService.ACTION_PAUSE);
+    }
+
+    boolean hasPlayedAction(Intent intent) {
+        return checkIntent(intent, PlayerService.ACTION_PLAYED);
     }
 
     boolean hasPlayingAction(Intent intent) {
@@ -51,9 +54,10 @@ class ParamManager {
         return intent;
     }
 
-    Intent getPlayingIntent(EpisodeRealm episodeRealm, Throwable throwable) {
+    Intent getPlayingIntent(long episodeId, long currentPosition) {
         Intent intent = new Intent(PlayerService.ACTION_PLAYING);
-//        intent.putExtra(KEY_ERROR, DownloadErrorParam.create(String.valueOf(episodeRealm.getId()), throwable));
+        intent.putExtra(KEY_EPISODE_ID, episodeId);
+        intent.putExtra(KEY_CURRENT_POSITION, currentPosition);
         return intent;
     }
 
@@ -71,5 +75,9 @@ class ParamManager {
 
     long getEpisodeId(Intent intent) {
         return intent.getLongExtra(KEY_EPISODE_ID, -1);
+    }
+
+    long getCurrentPosition(Intent intent) {
+        return intent.getLongExtra(KEY_CURRENT_POSITION, -1);
     }
 }

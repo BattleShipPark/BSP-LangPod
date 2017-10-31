@@ -139,6 +139,7 @@ public class PlayerService extends Service {
                 unsubscribeTimer();
                 subscription = timer.subscribe(aLong -> {
                     updatePlayTime(mp.getCurrentPosition(), episodeRealm);
+                    sendPlayingBroadcast(episodeRealm.getId(), mp.getCurrentPosition());
                 });
 
                 updateEpisode(episodeRealm, EpisodeRealm.PlayState.PLAYING);
@@ -238,6 +239,10 @@ public class PlayerService extends Service {
 
     private void sendPlayedBroadcast(long episodeId) {
         sendBroadcast(paramManager.getPlayedIntent(episodeId));
+    }
+
+    private void sendPlayingBroadcast(long episodeId, int currentPosition) {
+        sendBroadcast(paramManager.getPlayingIntent(episodeId, currentPosition));
     }
 
     class LocalBinder extends Binder {
