@@ -58,13 +58,6 @@ public class Player {
         return bound;
     }
 
-    public IntentFilter createIntentFilter() {
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(PlayerService.ACTION_PLAY);
-        intentFilter.addAction(PlayerService.ACTION_PAUSE);
-        return intentFilter;
-    }
-
     private class LocalServiceConnection implements ServiceConnection {
         private PlayerService service;
         private Action1<PlayerService> onConnected;

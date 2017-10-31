@@ -35,6 +35,7 @@ import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.android.schedulers.HandlerScheduler;
 import rx.functions.Actions;
+import rx.schedulers.Schedulers;
 
 /**
  */
@@ -43,13 +44,11 @@ public class PlayerService extends Service {
     private static final String TAG = PlayerService.class.getSimpleName();
     public static final String ACTION_PLAY = TAG + ".actionPlay";
     public static final String ACTION_PAUSE = TAG + ".actionPause";
-    public static final String KEY_CHANNEL_ID = "keyChannelId";
-    public static final String KEY_EPISODE_ID = "keyEpisodeId";
+    public static final String ACTION_PLAYING = TAG + ".actionPlaying";
     private static final Logger logger = new Logger(TAG);
     private static final MediaPlayer mp = new MediaPlayer();
-    private static final Intent playIntent = new Intent(ACTION_PLAY);
-    private static final Intent pauseIntent = new Intent(ACTION_PAUSE);
     private final IBinder mBinder = new LocalBinder();
+    private final ParamManager paramManager = new ParamManager();
     private HandlerThread thread;
     private Handler handler;
     private GetChannel getChannel;
@@ -70,8 +69,8 @@ public class PlayerService extends Service {
         DomainMapper domainMapper = DaggerDomainMapperGraph.create().domainMapper();
 
         HandlerScheduler handlerScheduler = HandlerScheduler.from(handler);
-        getChannel = new GetChannel(channelDbApi, null, handlerScheduler, handlerScheduler, domainMapper);
-        updateEpisode = new UpdateEpisode(channelDbApi, handlerScheduler, handlerScheduler);
+        getChannel = new GetChannel(channelDbApi, null, handlerScheduler, AndroidSchedulers.mainThread(), domainMapper);
+        updateEpisode = new UpdateEpisode(channelDbApi, handlerScheduler, Schedulers.immediate());
 
         timer = Observable.interval(1, TimeUnit.SECONDS, handlerScheduler);
     }
@@ -79,17 +78,14 @@ public class PlayerService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         int ret = super.onStartCommand(intent, flags, startId);
-        if (intent != null) {
-            String action = intent.getAction();
-            if (action != null) {
-                long channelId = intent.getLongExtra(KEY_CHANNEL_ID, -1);
-                long episodeId = intent.getLongExtra(KEY_EPISODE_ID, -1);
-                if (channelId > 0 && episodeId > 0) {
-                    if (action.equals(ACTION_PLAY)) {
-                        play(channelId, episodeId);
-                    } else if (action.equals(ACTION_PAUSE)) {
-                        pause(channelId, episodeId);
-                    }
+        if (paramManager.hasServiceIntent(intent)) {
+            long channelId = paramManager.getChannelId(intent);
+            long episodeId = paramManager.getEpisodeId(intent);
+            if (channelId > 0 && episodeId > 0) {
+                if (paramManager.hasPlayAction(intent)) {
+                    play(channelId, episodeId);
+                } else if (paramManager.hasPauseAction(intent)) {
+                    pause(channelId, episodeId);
                 }
             }
         }
@@ -140,7 +136,7 @@ public class PlayerService extends Service {
                     updatePlayTime(mp.getCurrentPosition(), episodeRealm);
                 });
 
-                sendBroadcast(playIntent, episodeRealm.getId());
+                sendPlayBroadcast(episodeRealm.getId());
             } catch (IOException e) {
                 logger.w(e);
                 playingEpisodeId = -1;
@@ -182,11 +178,11 @@ public class PlayerService extends Service {
                 AndroidSchedulers.mainThread().createWorker().schedule(() -> showNotification(channelRealm, episodeRealm, false));
             }
         });
-        sendBroadcast(pauseIntent, episodeRealm.getId());
+        sendPauseBroadcast(episodeRealm.getId());
     }
 
     private void showNotification(ChannelRealm channelRealm, EpisodeRealm episodeRealm, boolean isPlaying) {
-        PendingIntent pendingIntent = createPendingIntent(isPlaying);
+        PendingIntent pendingIntent = createPendingIntent(isPlaying, channelRealm.getId(), episodeRealm.getId());
 
         RemoteViews rv = new RemoteViews(getPackageName(), R.layout.notification_play);
         rv.setImageViewResource(R.id.image_iv, R.mipmap.ic_launcher);
@@ -214,15 +210,17 @@ public class PlayerService extends Service {
         ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).cancel((int) channelRealm.getId());
     }
 
-    private PendingIntent createPendingIntent(boolean isPlaying) {
-        Intent intent = new Intent(this, PlayerService.class);
-        intent.setAction(isPlaying ? PlayerService.ACTION_PAUSE : PlayerService.ACTION_PLAY);
+    private PendingIntent createPendingIntent(boolean isPlaying, long channelId, long episodeId) {
+        Intent intent = paramManager.getServiceIntent(this, isPlaying, channelId, episodeId);
         return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
-    private void sendBroadcast(Intent intent, long episodeId) {
-        intent.putExtra(KEY_EPISODE_ID, episodeId);
-        sendBroadcast(intent);
+    private void sendPlayBroadcast(long episodeId) {
+        sendBroadcast(paramManager.getPlayIntent(episodeId));
+    }
+
+    private void sendPauseBroadcast(long episodeId) {
+        sendBroadcast(paramManager.getPauseIntent(episodeId));
     }
 
     public class LocalBinder extends Binder {

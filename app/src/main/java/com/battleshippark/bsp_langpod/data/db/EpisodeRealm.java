@@ -190,7 +190,7 @@ public class EpisodeRealm extends RealmObject {
     }
 
     public enum PlayState {
-        NOT_PLAYED, PLAYING, PLAYED
+        NOT_PLAYED, PLAYING, PAUSE, PLAYED
     }
 
     public enum DownloadState {

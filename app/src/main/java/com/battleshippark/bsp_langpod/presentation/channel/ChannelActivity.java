@@ -1,10 +1,8 @@
 package com.battleshippark.bsp_langpod.presentation.channel;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -41,7 +39,7 @@ import com.battleshippark.bsp_langpod.presentation.EpisodeDateFormat;
 import com.battleshippark.bsp_langpod.service.downloader.Downloader;
 import com.battleshippark.bsp_langpod.service.downloader.DownloaderBroadcastReceiver;
 import com.battleshippark.bsp_langpod.service.player.Player;
-import com.battleshippark.bsp_langpod.service.player.PlayerService;
+import com.battleshippark.bsp_langpod.service.player.PlayerBroadcastReceiver;
 import com.battleshippark.bsp_langpod.util.Logger;
 import com.bumptech.glide.Glide;
 
@@ -73,42 +71,8 @@ public class ChannelActivity extends Activity implements OnItemListener {
     private CompositeSubscription subscription = new CompositeSubscription();
     private Unbinder unbinder;
     private ChannelAdapter adapter;
-    private BroadcastReceiver playerBcReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            long episodeId = intent.getLongExtra(PlayerService.KEY_EPISODE_ID, -1);
-            if (intent.getAction().equals(PlayerService.ACTION_PLAY)) {
-                findEpisodeWith(episodeId).ifPresent(episodeRealm -> {
-                    findPlayingEpisodeExcept(episodeRealm.getId())
-                            .ifPresent(episodeRealm1 -> {
-                                episodeRealm1.setPlayState(EpisodeRealm.PlayState.PLAYED);
-                            });
-                    episodeRealm.setPlayState(EpisodeRealm.PlayState.PLAYING);
-                    adapter.notifyDataSetChanged();
-                });
-            } else if (intent.getAction().equals(PlayerService.ACTION_PAUSE)) {
-                findEpisodeWith(episodeId).ifPresent(episodeRealm -> {
-                    episodeRealm.setPlayState(EpisodeRealm.PlayState.PLAYED);
-                    adapter.notifyDataSetChanged();
-                });
-            }
-        }
-
-        private Optional<EpisodeRealm> findPlayingEpisodeExcept(long episodeId) {
-            return Stream.of(channelRealm.getEpisodes())
-                    .filter(episodeRealm -> episodeRealm.getPlayState() == EpisodeRealm.PlayState.PLAYING
-                            && episodeRealm.getId() != episodeId)
-                    .findFirst();
-        }
-
-        private Optional<EpisodeRealm> findEpisodeWith(long episodeId) {
-            return Stream.of(channelRealm.getEpisodes())
-                    .filter(episodeRealm -> episodeRealm.getId() == episodeId).findFirst();
-        }
-    };
+    private PlayerBroadcastReceiver playerBcReceiver;
     private DownloaderBroadcastReceiver downloaderBcReceiver;
-
-    private IntentFilter playerIntentFilter;
 
     private Player player;
     private Downloader downloader;
@@ -148,9 +112,10 @@ public class ChannelActivity extends Activity implements OnItemListener {
         player = new Player(this);
         downloader = new Downloader(this, new AppPhase(BuildConfig.DEBUG));
 
-        playerIntentFilter = player.createIntentFilter();
         downloaderBcReceiver = new DownloaderBroadcastReceiver(this,
                 this::onDownloadProgress, this::onDownloadCompleted, this::onDownloadError);
+        playerBcReceiver = new PlayerBroadcastReceiver(this,
+                this::onMediaPlay, this::onMediaPause, this::onMediaPlaying);
 
         if (savedInstanceState == null) {
             channelId = getIntent().getLongExtra(KEY_ID, 0);
@@ -402,6 +367,34 @@ public class ChannelActivity extends Activity implements OnItemListener {
         logger.w(param.throwable());
     }
 
+    private void onMediaPlay(Long episodeId) {
+        findEpisode(String.valueOf(episodeId)).ifPresent(episodeRealm -> {
+            findPlayingEpisodeExcept(episodeRealm.getId())
+                    .ifPresent(episodeRealm1 -> {
+                        episodeRealm1.setPlayState(EpisodeRealm.PlayState.PAUSE);
+                    });
+            episodeRealm.setPlayState(EpisodeRealm.PlayState.PLAYING);
+            adapter.notifyDataSetChanged();
+        });
+    }
+
+    private void onMediaPause(Long episodeId) {
+        findEpisode(String.valueOf(episodeId)).ifPresent(episodeRealm -> {
+            episodeRealm.setPlayState(EpisodeRealm.PlayState.PAUSE);
+            adapter.notifyDataSetChanged();
+        });
+    }
+
+    private void onMediaPlaying(Long episodeId) {
+    }
+
+    private Optional<EpisodeRealm> findPlayingEpisodeExcept(long episodeId) {
+        return Stream.of(channelRealm.getEpisodes())
+                .filter(episodeRealm -> episodeRealm.getPlayState() == EpisodeRealm.PlayState.PLAYING
+                        && episodeRealm.getId() != episodeId)
+                .findFirst();
+    }
+
     private Optional<EpisodeRealm> findEpisode(String episodeId) {
         return Stream.of(channelRealm.getEpisodes())
                 .filter(episodeRealm -> episodeRealm.getId() == Long.valueOf(episodeId))
@@ -409,13 +402,13 @@ public class ChannelActivity extends Activity implements OnItemListener {
     }
 
     private void registerReceiver() {
-        registerReceiver(playerBcReceiver, playerIntentFilter);
+        playerBcReceiver.register();
         downloaderBcReceiver.register();
     }
 
     private void unregisterReceiver() {
         downloaderBcReceiver.unregister();
-        unregisterReceiver(playerBcReceiver);
+        playerBcReceiver.unregister();
     }
 
     public static Intent createIntent(Context context, long id) {
