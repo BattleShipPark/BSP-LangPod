@@ -15,12 +15,12 @@ import rx.functions.Action1;
 /**
  */
 
-public class PlayerServiceFacade {
+public class Player {
     private final Context context;
     private final LocalServiceConnection connection = new LocalServiceConnection();
     private boolean bound;
 
-    public PlayerServiceFacade(Context context) {
+    public Player(Context context) {
         this.context = context;
     }
 

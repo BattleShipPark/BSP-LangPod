@@ -40,8 +40,8 @@ import com.battleshippark.bsp_langpod.domain.UpdateEpisode;
 import com.battleshippark.bsp_langpod.presentation.EpisodeDateFormat;
 import com.battleshippark.bsp_langpod.service.downloader.Downloader;
 import com.battleshippark.bsp_langpod.service.downloader.DownloaderBroadcastReceiver;
+import com.battleshippark.bsp_langpod.service.player.Player;
 import com.battleshippark.bsp_langpod.service.player.PlayerService;
-import com.battleshippark.bsp_langpod.service.player.PlayerServiceFacade;
 import com.battleshippark.bsp_langpod.util.Logger;
 import com.bumptech.glide.Glide;
 
@@ -110,7 +110,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
 
     private IntentFilter playerIntentFilter;
 
-    private PlayerServiceFacade playerServiceFacade;
+    private Player player;
     private Downloader downloader;
 
     private GetChannel getChannel;
@@ -145,10 +145,10 @@ public class ChannelActivity extends Activity implements OnItemListener {
 
         adapter = new ChannelAdapter(this);
 
-        playerServiceFacade = new PlayerServiceFacade(this);
+        player = new Player(this);
         downloader = new Downloader(this, new AppPhase(BuildConfig.DEBUG));
 
-        playerIntentFilter = playerServiceFacade.createIntentFilter();
+        playerIntentFilter = player.createIntentFilter();
         downloaderBcReceiver = new DownloaderBroadcastReceiver(this,
                 this::onDownloadProgress, this::onDownloadCompleted, this::onDownloadError);
 
@@ -189,7 +189,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
     @Override
     protected void onStart() {
         super.onStart();
-        playerServiceFacade.onStart();
+        player.onStart();
         downloader.onStart();
         registerReceiver();
     }
@@ -198,7 +198,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
     protected void onStop() {
         unregisterReceiver();
         downloader.onStop();
-        playerServiceFacade.onStop();
+        player.onStop();
         super.onStop();
     }
 
@@ -290,14 +290,14 @@ public class ChannelActivity extends Activity implements OnItemListener {
     }
 
     private void pauseEpisode(EpisodeRealm episode) {
-        playerServiceFacade.pause(channelRealm, episode);
+        player.pause(channelRealm, episode);
 
         episode.setPlayState(EpisodeRealm.PlayState.PLAYED);
         updateEpisode.execute(episode).subscribe();
     }
 
     private void playEpisode(EpisodeRealm episode) {
-        playerServiceFacade.play(channelRealm, episode);
+        player.play(channelRealm, episode);
 
         episode.setPlayState(EpisodeRealm.PlayState.PLAYING);
         updateEpisode.execute(episode).subscribe();
