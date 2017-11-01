@@ -18,8 +18,6 @@ import android.widget.Toolbar;
 
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
-import com.battleshippark.bsp_langpod.AppPhase;
-import com.battleshippark.bsp_langpod.BuildConfig;
 import com.battleshippark.bsp_langpod.R;
 import com.battleshippark.bsp_langpod.dagger.DaggerDbApiGraph;
 import com.battleshippark.bsp_langpod.dagger.DaggerDomainMapperGraph;
@@ -107,7 +105,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
         adapter = new ChannelAdapter(this);
 
         player = new Player(this);
-        downloader = new Downloader(this, new AppPhase(BuildConfig.DEBUG));
+        downloader = new Downloader(this);
 
         downloaderBcReceiver = new DownloaderBroadcastReceiver(this,
                 this::onDownloadProgress, this::onDownloadCompleted, this::onDownloadError);
@@ -152,14 +150,14 @@ public class ChannelActivity extends Activity implements OnItemListener {
     protected void onStart() {
         super.onStart();
         player.onStart();
-        downloader.onStart();
+        downloader.init();
         registerReceiver();
     }
 
     @Override
     protected void onStop() {
         unregisterReceiver();
-        downloader.onStop();
+        downloader.release();
         player.onStop();
         super.onStop();
     }

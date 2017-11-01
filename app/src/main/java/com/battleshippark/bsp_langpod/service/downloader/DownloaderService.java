@@ -57,6 +57,7 @@ public class DownloaderService extends Service {
     private UpdateEpisode updateEpisode;
     private DownloadDbApi downloadDbApi;
     private NotificationController notificationController;
+    boolean bound;
 
     @Override
     public void onCreate() {
@@ -98,7 +99,20 @@ public class DownloaderService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
+        this.bound = true;
         return mBinder;
+    }
+
+    @Override
+    public void onRebind(Intent intent) {
+        super.onRebind(intent);
+        this.bound = true;
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        this.bound = false;
+        return true;
     }
 
     @Override
@@ -222,6 +236,10 @@ public class DownloaderService extends Service {
 
     private void sendErrorBroadcast(EpisodeRealm episodeRealm, Throwable throwable) {
         sendBroadcast(paramManager.getErrorIntent(episodeRealm, throwable));
+    }
+
+    boolean getBound() {
+        return bound;
     }
 
     class LocalBinder extends Binder {
