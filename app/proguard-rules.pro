@@ -23,3 +23,21 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-optimizationpasses 5
+-allowaccessmodification
+-printmapping 'mapping.txt'
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
+
+-dontwarn sun.misc.Unsafe
+-dontwarn javax.lang.model.element.Modifier
+-dontwarn org.apache.**
+-dontwarn com.google.auto.**
+-dontwarn autovalue.shaded.com.**
+-dontwarn okio.**
+-dontwarn retrofit2.**
+-dontwarn org.jdom2.xpath.**
+-dontwarn org.slf4j.**
+
+-keep class com.rometools.** { *;}
