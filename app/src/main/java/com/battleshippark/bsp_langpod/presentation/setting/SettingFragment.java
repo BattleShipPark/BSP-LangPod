@@ -83,19 +83,19 @@ public class SettingFragment extends Fragment {
         super.onDestroy();
     }
 
-    @OnClick({R.id.wifi_checkbox, R.id.clear_cache_tv, R.id.download_list_tv})
+    @OnClick({R.id.wifi_checkbox, R.id.download_list_tv})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.wifi_checkbox:
                 putStoredValue.downloadOnlyWifi(wifiCheckbox.isChecked())
                         .subscribe(Actions.empty(), logger::w);
                 break;
-            case R.id.clear_cache_tv:
+/*            case R.id.clear_cache_tv:
                 new AlertDialog.Builder(getActivity()).setMessage(R.string.setting_clear_cache_message)
                         .setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.cancel())
                         .setNegativeButton(android.R.string.no, (dialog, which) -> dialog.cancel())
                         .show();
-                break;
+                break;*/
             case R.id.download_list_tv:
                 startActivity(new Intent(getActivity(), SettingDownloadListActivity.class));
                 break;

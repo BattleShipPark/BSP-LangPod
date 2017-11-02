@@ -77,6 +77,7 @@ public class SettingDownloadListActivity extends Activity implements OnItemListe
         setActionBar(toolbar);
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setDisplayShowHomeEnabled(true);
+        getActionBar().setTitle(R.string.setting_download_list);
 
         downloadRv.setLayoutManager(new LinearLayoutManager(this));
         downloadRv.setAdapter(adapter);

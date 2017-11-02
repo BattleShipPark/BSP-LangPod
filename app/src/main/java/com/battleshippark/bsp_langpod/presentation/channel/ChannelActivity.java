@@ -402,6 +402,9 @@ public class ChannelActivity extends Activity implements OnItemListener {
     }
 
     private Optional<EpisodeRealm> findEpisode(String episodeId) {
+        if (channelRealm == null) {
+            return Optional.empty();
+        }
         return Stream.of(channelRealm.getEpisodes())
                 .filter(episodeRealm -> episodeRealm.getId() == Long.valueOf(episodeId))
                 .findFirst();
