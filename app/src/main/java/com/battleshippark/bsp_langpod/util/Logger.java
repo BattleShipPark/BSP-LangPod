@@ -2,6 +2,8 @@ package com.battleshippark.bsp_langpod.util;
 
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
+
 /**
  */
 
@@ -55,6 +57,7 @@ public class Logger implements Loggable {
     @Override
     public void w(Throwable t) {
         Log.w(tag, t);
+        Crashlytics.logException(t);
     }
 
     @Override

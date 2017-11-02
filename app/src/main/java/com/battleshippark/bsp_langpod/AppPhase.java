@@ -15,8 +15,8 @@ public class AppPhase {
     }
 
     private enum Phase {
-        DEBUG("langpod-beta.appspot.com"),
-        RELEASE("langpod-165807.appspot.com");
+        DEBUG("mooncast-beta-2017.appspot.com"),
+        RELEASE("mooncast-2017.appspot.com");
 
         private String serverDomain;
 
