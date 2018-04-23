@@ -53,7 +53,7 @@ class NotificationController {
         remoteViews.setImageViewResource(R.id.image_iv, R.mipmap.ic_launcher);
         remoteViews.setTextViewText(R.id.channel_tv, context.getString(R.string.notification_waiting_download));
         remoteViews.setTextViewText(R.id.episode_tv, "");
-        remoteViews.setTextViewText(R.id.progress_tv, context.getString(R.string.episode_downloading, 0f, 0f));
+        remoteViews.setTextViewText(R.id.progress_tv, context.getString(R.string.notification_downloading, 0f, 0f));
 
         prepared = true;
 
@@ -70,7 +70,7 @@ class NotificationController {
                 return;
             }
             remoteViews.setTextViewText(R.id.progress_tv,
-                    context.getString(R.string.episode_downloading,
+                    context.getString(R.string.notification_downloading,
                             param.bytesRead() / Const.MEGA_BYTE, param.contentLength() / Const.MEGA_BYTE));
         }
 
