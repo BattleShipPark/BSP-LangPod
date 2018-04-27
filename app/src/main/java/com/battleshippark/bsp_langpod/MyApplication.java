@@ -2,6 +2,7 @@ package com.battleshippark.bsp_langpod;
 
 import android.app.Application;
 import android.content.Intent;
+import android.os.StrictMode;
 
 import com.battleshippark.bsp_langpod.dagger.DaggerDbApiGraph;
 import com.battleshippark.bsp_langpod.dagger.DaggerDomainMapperGraph;
@@ -34,5 +35,8 @@ public class MyApplication extends Application {
 
         startService(new Intent(this, PlayerService.class));
         startService(new Intent(this, DownloaderService.class));
+
+
+        StrictMode.enableDefaults();
     }
 }

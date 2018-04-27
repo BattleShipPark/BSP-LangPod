@@ -20,8 +20,8 @@ final class RssResponseBodyConverter implements Converter<ResponseBody, ChannelJ
 
     @Override
     public ChannelJson convert(ResponseBody value) throws IOException {
-        try {
-            SyndFeed feed = new SyndFeedInput().build(new XmlReader(value.byteStream()));
+        try (XmlReader reader = new XmlReader(value.byteStream())) {
+            SyndFeed feed = new SyndFeedInput().build(reader);
             return mapper.map(feed);
         } catch (FeedException e) {
             throw new IOException(e);
