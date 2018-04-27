@@ -3,9 +3,9 @@ package com.battleshippark.bsp_langpod.service.player;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.IBinder;
+import android.util.Log;
 
 import com.battleshippark.bsp_langpod.data.db.ChannelRealm;
 import com.battleshippark.bsp_langpod.data.db.EpisodeRealm;
@@ -45,12 +45,14 @@ public class Player {
     public void onStart() {
         if (!isBound()) {
             context.bindService(new Intent(context, PlayerService.class), connection, Context.BIND_AUTO_CREATE);
+            bound = true;
         }
     }
 
     public void onStop() {
         if (isBound()) {
             context.unbindService(connection);
+            bound = false;
         }
     }
 
@@ -64,7 +66,6 @@ public class Player {
 
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            bound = true;
             this.service = ((PlayerService.LocalBinder) service).getService();
             if (onConnected != null) {
                 onConnected.call(this.service);
@@ -74,7 +75,7 @@ public class Player {
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            bound = false;
+            this.service = null;
         }
 
         PlayerService getService() {
