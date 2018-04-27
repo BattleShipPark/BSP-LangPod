@@ -1,0 +1,73 @@
+{
+  "project_info": {
+    "project_number": "64491136758",
+    "firebase_url": "https://mooncast-2017.firebaseio.com",
+    "project_id": "mooncast-2017",
+    "storage_bucket": "mooncast-2017.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:64491136758:android:6b25d83c8665e213",
+        "android_client_info": {
+          "package_name": "com.battleshippark.bsp_langpod.beta"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "64491136758-uca47oqipm0ec5gf7q4ukdiod4a9thbp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCD5NW92WRcxfJIMsg8oxXE7cCzmt3gsG8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:64491136758:android:fdb06ef50276a544",
+        "android_client_info": {
+          "package_name": "com.battleshippark.bsp_langpod"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "64491136758-uca47oqipm0ec5gf7q4ukdiod4a9thbp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCD5NW92WRcxfJIMsg8oxXE7cCzmt3gsG8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
