@@ -235,6 +235,12 @@ public class ChannelActivity extends Activity implements OnItemListener {
         holder.dateView.setText(dateFormat.format(episode.getDate()));
         holder.statusTv.setText(getStatusText(episode));
         holder.statusIv.setImageResource(getStatusImage(episode));
+
+        if (episode.getPlayState() == EpisodeRealm.PlayState.PLAYED) {
+            holder.itemView.setBackgroundColor(0xFF444444);
+        } else {
+            holder.itemView.setBackground(null);
+        }
     }
 
     private void onClickEpisode(EpisodeRealm episode) {
