@@ -9,8 +9,7 @@ import com.battleshippark.bsp_langpod.dagger.DaggerDomainMapperGraph;
 import com.battleshippark.bsp_langpod.service.downloader.DownloaderQueueManager;
 import com.battleshippark.bsp_langpod.service.downloader.DownloaderService;
 import com.battleshippark.bsp_langpod.service.player.PlayerService;
-import com.facebook.stetho.Stetho;
-import com.uphyca.stetho_realm.RealmInspectorModulesProvider;
+import com.battleshippark.bsp_langpod.util.StethoHelper;
 
 import io.realm.Realm;
 
@@ -24,11 +23,7 @@ public class MyApplication extends Application {
 
         Realm.init(this);
 
-        Stetho.initialize(
-                Stetho.newInitializerBuilder(this)
-                        .enableDumpapp(Stetho.defaultDumperPluginsProvider(this))
-                        .enableWebKitInspector(RealmInspectorModulesProvider.builder(this).build())
-                        .build());
+        StethoHelper.initialize(this);
 
         DownloaderQueueManager.create(DaggerDbApiGraph.create().downloadApi(),
                 DaggerDomainMapperGraph.create().domainMapper());
