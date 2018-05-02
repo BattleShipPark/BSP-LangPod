@@ -179,6 +179,8 @@ public class ChannelActivity extends Activity implements OnItemListener {
 
         rv.setVisibility(View.VISIBLE);
         msgTextView.setVisibility(View.GONE);
+
+        toolbar.setTitle(channelRealm.getTitle());
     }
 
     void showError(Throwable throwable) {
