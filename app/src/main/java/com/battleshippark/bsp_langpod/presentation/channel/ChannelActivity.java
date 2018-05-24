@@ -46,6 +46,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Actions;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 
@@ -230,6 +231,7 @@ public class ChannelActivity extends Activity implements OnItemListener {
     @Override
     public void onBindEpisodeViewHolder(ChannelAdapter.EpisodeViewHolder holder, EpisodeRealm episode) {
         holder.itemView.setOnClickListener(v -> onClickEpisode(episode));
+        holder.itemView.setOnLongClickListener(v -> onLongClickEpisode(episode));
 
         holder.descView.setText(episode.getDesc());
         holder.dateView.setText(dateFormat.format(episode.getDate()));
@@ -256,6 +258,16 @@ public class ChannelActivity extends Activity implements OnItemListener {
                 pauseEpisode(episode);
             }
         }
+    }
+
+    private boolean onLongClickEpisode(EpisodeRealm episode) {
+        if (episode.getDownloadState() == EpisodeRealm.DownloadState.DOWNLOADING) {
+            new AlertDialog.Builder(this).setMessage(R.string.download_downloading_episode)
+                    .setPositiveButton(android.R.string.yes, (dialog, which) -> tryDownload(episode))
+                    .setNegativeButton(android.R.string.no, (dialog, which) -> Actions.empty())
+                    .show();
+        }
+        return true;
     }
 
     private void pauseEpisode(EpisodeRealm episode) {

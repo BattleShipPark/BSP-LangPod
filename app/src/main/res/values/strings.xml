@@ -29,4 +29,5 @@
     <string name="download_list_episode_downloading">Downloading (%1$.1f/%2$.1fMB)</string>
     <string name="download_list_episode_downloaded">Downloaded</string>
     <string name="download_list_episode_failed_download">Failed to Download</string>
+    <string name="download_downloading_episode">다운로드 중인 에피소드입니다. 취소하고 다시 다운로드 하시겠습니까?</string>
 </resources>
