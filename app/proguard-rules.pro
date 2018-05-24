@@ -26,8 +26,9 @@
 
 -optimizationpasses 5
 -allowaccessmodification
--printmapping 'mapping.txt'
+#-printmapping 'mapping.txt' #uncomment for Crashlytics Auto Upload
 -keepattributes SourceFile,LineNumberTable
+-keepattributes *Annotation*
 -renamesourcefileattribute SourceFile
 
 -dontwarn sun.misc.Unsafe
