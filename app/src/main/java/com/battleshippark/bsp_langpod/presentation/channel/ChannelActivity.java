@@ -189,13 +189,13 @@ public class ChannelActivity extends Activity implements OnItemListener {
         }
         GetChannel.GetChannelThrowable t = (GetChannel.GetChannelThrowable) throwable;
         if (t.getType() == GetChannel.Type.ONLY_DB) {
-            progressBar.setVisibility(View.GONE);
             rv.setVisibility(View.GONE);
             msgTextView.setVisibility(View.VISIBLE);
             msgTextView.setText(R.string.my_list_error_msg);
         } else {
             Toast.makeText(this, R.string.channel_failed_load_from_network, Toast.LENGTH_SHORT).show();
         }
+        progressBar.setVisibility(View.GONE);
         logger.w(throwable);
     }
 
