@@ -199,10 +199,13 @@ public class DownloaderService extends Service {
         if (param.done()) {
             return;
         }
-        sendProgressBroadcast(param);
 
         long episodeId = Long.parseLong(param.identifier());
         getChannel(episodeId, (channelRealm, episodeRealm) -> {
+            if (episodeRealm.getDownloadState() == EpisodeRealm.DownloadState.FAILED_DOWNLOAD) {
+                return;
+            }
+            sendProgressBroadcast(param);
             AndroidSchedulers.mainThread().createWorker().schedule(() -> notificationController.update(channelRealm, episodeRealm, param));
 
             episodeRealm.setDownloadState(EpisodeRealm.DownloadState.DOWNLOADING);
