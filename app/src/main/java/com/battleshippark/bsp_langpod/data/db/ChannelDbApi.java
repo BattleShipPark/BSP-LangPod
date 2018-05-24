@@ -36,7 +36,7 @@ public class ChannelDbApi implements ChannelDbRepository {
         return Observable.create(subscriber -> {
             try (Realm realm = Realm.getInstance(realmConfiguration)) {
                 RealmQuery<ChannelRealm> query = realm.where(ChannelRealm.class);
-                RealmResults<ChannelRealm> results = query.findAllSorted("order");
+                RealmResults<ChannelRealm> results = query.sort("order").findAll();
                 subscriber.onNext(realm.copyFromRealm(results));
                 subscriber.onCompleted();
             } catch (Exception e) {
@@ -51,7 +51,7 @@ public class ChannelDbApi implements ChannelDbRepository {
             try (Realm realm = Realm.getInstance(realmConfiguration)) {
                 RealmQuery<ChannelRealm> query = realm.where(ChannelRealm.class);
                 RealmResults<ChannelRealm> results = query.equalTo(ChannelRealm.FIELD_SUBSCRIBED, true)
-                        .findAllSorted(ChannelRealm.FIELD_ORDER);
+                        .sort(ChannelRealm.FIELD_ORDER).findAll();
                 subscriber.onNext(realm.copyFromRealm(results));
                 subscriber.onCompleted();
             } catch (Exception e) {

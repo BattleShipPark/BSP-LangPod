@@ -38,7 +38,7 @@ public class DownloadDbApi implements DownloadDbRepository {
         return Observable.create(subscriber -> {
             try (Realm realm = Realm.getInstance(realmConfiguration)) {
                 RealmQuery<DownloadRealm> query = realm.where(DownloadRealm.class);
-                RealmResults<DownloadRealm> results = query.findAllSorted(DownloadRealm.FIELD_DOWNLOAD_DATE);
+                RealmResults<DownloadRealm> results = query.sort(DownloadRealm.FIELD_DOWNLOAD_DATE).findAll();
 
                 List<DownloadRealm> downloadRealmList = Stream.of(realm.copyFromRealm(results)).map(this::populate).toList();
                 subscriber.onNext(downloadRealmList);
@@ -68,7 +68,7 @@ public class DownloadDbApi implements DownloadDbRepository {
             try (Realm realm = Realm.getInstance(realmConfiguration)) {
                 RealmQuery<DownloadRealm> query = realm.where(DownloadRealm.class)
                         .equalTo(DownloadRealm.FIELD_DOWNLOAD_STATE, DownloadRealm.DownloadState.NOT_DOWNLOADED.name());
-                RealmResults<DownloadRealm> results = query.findAllSorted(DownloadRealm.FIELD_DOWNLOAD_DATE);
+                RealmResults<DownloadRealm> results = query.sort(DownloadRealm.FIELD_DOWNLOAD_DATE).findAll();
                 subscriber.onNext(realm.copyFromRealm(results));
                 subscriber.onCompleted();
             } catch (Exception e) {
@@ -95,7 +95,7 @@ public class DownloadDbApi implements DownloadDbRepository {
             try (Realm realm = Realm.getInstance(realmConfiguration)) {
                 RealmQuery<DownloadRealm> query = realm.where(DownloadRealm.class)
                         .equalTo(DownloadRealm.FIELD_DOWNLOAD_STATE, DownloadRealm.DownloadState.NOT_DOWNLOADED.name());
-                RealmResults<DownloadRealm> results = query.findAllSorted(DownloadRealm.FIELD_DOWNLOAD_DATE);
+                RealmResults<DownloadRealm> results = query.sort(DownloadRealm.FIELD_DOWNLOAD_DATE).findAll();
                 results.deleteAllFromRealm();
                 subscriber.onCompleted();
             } catch (Exception e) {
