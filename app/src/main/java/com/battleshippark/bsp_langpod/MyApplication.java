@@ -10,6 +10,7 @@ import com.battleshippark.bsp_langpod.service.downloader.DownloaderQueueManager;
 import com.battleshippark.bsp_langpod.service.downloader.DownloaderService;
 import com.battleshippark.bsp_langpod.service.player.PlayerService;
 import com.battleshippark.bsp_langpod.util.StethoHelper;
+import com.squareup.leakcanary.LeakCanary;
 
 import io.realm.Realm;
 
@@ -31,7 +32,11 @@ public class MyApplication extends Application {
         startService(new Intent(this, PlayerService.class));
         startService(new Intent(this, DownloaderService.class));
 
-
         StrictMode.enableDefaults();
+
+        if (LeakCanary.isInAnalyzerProcess(this)) {
+            return;
+        }
+        LeakCanary.install(this);
     }
 }
